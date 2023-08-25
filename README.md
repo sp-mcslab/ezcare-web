@@ -17,7 +17,13 @@ NEXT_PUBLIC_MEDIA_SERVER_BASE_URL = "http://localhost:2000/room"
 
 위 버전에 맞게 설치 진행
 
-## 3. 실행
+## 3. 의존성 설치
+
+```console
+npm install
+```
+
+## 4. 실행
 
 **콘솔로 실행하는 법**
 
@@ -37,7 +43,7 @@ npm run dev
 2. 두 번째 이미지의 좌측 상단 `+` 버튼을 눌러 `npm` 추가
 3. `command`, `script`에 run, dev 입력
 
-## 4. 크롬으로 공부방 접속
+## 5. 크롬으로 공부방 접속
 
 - [미디어 서버](https://github.com/hansung-ez-care/media-server)를 마찬가지로 실행
 - 아래의 주소를 주소창에 입력

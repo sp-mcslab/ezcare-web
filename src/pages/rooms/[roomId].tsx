@@ -175,9 +175,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
         <RoomSettingDialog
           open={openSettingDialog}
           onClose={() => setOpenSettingDialog(false)}
-          onUpdatedTimer={() => {
-            /* TODO: 구현 */
-          }}
           onUnblockedUser={(user) => roomStore.unblockUser(user.id)}
           blacklist={roomStore.blacklist}
         />

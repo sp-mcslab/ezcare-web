@@ -1,5 +1,4 @@
 import React from "react";
-import { PomodoroTimerProperty } from "@/models/room/PomodoroTimerProperty";
 import {
   Dialog,
   DialogActions,
@@ -15,7 +14,6 @@ import Button from "@mui/material/Button";
 interface RoomSettingDialogProps {
   open: boolean;
   onClose: () => void;
-  onUpdatedTimer: (property: PomodoroTimerProperty) => void;
   onUnblockedUser: (user: BlockedUser) => void;
   blacklist: BlockedUser[];
 }
@@ -23,7 +21,6 @@ interface RoomSettingDialogProps {
 export const RoomSettingDialog: React.FC<RoomSettingDialogProps> = ({
   open,
   onClose,
-  onUpdatedTimer,
   onUnblockedUser,
   blacklist,
 }) => {

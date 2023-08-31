@@ -4,8 +4,6 @@ import { observer } from "mobx-react";
 import { RoomStore } from "@/stores/RoomStore";
 import { useRouter } from "next/router";
 import { ChatMessage } from "@/models/room/ChatMessage";
-import { PomodoroTimerState } from "@/models/room/PomodoroTimerState";
-import { TimerEditInputGroup } from "@/components/TimerEditInputGroup";
 import { RoomState } from "@/models/room/RoomState";
 import { UserProfileImage } from "@/components/UserProfileImage";
 import { PeerState } from "@/models/room/PeerState";
@@ -254,20 +252,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
           {enabledHeadset ? "Mute Headset" : "Unmute Headset"}
         </button>
         <DeviceSelector roomStore={roomStore}></DeviceSelector>
-        <div>
-          <PomodoroTimer
-            timerState={roomStore.pomodoroTimerState}
-            getElapsedSeconds={() => roomStore.pomodoroTimerElapsedSeconds}
-            onClickStart={() => roomStore.startTimer()}
-          />
-          {/* TODO: 관리자인 경우만 타이머 편집 부분 보이기*/}
-          {roomStore.pomodoroTimerProperty !== undefined ? (
-            <TimerEditInputGroup
-              defaultTimerProperty={roomStore.pomodoroTimerProperty}
-              onClickSave={roomStore.updateAndStopPomodoroTimer}
-            />
-          ) : undefined}
-        </div>
         {isCurrentUserMaster && (
           <div>
             <Button onClick={() => setOpenSettingDialog(true)}>설정</Button>
@@ -538,65 +522,5 @@ const ChatMessage: NextPage<{ messages: ChatMessage[] }> = observer(
     );
   }
 );
-const PomodoroTimer: NextPage<{
-  timerState: PomodoroTimerState;
-  getElapsedSeconds: () => number;
-  onClickStart: () => void;
-}> = observer(({ timerState, getElapsedSeconds, onClickStart }) => {
-  let backgroundColor: string;
-  switch (timerState) {
-    case PomodoroTimerState.STOPPED:
-      backgroundColor = "cyan";
-      break;
-    case PomodoroTimerState.STARTED:
-      backgroundColor = "red";
-      break;
-    case PomodoroTimerState.SHORT_BREAK:
-      backgroundColor = "lightblue";
-      break;
-    case PomodoroTimerState.LONG_BREAK:
-      backgroundColor = "yellow";
-      break;
-  }
-  return (
-    <div style={{ background: backgroundColor }}>
-      <button id="timerStartButton" onClick={() => onClickStart()}>
-        Start Timer!
-      </button>
-      <ElapsedTimeDisplay
-        timerState={timerState}
-        getElapsedSeconds={getElapsedSeconds}
-      />
-    </div>
-  );
-});
-
-const ElapsedTimeDisplay: NextPage<{
-  timerState: PomodoroTimerState;
-  getElapsedSeconds: () => number;
-}> = ({ timerState, getElapsedSeconds }) => {
-  const [secondsWrapper, setSecondsWrapper] = useState({
-    seconds: getElapsedSeconds(),
-  });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsWrapper({ seconds: getElapsedSeconds() });
-    }, 1000);
-    return () => {
-      clearInterval(timer);
-    };
-  }, [getElapsedSeconds]);
-
-  const seconds =
-    timerState === PomodoroTimerState.STOPPED ? 0 : secondsWrapper.seconds;
-
-  return (
-    <>
-      {seconds >= 60 ? `${Math.floor(seconds / 60)}분 ` : undefined}
-      {Math.floor(seconds % 60)}초 지남
-    </>
-  );
-};
 
 export default RoomScaffold;

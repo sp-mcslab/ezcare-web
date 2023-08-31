@@ -2,10 +2,7 @@ import { RoomSocketService } from "@/service/RoomSocketService";
 import { makeAutoObservable, observable, runInAction } from "mobx";
 import { InvalidStateError } from "mediasoup-client/lib/errors";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
-import { PomodoroTimerState } from "@/models/room/PomodoroTimerState";
-import { PomodoroTimerEvent } from "@/models/room/PomodoroTimerEvent";
 import { beep } from "@/service/SoundPlayer";
-import { PomodoroTimerProperty } from "@/models/room/PomodoroTimerProperty";
 import { ChatMessage } from "@/models/room/ChatMessage";
 import { RoomState } from "@/models/room/RoomState";
 import { MediaUtil } from "@/utils/MediaUtil";
@@ -24,7 +21,6 @@ import {
 } from "@/constants/roomMessage";
 import { PeerState } from "@/models/room/PeerState";
 import { BlockedUser } from "@/models/room/BlockedUser";
-import { convertToKoreaDate } from "@/utils/DateUtil";
 import { uuidv4 } from "@firebase/util";
 
 export interface RoomViewModel {
@@ -32,12 +28,7 @@ export interface RoomViewModel {
   onNotExistsRoomId: () => void;
   onWaitingRoomEvent: (event: WaitingRoomEvent) => void;
   onFailedToJoin: (message: string) => void;
-  onJoined: (
-    peerStates: PeerState[],
-    timerStartedDate: string | undefined,
-    timerState: PomodoroTimerState,
-    timerProperty: PomodoroTimerProperty
-  ) => void;
+  onJoined: (peerStates: PeerState[]) => void;
   onChangePeerState: (state: PeerState) => void;
   onReceivedChat: (message: ChatMessage) => void;
   onAddedConsumer: (
@@ -46,8 +37,6 @@ export interface RoomViewModel {
     kind: MediaKind
   ) => void;
   onDisposedPeer: (disposedPeerId: string) => void;
-  onPomodoroTimerEvent: (event: PomodoroTimerEvent) => void;
-  onUpdatedPomodoroTimer: (newProperty: PomodoroTimerProperty) => void;
   onKicked: (userId: string) => void;
   onBlocked: (userId: string) => void;
 }
@@ -80,17 +69,12 @@ export class RoomStore implements RoomViewModel {
   private _peerStates: PeerState[] = [];
   private _chatInput: string = "";
   private readonly _chatMessages: ChatMessage[] = observable.array([]);
-  private _pomodoroTimerState: PomodoroTimerState = PomodoroTimerState.STOPPED;
-  private _pomodoroTimerEventDate?: Date = undefined;
-  private _pomodoroProperty?: PomodoroTimerProperty = undefined;
   private _blacklist: BlockedUser[] = [];
   private _kicked: boolean = false;
   private _videoDeviceList: MediaDeviceInfo[] = [];
   private _audioDeviceList: MediaDeviceInfo[] = [];
-  private _speakerDeviceList: MediaDeviceInfo[] = [];
   private _currentVideoDeviceId: string | undefined = undefined;
   private _currentAudioDeviceId: string | undefined = undefined;
-  private _currentSpeakerDeviceId: string | undefined = undefined;
 
   /**
    * 회원에게 알림을 보내기위한 메시지이다.
@@ -279,23 +263,6 @@ export class RoomStore implements RoomViewModel {
     return this._chatInput.length > 0;
   }
 
-  public get pomodoroTimerState(): PomodoroTimerState {
-    return this._pomodoroTimerState;
-  }
-
-  public get pomodoroTimerElapsedSeconds(): number {
-    if (this._pomodoroTimerEventDate === undefined) {
-      return 0;
-    }
-    const currentTime = convertToKoreaDate(new Date()).getTime();
-    const milliseconds = currentTime - this._pomodoroTimerEventDate.getTime();
-    return milliseconds / 1000;
-  }
-
-  public get pomodoroTimerProperty(): PomodoroTimerProperty | undefined {
-    return this._pomodoroProperty;
-  }
-
   public get blacklist(): BlockedUser[] {
     return this._blacklist;
   }
@@ -373,22 +340,10 @@ export class RoomStore implements RoomViewModel {
     this._passwordInput = "";
   };
 
-  public onJoined = (
-    peerStates: PeerState[],
-    timerStartedDate: string | undefined,
-    timerState: PomodoroTimerState,
-    timerProperty: PomodoroTimerProperty
-  ): void => {
+  public onJoined = (peerStates: PeerState[]): void => {
     this._peerStates = peerStates;
     this._state = RoomState.JOINED;
     this._waitingRoomData = undefined;
-    this._pomodoroTimerState = timerState;
-    this._pomodoroProperty = timerProperty;
-    if (timerStartedDate !== undefined) {
-      this._pomodoroTimerEventDate = convertToKoreaDate(
-        new Date(timerStartedDate)
-      );
-    }
   };
 
   public changeCamera = async (deviceId: string) => {
@@ -523,20 +478,6 @@ export class RoomStore implements RoomViewModel {
     this._chatInput = "";
   };
 
-  public startTimer = () => {
-    this._roomService.startTimer();
-  };
-
-  public updateAndStopPomodoroTimer = (newProperty: PomodoroTimerProperty) => {
-    this._roomService.updateAndStopTimer(newProperty);
-  };
-
-  public onUpdatedPomodoroTimer = (newProperty: PomodoroTimerProperty) => {
-    this._pomodoroTimerState = PomodoroTimerState.STOPPED;
-    this._pomodoroTimerEventDate = undefined;
-    this._pomodoroProperty = newProperty;
-  };
-
   public onReceivedChat = (message: ChatMessage) => {
     this._chatMessages.push(message);
     beep();
@@ -554,22 +495,6 @@ export class RoomStore implements RoomViewModel {
       case "video":
         this._remoteVideoStreamsByPeerId.set(peerId, new MediaStream([track]));
         this._remoteVideoSwitchByPeerId.set(peerId, true);
-        break;
-    }
-  };
-
-  public onPomodoroTimerEvent = (event: PomodoroTimerEvent) => {
-    this._pomodoroTimerEventDate = convertToKoreaDate(new Date());
-    beep();
-    switch (event) {
-      case PomodoroTimerEvent.ON_START:
-        this._pomodoroTimerState = PomodoroTimerState.STARTED;
-        break;
-      case PomodoroTimerEvent.ON_SHORT_BREAK:
-        this._pomodoroTimerState = PomodoroTimerState.SHORT_BREAK;
-        break;
-      case PomodoroTimerEvent.ON_LONG_BREAK:
-        this._pomodoroTimerState = PomodoroTimerState.LONG_BREAK;
         break;
     }
   };

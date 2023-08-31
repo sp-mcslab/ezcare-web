@@ -8,7 +8,4 @@ export interface JoinRoomSuccessCallbackProperty {
   readonly type: "success";
   readonly rtpCapabilities: RtpCapabilities;
   readonly peerStates: PeerState[];
-  readonly timerStartedDate?: string;
-  readonly timerState: PomodoroTimerState;
-  readonly timerProperty: PomodoroTimerProperty;
 }

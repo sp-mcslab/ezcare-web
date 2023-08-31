@@ -160,19 +160,6 @@ const OTHER_PEER_DISCONNECTED = "other-peer-disconnected";
 const SEND_CHAT = "send-chat";
 
 /**
- * 뽀모도로 타이머를 시작하라고 클라이언트가 서버에게 요청하고 서버가 방의 모든
- * 클라이언트에게 브로드캐스트한다.
- */
-const START_TIMER = "start-timer";
-const START_SHORT_BREAK = "start-short-break";
-const START_LONG_BREAK = "start-long-break";
-
-/**
- * 타이머 정보를 수정하는 프로토콜이다. 클라이언트가 서버에 요청한다.
- */
-const EDIT_AND_STOP_TIMER = "edit-and-stop-timer";
-
-/**
  * 방장이 회원을 강퇴할 때 서버에 전송하는 프로토콜이다.
  */
 const KICK_USER = "kick-user";
@@ -213,10 +200,6 @@ export {
   UNMUTE_HEADSET,
   OTHER_PEER_DISCONNECTED,
   SEND_CHAT,
-  START_TIMER,
-  START_SHORT_BREAK,
-  START_LONG_BREAK,
-  EDIT_AND_STOP_TIMER,
   KICK_USER,
   BLOCK_USER,
   UNBLOCK_USER,

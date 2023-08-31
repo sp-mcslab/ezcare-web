@@ -8,7 +8,6 @@ import {
   CONSUME,
   CONSUME_RESUME,
   CREATE_WEB_RTC_TRANSPORT,
-  EDIT_AND_STOP_TIMER,
   GET_PRODUCER_IDS,
   HIDE_REMOTE_VIDEO,
   JOIN_ROOM,
@@ -23,9 +22,6 @@ import {
   PRODUCER_CLOSED,
   SEND_CHAT,
   SHOW_REMOTE_VIDEO,
-  START_LONG_BREAK,
-  START_SHORT_BREAK,
-  START_TIMER,
   TRANSPORT_PRODUCER,
   TRANSPORT_PRODUCER_CONNECT,
   TRANSPORT_RECEIVER_CONNECT,
@@ -42,8 +38,6 @@ import {
 } from "mediasoup-client/lib/Transport";
 import { Consumer } from "mediasoup-client/lib/Consumer";
 import { Producer } from "mediasoup-client/lib/Producer";
-import { PomodoroTimerEvent } from "@/models/room/PomodoroTimerEvent";
-import { PomodoroTimerProperty } from "@/models/room/PomodoroTimerProperty";
 import { ChatMessage } from "@/models/room/ChatMessage";
 import { WaitingRoomData } from "@/models/room/WaitingRoomData";
 import {
@@ -182,12 +176,7 @@ export class RoomSocketService {
         }
         console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
         this._removeWaitingRoomEventsListener();
-        this._roomViewModel.onJoined(
-          data.peerStates,
-          data.timerStartedDate,
-          data.timerState,
-          data.timerProperty
-        );
+        this._roomViewModel.onJoined(data.peerStates);
         try {
           // once we have rtpCapabilities from the Router, create Device
           this._device = new Device();
@@ -245,22 +234,6 @@ export class RoomSocketService {
     });
     socket.on(PEER_STATE_CHANGED, (state: PeerState) => {
       this._roomViewModel.onChangePeerState(state);
-    });
-    socket.on(START_TIMER, () => {
-      this._roomViewModel.onPomodoroTimerEvent(PomodoroTimerEvent.ON_START);
-    });
-    socket.on(START_SHORT_BREAK, () => {
-      this._roomViewModel.onPomodoroTimerEvent(
-        PomodoroTimerEvent.ON_SHORT_BREAK
-      );
-    });
-    socket.on(START_LONG_BREAK, () => {
-      this._roomViewModel.onPomodoroTimerEvent(
-        PomodoroTimerEvent.ON_LONG_BREAK
-      );
-    });
-    socket.on(EDIT_AND_STOP_TIMER, (newProperty: PomodoroTimerProperty) => {
-      this._roomViewModel.onUpdatedPomodoroTimer(newProperty);
     });
     socket.on(KICK_USER, this._roomViewModel.onKicked);
     socket.on(BLOCK_USER, this._roomViewModel.onBlocked);
@@ -666,14 +639,6 @@ export class RoomSocketService {
 
   public sendChat = (message: string) => {
     this._requireSocket().emit(SEND_CHAT, message);
-  };
-
-  public startTimer = () => {
-    this._requireSocket().emit(START_TIMER);
-  };
-
-  public updateAndStopTimer = (newProperty: PomodoroTimerProperty) => {
-    this._requireSocket().emit(EDIT_AND_STOP_TIMER, newProperty);
   };
 
   public kickUser = (userId: string) => {

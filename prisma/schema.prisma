@@ -7,168 +7,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model belong {
-  user_id          String       @db.VarChar(100)
-  organization_id  String       @db.VarChar(100)
-  email            String       @db.VarChar(255)
-  is_authenticated Boolean
-  organization     organization @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_organization_to_belong_1")
-  user_account     user_account @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_account_to_belong_1")
+model CallRecord {
+  userId String    @db.VarChar(100)
+  roomId String    @db.VarChar(100)
+  joinAt DateTime? @db.Timestamp(6)
+  exitAt DateTime? @db.Timestamp(6)
+  Room   Room      @relation(fields: [roomId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User   User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([user_id, organization_id], map: "pk_belong")
+  @@id([userId, roomId])
 }
 
-model block {
-  room_id      String       @db.VarChar(100)
-  user_id      String       @db.VarChar(100)
-  room         room         @relation(fields: [room_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_room_to_block_1")
-  user_account user_account @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_account_to_block_1")
+model Host {
+  roomId String @db.VarChar(100)
+  userId String @db.VarChar(100)
+  Room   Room   @relation(fields: [roomId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User   User   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([room_id, user_id], map: "pk_block")
+  @@id([roomId, userId])
 }
 
-model crops {
-  id           String       @db.VarChar(100)
-  user_id      String       @db.VarChar(100)
-  type         crops_type
-  planted_at   DateTime     @db.Timestamptz(6)
-  harvested_at DateTime?    @db.Timestamptz(6)
-  grade        fruit_grade?
-  user_account user_account @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_account_to_crops_1")
+model Invite {
+  userId String @db.VarChar(100)
+  roomId String @db.VarChar(100)
+  Room   Room   @relation(fields: [roomId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User   User   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([id, user_id], map: "pk_crops")
+  @@id([userId, roomId])
 }
 
-model friend {
-  requester_id                                   String       @db.VarChar(100)
-  acceptor_id                                    String       @db.VarChar(100)
-  accepted                                       Boolean
-  requested_at                                   DateTime     @db.Timestamp(6)
-  user_account_friend_acceptor_idTouser_account  user_account @relation("friend_acceptor_idTouser_account", fields: [acceptor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_friend_user_account_1")
-  user_account_friend_requester_idTouser_account user_account @relation("friend_requester_idTouser_account", fields: [requester_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_friend_user_account_2")
-
-  @@id([requester_id, acceptor_id], map: "pk_friend")
+model Room {
+  id         String       @id @db.VarChar(100)
+  creatorId  String       @db.VarChar(100)
+  name       String?      @db.VarChar(100)
+  createdAt  DateTime?    @db.Timestamp(6)
+  openAt     DateTime?    @db.Timestamp(6)
+  deletedAt  DateTime?    @db.Timestamp(6)
+  CallRecord CallRecord[]
+  Host       Host[]
+  Invite     Invite[]
+  User       User         @relation(fields: [creatorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model organization {
-  id      String   @id(map: "pk_organization") @default(dbgenerated("nextval('organization_id_seq'::regclass)")) @db.VarChar(100)
-  name    String   @db.VarChar(30)
-  address String   @db.VarChar(100)
-  belong  belong[]
-}
-
-model report {
-  id                                            String          @id(map: "pk_report") @db.VarChar(100)
-  suspect_id                                    String          @db.VarChar(100)
-  reporter_id                                   String          @db.VarChar(100)
-  category                                      report_category
-  content                                       String          @db.VarChar(500)
-  reported_at                                   DateTime        @db.Timestamp(6)
-  screenshot                                    String?         @db.VarChar(500)
-  accepted                                      Boolean?
-  user_account_report_reporter_idTouser_account user_account    @relation("report_reporter_idTouser_account", fields: [reporter_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "report_reporter_id__fk")
-  user_account_report_suspect_idTouser_account  user_account    @relation("report_suspect_idTouser_account", fields: [suspect_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "report_suspect_id__fk")
-}
-
-model room {
-  id                  String          @id(map: "pk_room") @db.VarChar(100)
-  master_id           String          @db.VarChar(100)
-  title               String          @db.VarChar(50)
-  thumbnail           String?         @db.VarChar(255)
-  password            String?         @db.VarChar(255)
-  timer               Int
-  short_break         Int
-  long_break          Int
-  long_break_interval Int
-  expired_at          DateTime        @db.Timestamp(6)
-  deleted_at          DateTime?       @db.Timestamp(6)
-  block               block[]
-  user_account        user_account    @relation(fields: [master_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "room_master_id__fk")
-  room_tag            room_tag[]
-  study_history       study_history[]
-}
-
-model room_tag {
-  tag_id  String @db.VarChar(100)
-  room_id String @db.VarChar(100)
-  room    room   @relation(fields: [room_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_room_to_room_tag_1")
-  tag     tag    @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tag_to_room_tag_1")
-
-  @@id([tag_id, room_id], map: "pk_room_tag")
-}
-
-model study_history {
-  user_id      String       @db.VarChar(100)
-  room_id      String       @db.VarChar(100)
-  join_at      DateTime     @db.Timestamp(6)
-  exit_at      DateTime?    @db.Timestamp(6)
-  id           String       @db.VarChar(100)
-  room         room         @relation(fields: [room_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_room_to_study_history_1")
-  user_account user_account @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_account_to_study_history_1")
-
-  @@id([id, user_id, room_id], map: "pk_study_history")
-}
-
-model tag {
-  id       String     @id(map: "pk_tag") @db.VarChar(100)
-  name     String     @unique(map: "unique_tag") @db.VarChar(20)
-  room_tag room_tag[]
-  user_tag user_tag[]
-}
-
-model user_account {
-  id                                       String          @id(map: "pk_user_account") @db.VarChar(100)
-  name                                     String          @db.VarChar(20)
-  introduce                                String?         @db.VarChar(100)
-  score                                    BigInt
-  profile_image                            String?         @db.VarChar(255)
-  status                                   user_status
-  belong                                   belong[]
-  block                                    block[]
-  crops                                    crops[]
-  friend_friend_acceptor_idTouser_account  friend[]        @relation("friend_acceptor_idTouser_account")
-  friend_friend_requester_idTouser_account friend[]        @relation("friend_requester_idTouser_account")
-  report_report_reporter_idTouser_account  report[]        @relation("report_reporter_idTouser_account")
-  report_report_suspect_idTouser_account   report[]        @relation("report_suspect_idTouser_account")
-  room                                     room[]
-  study_history                            study_history[]
-  user_tag                                 user_tag[]
-}
-
-model user_tag {
-  tag_id       String       @db.VarChar(100)
-  user_id      String       @db.VarChar(100)
-  tag          tag          @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_tag_to_user_tag_1")
-  user_account user_account @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_account_to_user_tag_1")
-
-  @@id([tag_id, user_id], map: "pk_user_tag")
-}
-
-enum crops_type {
-  strawberry
-  tomato
-  carrot
-  pumpkin
-  cabbage
-}
-
-enum fruit_grade {
-  not_fresh
-  fresh
-  silver
-  gold
-  diamond
-}
-
-enum report_category {
-  obscene
-  fraud
-  meandering
-  hate
-  hindrance
-}
-
-enum user_status {
-  login
-  logout
+model User {
+  id         String       @id @db.VarChar(100)
+  username   String?      @db.VarChar(100)
+  password   String?      @db.VarChar(100)
+  name       String?      @db.VarChar(100)
+  role       String?      @db.VarChar(100)
+  phone      String?      @db.VarChar(100)
+  pin        String?      @db.VarChar(100)
+  department String?      @db.VarChar(100)
+  CallRecord CallRecord[]
+  Host       Host[]
+  Invite     Invite[]
+  Room       Room[]
 }

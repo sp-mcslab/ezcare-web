@@ -1,10 +1,3 @@
-import {
-  POMODORO_LONG_BREAK_RANGE,
-  POMODORO_LONG_INTERVAL_RANGE,
-  POMODORO_SHORT_BREAK_RANGE,
-  POMODORO_TIMER_RANGE,
-} from "@/constants/room.constant";
-
 export const ROOM_CREATE_SUCCESS: string = "방 개설을 성공했습니다.";
 export const ROOM_DELETE_SUCCESS: string = "방을 삭제되었습니다";
 export const GET_RECENT_ROOM_SUCCESS: string =

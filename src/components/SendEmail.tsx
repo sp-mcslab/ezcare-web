@@ -3,8 +3,6 @@ import mg from "nodemailer-mailgun-transport";
 import mailgunTransport from "nodemailer-mailgun-transport";
 import Mail from "nodemailer/lib/mailer";
 import * as process from "process";
-import { createEmailToken } from "@/service/manageVerifyToken";
-import { emailHtml } from "@/components/EmailHtmlExample";
 
 const mailGunSendMail = (email: Mail.Options) => {
   const auth: mailgunTransport.Options = {
@@ -26,21 +24,4 @@ const mailGunSendMail = (email: Mail.Options) => {
   } catch (e) {
     return false;
   }
-};
-
-export const sendSecretMail = (
-  address: string,
-  userId: string,
-  userName: string,
-  organizationId: string,
-  organizationName: string
-) => {
-  const token = createEmailToken(userId, organizationId, organizationName);
-  const email = {
-    from: "studyingFarmer@developer.com",
-    to: address,
-    subject: "공부하는 농부 - 소속 인증 이메일",
-    html: emailHtml(token, userName),
-  };
-  return mailGunSendMail(email);
 };

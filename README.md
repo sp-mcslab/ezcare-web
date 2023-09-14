@@ -54,3 +54,10 @@ http://localhost:3000/rooms/1234
 
 - 우측 상단의 "입장" 버튼을 눌러 공부방 입장
 - 다른 탭을 실행하여 동일한 공부방에 접속하여 비디오 전송 확인 가능 
+
+# Prisma DB 업데이트 방법
+
+```console
+prisma db pull
+prisma generate
+```

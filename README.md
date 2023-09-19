@@ -7,8 +7,9 @@
 프로젝트 루트에 `.env` 파일을 생성하여 아래와 같이 환경 변수들을 설정한다.
 
 ```text
-NEXT_PUBLIC_BASE_URL = "http://localhost:3000"
-NEXT_PUBLIC_MEDIA_SERVER_BASE_URL = "http://localhost:2000/room"
+DATABASE_URL="여기에 DB URL 입력"
+NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+NEXT_PUBLIC_MEDIA_SERVER_BASE_URL="http://localhost:2000/room"
 ```
 
 ## 2. NodeJS 설치

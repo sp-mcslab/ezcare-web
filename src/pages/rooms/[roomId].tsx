@@ -11,6 +11,7 @@ import PopupMenu from "@/components/PopupMenu";
 import { getEnumKeyByEnumValue } from "@/utils/EnumUtil";
 import Button from "@mui/material/Button";
 import { RoomSettingDialog } from "@/components/RoomSettingDialog";
+import UserRoleSelector from "@/components/UserRoleSelector";
 
 enum MasterPopupMenus {
   Kick = "강퇴",
@@ -115,7 +116,12 @@ const WaitingRoom: NextPage<{
         </button>
       </div>
       <div>{roomStore.waitingRoomMessage}</div>
-
+      <div>
+        <UserRoleSelector
+          isHost={roomStore.isHost}
+          onHostChange={(isHost) => roomStore.changeHost(isHost)}
+        />
+      </div>
       <div>
         <div>방 참여자 목록</div>
         {roomStore.roomJoiners.map((joiner) => {

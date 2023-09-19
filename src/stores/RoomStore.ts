@@ -53,6 +53,12 @@ export class RoomStore implements RoomViewModel {
   private _enabledHeadset: boolean = true;
 
   // ======================= 대기실 관련 =======================
+
+  /**
+   * 회원 API 개발 전에 임시로 사용하는 필드입니다.
+   */
+  private _isHost: boolean = true;
+
   private _waitingRoomData?: WaitingRoomData = undefined;
   private _passwordInput: string = "";
   private _failedToJoinMessage?: string = undefined;
@@ -87,6 +93,10 @@ export class RoomStore implements RoomViewModel {
   ) {
     makeAutoObservable(this);
     this._roomService = roomService ?? new RoomSocketService(this);
+  }
+
+  public get isHost(): boolean {
+    return this._isHost;
   }
 
   public get videoDeviceList() {
@@ -322,6 +332,13 @@ export class RoomStore implements RoomViewModel {
     } else {
       throw Error("지원되지 않는 event입니다.");
     }
+  };
+
+  /**
+   * 회원 API 생성 전 임시로 사용하는 API입니다.
+   */
+  public changeHost = (isHost: boolean) => {
+    this._isHost = isHost;
   };
 
   public joinRoom = () => {

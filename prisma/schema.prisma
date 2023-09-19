@@ -8,60 +8,82 @@ datasource db {
 }
 
 model CallRecord {
-  userId String    @db.VarChar(100)
-  roomId String    @db.VarChar(100)
-  joinAt DateTime? @db.Timestamp(6)
-  exitAt DateTime? @db.Timestamp(6)
-  Room   Room      @relation(fields: [roomId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  User   User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id     String    @db.VarChar(100)
+  userid String    @db.VarChar(100)
+  roomid String    @db.VarChar(100)
+  joinat DateTime? @db.Timestamp(6)
+  exitat DateTime? @db.Timestamp(6)
+  Room   Room      @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_CallRecord_1")
+  User   User      @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_CallRecord_1")
 
-  @@id([userId, roomId])
+  @@id([id, userid, roomid], map: "PK_CALLRECORD")
 }
 
 model Host {
-  roomId String @db.VarChar(100)
-  userId String @db.VarChar(100)
-  Room   Room   @relation(fields: [roomId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  User   User   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  roomid String @db.VarChar(100)
+  userid String @db.VarChar(100)
+  Room   Room   @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_Host_1")
+  User   User   @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Host_1")
 
-  @@id([roomId, userId])
+  @@id([roomid, userid], map: "PK_HOST")
 }
 
 model Invite {
-  userId String @db.VarChar(100)
-  roomId String @db.VarChar(100)
-  Room   Room   @relation(fields: [roomId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  User   User   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userid String @db.VarChar(100)
+  roomid String @db.VarChar(100)
+  Room   Room   @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_Invite_1")
+  User   User   @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Invite_1")
 
-  @@id([userId, roomId])
+  @@id([userid, roomid], map: "PK_INVITE")
 }
 
 model Room {
-  id         String       @id @db.VarChar(100)
-  creatorId  String       @db.VarChar(100)
+  id         String       @id(map: "PK_ROOM") @db.VarChar(100)
+  creatorid  String       @db.VarChar(100)
   name       String?      @db.VarChar(100)
-  createdAt  DateTime?    @db.Timestamp(6)
-  openAt     DateTime?    @db.Timestamp(6)
-  deletedAt  DateTime?    @db.Timestamp(6)
+  createdat  DateTime?    @db.Timestamp(6)
+  openat     DateTime?    @db.Timestamp(6)
+  deletedat  DateTime?    @db.Timestamp(6)
+  code       String       @db.VarChar(100)
+  tenantcode String       @db.VarChar(100)
   CallRecord CallRecord[]
   Host       Host[]
   Invite     Invite[]
-  User       User         @relation(fields: [creatorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Hospital   Hospital     @relation(fields: [code, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Room_1")
+  User       User         @relation(fields: [creatorid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Room_1")
 }
 
 model User {
-  id         String       @id @db.VarChar(100)
-  username   String?      @db.VarChar(100)
-  password   String?      @db.VarChar(100)
-  name       String?      @db.VarChar(100)
-  phone      String?      @db.VarChar(100)
-  pin        String?      @db.VarChar(100)
-  department String?      @db.VarChar(100)
-  role       UserRole?
-  CallRecord CallRecord[]
-  Host       Host[]
-  Invite     Invite[]
+  id           String       @id(map: "PK_USER") @db.VarChar(100)
+  username     String?      @db.VarChar(100)
+  password     String?      @db.VarChar(100)
+  name         String?      @db.VarChar(100)
+  phone        String?      @db.VarChar(100)
+  pin          String?      @db.VarChar(100)
+  department   String?      @db.VarChar(100)
+  hospitalcode String       @db.VarChar(100)
+  tenantcode   String       @db.VarChar(100)
+  role         UserRole?
+  CallRecord   CallRecord[]
+  Host         Host[]
+  Invite       Invite[]
+  Room         Room[]
+  Hospital     Hospital     @relation(fields: [hospitalcode, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_User_1")
+}
+
+model Hospital {
+  code       String @db.VarChar(100)
+  tenantcode String @db.VarChar(100)
+  Tenant     Tenant @relation(fields: [tenantcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Tenant_TO_Hospital_1")
   Room       Room[]
+  User       User[]
+
+  @@id([code, tenantcode], map: "PK_HOSPITAL")
+}
+
+model Tenant {
+  code     String     @id(map: "PK_TENANT") @db.VarChar(100)
+  Hospital Hospital[]
 }
 
 enum UserRole {

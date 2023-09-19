@@ -54,12 +54,19 @@ model User {
   username   String?      @db.VarChar(100)
   password   String?      @db.VarChar(100)
   name       String?      @db.VarChar(100)
-  role       String?      @db.VarChar(100)
   phone      String?      @db.VarChar(100)
   pin        String?      @db.VarChar(100)
   department String?      @db.VarChar(100)
+  role       UserRole?
   CallRecord CallRecord[]
   Host       Host[]
   Invite     Invite[]
   Room       Room[]
+}
+
+enum UserRole {
+  nurse
+  doctor
+  patient
+  systemManager
 }

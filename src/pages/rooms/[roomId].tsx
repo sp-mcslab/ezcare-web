@@ -113,6 +113,13 @@ const WaitingRoom: NextPage<{
         >
           입장
         </button>
+        {/*TODO: 임시로 두는 버튼입니다. 추후에 회원 기능이 구현되면 회원 타입이 환자인 경우만 보여야 합니다.*/}
+        <button
+          disabled={!roomStore.enableJoinButton}
+          onClick={() => roomStore.requestToJoinRoom()}
+        >
+          입장요청
+        </button>
       </div>
       <div>{roomStore.waitingRoomMessage}</div>
       <div>
@@ -226,6 +233,14 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 >
                   전송
                 </button>
+              </td>
+              {/* TODO: 호스트인 경우에만 아래의 입장 대기목록 보이도록 수정 */}
+              <td className="awaitingList">
+                <div>입장 대기자 목록</div>
+                <br />
+                {roomStore.awaitingPeerIds.map((userId) => {
+                  return <>{userId}</>;
+                })}
               </td>
             </tr>
           </tbody>

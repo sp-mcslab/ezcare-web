@@ -20,6 +20,7 @@ import {
   OTHER_PEER_JOINED_ROOM,
   PEER_STATE_CHANGED,
   PRODUCER_CLOSED,
+  REQUEST_TO_JOIN_ROOM,
   SEND_CHAT,
   SHOW_REMOTE_VIDEO,
   TRANSPORT_PRODUCER,
@@ -49,6 +50,8 @@ import { JoinRoomSuccessCallbackProperty } from "@/models/room/JoinRoomSuccessCa
 import { JoinRoomFailureCallbackProperty } from "@/models/room/JoinRoomFailureCallbackProperty";
 import { PeerState } from "@/models/room/PeerState";
 import process from "process";
+import RequestToJoinRoomArgs from "@/models/room/RequestToJoinRoomArgs";
+import { Result } from "@/models/common/Result";
 
 const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_MEDIA_SERVER_BASE_URL!;
 
@@ -154,6 +157,23 @@ export class RoomSocketService {
     socket.removeListener(OTHER_PEER_EXITED_ROOM);
   };
 
+  public requestToJoin = async (uid: string): Promise<Result<boolean>> => {
+    const socket = this._requireSocket();
+    const args: RequestToJoinRoomArgs = {
+      userId: uid,
+      mutedHeadset: this._mutedHeadset,
+    };
+    return new Promise((resolve) => {
+      socket.emit(REQUEST_TO_JOIN_ROOM, args, (existsRoom: boolean) => {
+        if (existsRoom) {
+          resolve(Result.success(true));
+        } else {
+          resolve(Result.success(false));
+        }
+      });
+    });
+  };
+
   public join = (
     localMediaStream: MediaStream,
     password: string,
@@ -237,6 +257,7 @@ export class RoomSocketService {
     });
     socket.on(KICK_USER, this._roomViewModel.onKicked);
     socket.on(BLOCK_USER, this._roomViewModel.onBlocked);
+    socket.on(REQUEST_TO_JOIN_ROOM, this._roomViewModel.onRequestToJoinRoom);
   };
 
   private _createSendTransport = (

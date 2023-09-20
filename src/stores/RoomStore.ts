@@ -39,6 +39,7 @@ export interface RoomViewModel {
   onDisposedPeer: (disposedPeerId: string) => void;
   onKicked: (userId: string) => void;
   onBlocked: (userId: string) => void;
+  onRequestToJoinRoom: (userId: string) => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -53,7 +54,7 @@ export class RoomStore implements RoomViewModel {
   private _enabledHeadset: boolean = true;
 
   // ======================= 대기실 관련 =======================
-
+  private _awaitConfirmToJoin: boolean = false;
   private _waitingRoomData?: WaitingRoomData = undefined;
   private _passwordInput: string = "";
   private _failedToJoinMessage?: string = undefined;
@@ -69,6 +70,7 @@ export class RoomStore implements RoomViewModel {
   private _masterId?: string = undefined;
   private _peerStates: PeerState[] = [];
   private _chatInput: string = "";
+  private _awaitingPeerIds: string[] = [];
   private readonly _chatMessages: ChatMessage[] = observable.array([]);
   private _blacklist: BlockedUser[] = [];
   private _kicked: boolean = false;
@@ -132,6 +134,10 @@ export class RoomStore implements RoomViewModel {
 
   public get enabledHeadset(): boolean {
     return this._enabledHeadset;
+  }
+
+  public get awaitingPeerIds(): string[] {
+    return this._awaitingPeerIds;
   }
 
   // ================================ 대기실 getter 시작 ================================
@@ -221,6 +227,9 @@ export class RoomStore implements RoomViewModel {
   public get enableJoinButton(): boolean {
     const waitingRoomData = this._waitingRoomData;
     if (waitingRoomData === undefined) {
+      return false;
+    }
+    if (this._awaitConfirmToJoin) {
       return false;
     }
     if (this._isCurrentUserAlreadyJoined(waitingRoomData)) {
@@ -332,8 +341,33 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
+  public onRequestToJoinRoom = (requesterId: string) => {
+    console.log("onRequestToJoinRoom: ", requesterId);
+    // TODO: 호스트가 맞는지 검증하기
+    if (this._state !== RoomState.JOINED) {
+      return;
+    }
+    this._awaitingPeerIds = [...this._awaitingPeerIds, requesterId];
+  };
+
   public updateUserId = (newUserId: string) => {
     this._uid = newUserId;
+  };
+
+  public requestToJoinRoom = async () => {
+    this._awaitConfirmToJoin = true;
+    const result = await this._roomService.requestToJoin(this._uid);
+    if (result.isFailure) {
+      this._failedToJoinMessage = "입장 요청 전송을 실패했습니다.";
+      this._awaitConfirmToJoin = false;
+    }
+
+    const existsRoom = result.getOrNull()!;
+    console.log("existsRoom: ", existsRoom);
+    if (!existsRoom) {
+      this._failedToJoinMessage = "아직 방이 열리지 않았습니다.";
+      this._awaitConfirmToJoin = false;
+    }
   };
 
   public joinRoom = () => {

@@ -54,11 +54,6 @@ export class RoomStore implements RoomViewModel {
 
   // ======================= 대기실 관련 =======================
 
-  /**
-   * 회원 API 개발 전에 임시로 사용하는 필드입니다.
-   */
-  private _isHost: boolean = true;
-
   private _waitingRoomData?: WaitingRoomData = undefined;
   private _passwordInput: string = "";
   private _failedToJoinMessage?: string = undefined;
@@ -93,10 +88,6 @@ export class RoomStore implements RoomViewModel {
   ) {
     makeAutoObservable(this);
     this._roomService = roomService ?? new RoomSocketService(this);
-  }
-
-  public get isHost(): boolean {
-    return this._isHost;
   }
 
   public get videoDeviceList() {
@@ -144,7 +135,14 @@ export class RoomStore implements RoomViewModel {
   }
 
   // ================================ 대기실 getter 시작 ================================
+  /**
+   * 임시 회원 ID입니다.
+   * TODO: 회원 기능 구현되면 제거하고 실제 회원 ID 사용하기
+   */
   private _uid = uuidv4();
+  public get uid(): string {
+    return this._uid;
+  }
 
   private _requireCurrentUserId(): string {
     return this._uid;
@@ -334,11 +332,8 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
-  /**
-   * 회원 API 생성 전 임시로 사용하는 API입니다.
-   */
-  public changeHost = (isHost: boolean) => {
-    this._isHost = isHost;
+  public updateUserId = (newUserId: string) => {
+    this._uid = newUserId;
   };
 
   public joinRoom = () => {

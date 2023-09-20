@@ -19,6 +19,16 @@ model CallRecord {
   @@id([id, userid, roomid], map: "PK_CALLRECORD")
 }
 
+model Hospital {
+  code       String @db.VarChar(100)
+  tenantcode String @db.VarChar(100)
+  Tenant     Tenant @relation(fields: [tenantcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Tenant_TO_Hospital_1")
+  Room       Room[]
+  User       User[]
+
+  @@id([code, tenantcode], map: "PK_HOSPITAL")
+}
+
 model Host {
   roomid String @db.VarChar(100)
   userid String @db.VarChar(100)
@@ -53,6 +63,11 @@ model Room {
   User         User         @relation(fields: [creatorid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Room_1")
 }
 
+model Tenant {
+  code     String     @id(map: "PK_TENANT") @db.VarChar(100)
+  Hospital Hospital[]
+}
+
 model User {
   id           String       @id(map: "PK_USER") @db.VarChar(100)
   username     String       @db.VarChar(100)
@@ -69,21 +84,6 @@ model User {
   Invite       Invite[]
   Room         Room[]
   Hospital     Hospital     @relation(fields: [hospitalcode, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_User_1")
-}
-
-model Hospital {
-  code       String @db.VarChar(100)
-  tenantcode String @db.VarChar(100)
-  Tenant     Tenant @relation(fields: [tenantcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Tenant_TO_Hospital_1")
-  Room       Room[]
-  User       User[]
-
-  @@id([code, tenantcode], map: "PK_HOSPITAL")
-}
-
-model Tenant {
-  code     String     @id(map: "PK_TENANT") @db.VarChar(100)
-  Hospital Hospital[]
 }
 
 enum UserRole {

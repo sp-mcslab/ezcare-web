@@ -11,6 +11,7 @@ import {
   ApprovedJoiningRoomEvent,
   OtherPeerExitedRoomEvent,
   OtherPeerJoinedRoomEvent,
+  RejectedJoiningRoomEvent,
   WaitingRoomEvent,
 } from "@/models/room/WaitingRoomEvent";
 import { RoomJoiner } from "@/models/room/RoomJoiner";
@@ -339,9 +340,15 @@ export class RoomStore implements RoomViewModel {
       };
     } else if (event instanceof ApprovedJoiningRoomEvent) {
       this.joinRoom();
+    } else if (event instanceof RejectedJoiningRoomEvent) {
+      this._onRejectedJoining();
     } else {
       throw Error("지원되지 않는 event입니다.");
     }
+  };
+
+  private _onRejectedJoining = () => {
+    this._failedToJoinMessage = "입장이 거절되었습니다.";
   };
 
   public onRequestToJoinRoom = (requesterId: string) => {
@@ -376,6 +383,15 @@ export class RoomStore implements RoomViewModel {
   public approveJoiningRoom = async (userId: string) => {
     // TODO: 호스트인지 검증하기
     const result = await this._roomService.approveJoiningRoom(userId);
+    if (result.isFailure) {
+      this._userMessage = result.throwableOrNull()!.message;
+    }
+    this._awaitingPeerIds = this._awaitingPeerIds.filter((id) => id !== userId);
+  };
+
+  public rejectJoiningRoom = async (userId: string) => {
+    // TODO: 호스트인지 검증하기
+    const result = await this._roomService.rejectJoiningRoom(userId);
     if (result.isFailure) {
       this._userMessage = result.throwableOrNull()!.message;
     }

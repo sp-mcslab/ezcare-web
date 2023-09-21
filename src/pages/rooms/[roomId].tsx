@@ -247,6 +247,11 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                       >
                         승인
                       </button>
+                      <button
+                        onClick={() => roomStore.rejectJoiningRoom(userId)}
+                      >
+                        거부
+                      </button>
                     </>
                   );
                 })}

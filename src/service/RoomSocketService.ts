@@ -21,6 +21,7 @@ import {
   OTHER_PEER_JOINED_ROOM,
   PEER_STATE_CHANGED,
   PRODUCER_CLOSED,
+  REJECT_JOINING_ROOM,
   REQUEST_TO_JOIN_ROOM,
   SEND_CHAT,
   SHOW_REMOTE_VIDEO,
@@ -46,6 +47,7 @@ import {
   ApprovedJoiningRoomEvent,
   OtherPeerExitedRoomEvent,
   OtherPeerJoinedRoomEvent,
+  RejectedJoiningRoomEvent,
 } from "@/models/room/WaitingRoomEvent";
 import { RoomJoiner } from "@/models/room/RoomJoiner";
 import { JoinRoomSuccessCallbackProperty } from "@/models/room/JoinRoomSuccessCallbackProperty";
@@ -153,8 +155,10 @@ export class RoomSocketService {
       );
     });
     socket.on(APPROVE_JOINING_ROOM, () => {
-      console.log("SocketService. APPROVE_JOINING_ROOM");
       this._roomViewModel.onWaitingRoomEvent(new ApprovedJoiningRoomEvent());
+    });
+    socket.on(REJECT_JOINING_ROOM, () => {
+      this._roomViewModel.onWaitingRoomEvent(new RejectedJoiningRoomEvent());
     });
   };
 
@@ -185,6 +189,22 @@ export class RoomSocketService {
     const socket = this._requireSocket();
     return new Promise((resolve) => {
       socket.emit(APPROVE_JOINING_ROOM, userId, (result: EventResult<void>) => {
+        switch (result.type) {
+          case "success":
+            resolve(Result.success(undefined));
+            break;
+          case "failure":
+            resolve(Result.error(Error(result.message)));
+            break;
+        }
+      });
+    });
+  };
+
+  public rejectJoiningRoom = async (userId: string): Promise<Result<void>> => {
+    const socket = this._requireSocket();
+    return new Promise((resolve) => {
+      socket.emit(REJECT_JOINING_ROOM, userId, (result: EventResult<void>) => {
         switch (result.type) {
           case "success":
             resolve(Result.success(undefined));

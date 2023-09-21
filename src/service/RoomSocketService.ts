@@ -219,7 +219,7 @@ export class RoomSocketService {
         }
         console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
         this._removeWaitingRoomEventsListener();
-        this._roomViewModel.onJoined(data.peerStates);
+        this._roomViewModel.onJoined(data.peerStates, data.awaitingUserIds);
         try {
           // once we have rtpCapabilities from the Router, create Device
           this._device = new Device();

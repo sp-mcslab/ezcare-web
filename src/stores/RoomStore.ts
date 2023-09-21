@@ -29,7 +29,7 @@ export interface RoomViewModel {
   onNotExistsRoomId: () => void;
   onWaitingRoomEvent: (event: WaitingRoomEvent) => void;
   onFailedToJoin: (message: string) => void;
-  onJoined: (peerStates: PeerState[]) => void;
+  onJoined: (peerStates: PeerState[], awaitingPeerIds: string[]) => void;
   onChangePeerState: (state: PeerState) => void;
   onReceivedChat: (message: ChatMessage) => void;
   onAddedConsumer: (
@@ -398,10 +398,14 @@ export class RoomStore implements RoomViewModel {
     this._passwordInput = "";
   };
 
-  public onJoined = (peerStates: PeerState[]): void => {
+  public onJoined = (
+    peerStates: PeerState[],
+    awaitingPeerIds: string[]
+  ): void => {
     this._peerStates = peerStates;
     this._state = RoomState.JOINED;
     this._waitingRoomData = undefined;
+    this._awaitingPeerIds = awaitingPeerIds;
   };
 
   public changeCamera = async (deviceId: string) => {

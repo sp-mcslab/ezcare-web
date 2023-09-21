@@ -6,4 +6,9 @@ export interface JoinRoomSuccessCallbackProperty {
   readonly type: "success";
   readonly rtpCapabilities: RtpCapabilities;
   readonly peerStates: PeerState[];
+
+  /**
+   * 호스트 전용
+   */
+  readonly awaitingUserIds: string[];
 }

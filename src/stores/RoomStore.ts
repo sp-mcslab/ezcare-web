@@ -8,6 +8,7 @@ import { RoomState } from "@/models/room/RoomState";
 import { MediaUtil } from "@/utils/MediaUtil";
 import { WaitingRoomData } from "@/models/room/WaitingRoomData";
 import {
+  ApprovedJoiningRoomEvent,
   OtherPeerExitedRoomEvent,
   OtherPeerJoinedRoomEvent,
   WaitingRoomEvent,
@@ -336,6 +337,8 @@ export class RoomStore implements RoomViewModel {
           (joiner) => joiner.id !== event.exitedUserId
         ),
       };
+    } else if (event instanceof ApprovedJoiningRoomEvent) {
+      this.joinRoom();
     } else {
       throw Error("지원되지 않는 event입니다.");
     }
@@ -368,6 +371,15 @@ export class RoomStore implements RoomViewModel {
       this._failedToJoinMessage = "아직 방이 열리지 않았습니다.";
       this._awaitConfirmToJoin = false;
     }
+  };
+
+  public approveJoiningRoom = async (userId: string) => {
+    // TODO: 호스트인지 검증하기
+    const result = await this._roomService.approveJoiningRoom(userId);
+    if (result.isFailure) {
+      this._userMessage = result.throwableOrNull()!.message;
+    }
+    this._awaitingPeerIds = this._awaitingPeerIds.filter((id) => id !== userId);
   };
 
   public joinRoom = () => {

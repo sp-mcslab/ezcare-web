@@ -37,6 +37,11 @@ const DISCONNECT = "disconnect";
 const REQUEST_TO_JOIN_ROOM = "requestToJoinRoom";
 
 /**
+ * 호스트가 환자의 입장을 허용하는 프로토콜이다.
+ */
+const APPROVE_JOINING_ROOM = "approveJoiningRoom";
+
+/**
  * 방 접속 준비화면에 초기정보를 전달하기 위한 프로토콜이다.
  */
 const JOIN_WAITING_ROOM = "join-waiting-room";
@@ -186,6 +191,7 @@ export {
   CONNECTION_SUCCESS,
   DISCONNECT,
   REQUEST_TO_JOIN_ROOM,
+  APPROVE_JOINING_ROOM,
   JOIN_WAITING_ROOM,
   OTHER_PEER_JOINED_ROOM,
   OTHER_PEER_EXITED_ROOM,

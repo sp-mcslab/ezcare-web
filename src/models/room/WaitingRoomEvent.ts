@@ -13,3 +13,5 @@ export class OtherPeerExitedRoomEvent extends WaitingRoomEvent {
     super();
   }
 }
+
+export class ApprovedJoiningRoomEvent extends WaitingRoomEvent {}

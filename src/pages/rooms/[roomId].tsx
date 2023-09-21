@@ -239,7 +239,16 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 <div>입장 대기자 목록</div>
                 <br />
                 {roomStore.awaitingPeerIds.map((userId) => {
-                  return <>{userId}</>;
+                  return (
+                    <>
+                      {userId}
+                      <button
+                        onClick={() => roomStore.approveJoiningRoom(userId)}
+                      >
+                        승인
+                      </button>
+                    </>
+                  );
                 })}
               </td>
             </tr>
@@ -281,7 +290,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     );
   }
 );
-
 const RemoteMediaGroup: NextPage<{
   roomStore: RoomStore;
   isCurrentUserMaster: boolean;

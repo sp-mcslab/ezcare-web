@@ -1,6 +1,7 @@
 import { RoomViewModel } from "@/stores/RoomStore";
 import { io, Socket } from "socket.io-client";
 import {
+  APPROVE_JOINING_ROOM,
   BLOCK_USER,
   CLOSE_AUDIO_PRODUCER,
   CLOSE_VIDEO_PRODUCER,
@@ -42,6 +43,7 @@ import { Producer } from "mediasoup-client/lib/Producer";
 import { ChatMessage } from "@/models/room/ChatMessage";
 import { WaitingRoomData } from "@/models/room/WaitingRoomData";
 import {
+  ApprovedJoiningRoomEvent,
   OtherPeerExitedRoomEvent,
   OtherPeerJoinedRoomEvent,
 } from "@/models/room/WaitingRoomEvent";
@@ -52,6 +54,7 @@ import { PeerState } from "@/models/room/PeerState";
 import process from "process";
 import RequestToJoinRoomArgs from "@/models/room/RequestToJoinRoomArgs";
 import { Result } from "@/models/common/Result";
+import { EventResult } from "@/models/common/EventResult";
 
 const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_MEDIA_SERVER_BASE_URL!;
 
@@ -149,6 +152,10 @@ export class RoomSocketService {
         new OtherPeerExitedRoomEvent(userId)
       );
     });
+    socket.on(APPROVE_JOINING_ROOM, () => {
+      console.log("SocketService. APPROVE_JOINING_ROOM");
+      this._roomViewModel.onWaitingRoomEvent(new ApprovedJoiningRoomEvent());
+    });
   };
 
   private _removeWaitingRoomEventsListener = () => {
@@ -169,6 +176,22 @@ export class RoomSocketService {
           resolve(Result.success(true));
         } else {
           resolve(Result.success(false));
+        }
+      });
+    });
+  };
+
+  public approveJoiningRoom = async (userId: string): Promise<Result<void>> => {
+    const socket = this._requireSocket();
+    return new Promise((resolve) => {
+      socket.emit(APPROVE_JOINING_ROOM, userId, (result: EventResult<void>) => {
+        switch (result.type) {
+          case "success":
+            resolve(Result.success(undefined));
+            break;
+          case "failure":
+            resolve(Result.error(Error(result.message)));
+            break;
         }
       });
     });

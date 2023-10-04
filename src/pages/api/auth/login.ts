@@ -4,7 +4,7 @@ import { login } from "@/controller/login.controller";
 
 export default async function roomHandler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   const { method } = req;
   switch (method) {

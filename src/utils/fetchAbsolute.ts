@@ -4,6 +4,6 @@ export const fetchAbsolute = async (
   path: RequestInfo | URL,
   init: RequestInit
 ): Promise<Response> => {
-  const url = `${BASE_URL}:${PORT_NUM}/${path}`;
+  const url = `${BASE_URL}/${path}`;
   return await fetch(url, init);
 };

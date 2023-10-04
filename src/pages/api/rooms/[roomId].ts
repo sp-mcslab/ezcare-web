@@ -3,7 +3,7 @@ import { deleteRoom, postRoomThumbnail } from "@/controller/room.controller";
 
 export default async function roomInformationHandler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const { method } = req;
 

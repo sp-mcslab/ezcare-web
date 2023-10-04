@@ -1,8 +1,59 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { createRoom } from "@/repository/room.repository";
+import { getIdFromToken } from "@/utils/JwtUtil";
+
+
+export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => { // 진료실 생성
+  const { name, openAt, invitedUserIds, hostUserIds } = req.body;
+
+  const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
+  const creatorId = getIdFromToken(req.headers["x-ezcare-session-token"] as string, secretKey); // 방 생성자의 id get.
+  const currentTime = new Date();
+
+  //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
+  if (creatorId == null) {
+    res.status(401).end();
+    return;
+  }
+
+  //openAt이 createdAt보다 과거인 경우
+  if (openAt < currentTime) {
+    res.status(404);
+    res.json({ message: "openAt이 현재보다 과거일 수 없습니다." });
+    return;
+  }
+
+  try {
+    const room = await createRoom(
+      creatorId,
+      name,
+      currentTime,
+      openAt,
+      invitedUserIds,
+      hostUserIds);
+
+    res.status(201);
+    res.json({
+      "message": "진료실 개설을 성공했습니다.",
+      "data": room,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res
+      .status(500);
+    return;
+  }
+};
+
 
 export const getRoomAvailability = async (
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) => {
   // try {
   //   const roomId = req.query.roomId;
@@ -75,7 +126,7 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
 
 export const getRecentRooms = async (
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) => {
   // try {
   //   if (typeof req.query.userId !== "string") {
@@ -98,24 +149,6 @@ export const getRecentRooms = async (
   //   res
   //     .status(500)
   //     .send(new ResponseBody({ message: SERVER_INTERNAL_ERROR_MESSAGE }));
-  // }
-};
-
-export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
-  // try {
-  //   await createRoom(new RoomCreateRequestBody(req.body._room));
-  //   res.status(201).send(new ResponseBody({ message: ROOM_CREATE_SUCCESS }));
-  // } catch (e) {
-  //   if (typeof e === "string") {
-  //     console.log("error:400", e);
-  //     res.status(400).send(new ResponseBody({ message: e }));
-  //     return;
-  //   }
-  //   console.log("error: 500");
-  //   res
-  //     .status(500)
-  //     .send(new ResponseBody({ message: SERVER_INTERNAL_ERROR_MESSAGE }));
-  //   return;
   // }
 };
 
@@ -145,7 +178,7 @@ export const config = {
 
 export const postRoomThumbnail = async (
   req: NextApiRequest & { [key: string]: any },
-  res: NextApiResponse
+  res: NextApiResponse,
 ) => {
   // try {
   //   const multerUpload = multer({

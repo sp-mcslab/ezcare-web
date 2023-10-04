@@ -18,3 +18,15 @@ export function isValidToken(token: string, PRIVATE_KEY: string) {
     return false;
   }
 }
+export function getIdFromToken(token: string, PRIVATE_KEY: string) {
+  try {
+    // 인자로 받은 token decoded 후 id 반환
+    const decodedToken = jwt.verify(token, PRIVATE_KEY);
+    if (typeof decodedToken === "object" && "id" in decodedToken)
+      return decodedToken.id;
+    else
+      return null;
+  } catch (error: any) {
+    return null;
+  }
+}

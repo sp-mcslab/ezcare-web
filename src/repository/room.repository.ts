@@ -4,8 +4,67 @@ import { RoomOverview } from "@/models/room/RoomOverview";
 import { RoomCreateRequestBody } from "@/models/room/RoomCreateRequestBody";
 import { Room } from "@/stores/RoomListStore";
 import { RoomDeleteRequestBody } from "@/models/room/RoomDeleteRequestBody";
+import { uuid } from "uuidv4";
+import { RoomDto } from "@/dto/RoomDto";
 
-export const findRoomById = async () => {};
+export const findRoomById = async () => {
+};
+
+
+const HOSPITAL_CODE = "A0013";
+const TENANT_CODE = "A001";
+export const createRoom = async (
+  creatorId: string,
+  name: string,
+  createdAt: Date,
+  openAt: Date,
+  invitedUsers: string[],
+  hostedUsers: string[]): Promise<RoomDto> => {
+
+  // 생성할 방의 고유 아이디 (기본키 id)
+  const roomUniqueId = uuid();
+
+  const roomEntity = await client.room.create({
+    data: {
+      id: roomUniqueId,
+      User: {
+        connect: {
+          id: creatorId,
+        },
+      },
+      name: name,
+      createdat: createdAt,
+      openat: openAt,
+      deletedat: null,
+      Hospital: {
+        connect: {
+          code_tenantcode: {
+            code: HOSPITAL_CODE,
+            tenantcode: TENANT_CODE,
+          },
+        },
+      },
+      Host: {
+        createMany: {
+          data: hostedUsers.map(userid => ({
+            userid: userid,
+          })),
+        },
+      },
+      Invite: {
+        createMany: {
+          data: invitedUsers.map(userid => ({
+            userid: userid,
+          })),
+        },
+      },
+    },
+  });
+
+  return RoomDto.fromEntity(roomEntity);
+
+};
+
 
 // export const findRoomById = async (roomId: string): Promise<Room | null> => {
 //   return await prisma.room.findUnique({
@@ -90,23 +149,6 @@ export const findRoomById = async () => {};
 //   });
 // };
 //
-// export const createRoom = async (body: RoomCreateRequestBody) => {
-//   const room: Room = body.room;
-//   await client.room.create({
-//     data: {
-//       id: room.id,
-//       master_id: room.masterId,
-//       title: room.title,
-//       thumbnail: room.thumbnail,
-//       password: room.password,
-//       timer: room.timer,
-//       short_break: room.shortBreak,
-//       long_break: room.longBreak,
-//       long_break_interval: room.longBreakInterval,
-//       expired_at: room.expiredAt,
-//     },
-//   });
-// };
 //
 // export const deleteRoomReq = async (body: RoomDeleteRequestBody) => {
 //   const roomId: string = body.roomId;

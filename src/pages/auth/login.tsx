@@ -2,7 +2,7 @@ import { NextPage } from "next";
 import React, { useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
 import { LoginStore } from "@/stores/LoginStore";
-import userGlobalStore, { UserGlobalStore } from "@/stores/global/UserGlobalStore";
+import userGlobalStore from "@/stores/global/UserGlobalStore";
 import { useRouter } from "next/router";
 
 const LoginPage: NextPage = observer(() => {

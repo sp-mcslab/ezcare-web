@@ -20,8 +20,6 @@ export class UserGlobalStore {
     if (typeof window !== "undefined") {
       this._sessionToken = localStorage.getItem("sessionToken")!!;
       const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
-      const token = verifyJWT(String(this._sessionToken), secretKey);
-      console.log(token);
     }
     return !!this._currentUserId;
   }

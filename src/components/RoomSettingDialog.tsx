@@ -8,7 +8,6 @@ import {
 import IconButton from "@mui/material/IconButton";
 import { CloseIcon } from "next/dist/client/components/react-dev-overlay/internal/icons/CloseIcon";
 import { BlockedUser } from "@/models/room/BlockedUser";
-import { UserProfileImage } from "@/components/UserProfileImage";
 import Button from "@mui/material/Button";
 
 interface RoomSettingDialogProps {
@@ -38,7 +37,6 @@ export const RoomSettingDialog: React.FC<RoomSettingDialogProps> = ({
         {blacklist.map((user) => {
           return (
             <div key={user.id}>
-              <UserProfileImage userId={user.id} />
               {user.name}
               <Button onClick={() => handleUnblockButton(user)}>해제</Button>
             </div>

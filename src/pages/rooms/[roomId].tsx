@@ -5,7 +5,6 @@ import { RoomStore } from "@/stores/RoomStore";
 import { useRouter } from "next/router";
 import { ChatMessage } from "@/models/room/ChatMessage";
 import { RoomState } from "@/models/room/RoomState";
-import { UserProfileImage } from "@/components/UserProfileImage";
 import { PeerState } from "@/models/room/PeerState";
 import PopupMenu from "@/components/PopupMenu";
 import { getEnumKeyByEnumValue } from "@/utils/EnumUtil";
@@ -127,7 +126,6 @@ const WaitingRoom: NextPage<{
         {roomStore.roomJoiners.map((joiner) => {
           return (
             <div key={joiner.id} style={{ padding: "8px" }}>
-              <UserProfileImage userId={joiner.id} />
               {joiner.name}
             </div>
           );
@@ -555,7 +553,6 @@ const ChatMessage: NextPage<{ messages: ChatMessage[] }> = observer(
             >
               <div>{new Date(message.sentAt).toLocaleString()}</div>
               <div>
-                <UserProfileImage userId={message.authorId} />
                 {message.authorName}: {message.content}
               </div>
             </div>

@@ -355,6 +355,9 @@ const RemoteMediaGroup: NextPage<{
                     }
                   />
                 )}
+                <button onClick={() => roomStore.muteOneAudio(peerId)}>
+                  mute-one(host)
+                </button>
               </div>
             );
           })}

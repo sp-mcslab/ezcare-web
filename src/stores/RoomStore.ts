@@ -667,15 +667,22 @@ export class RoomStore implements RoomViewModel {
   };
 
   public muteAllAudio = () => {
-    const peerStatesExceptMe = this._peerStates.filter(ps => ps.uid !== this.uid);
-    const userIds = peerStatesExceptMe.map(ps => ps.uid);
-    userIds.forEach(id => console.log(`[muteAllAudio]socketid: ${id}`))// 테스트용
+    const peerStatesExceptMe = this._peerStates.filter(
+      (ps) => ps.uid !== this.uid
+    );
+    const userIds = peerStatesExceptMe.map((ps) => ps.uid);
+    userIds.forEach((id) => console.log(`[muteAllAudio]socketid: ${id}`)); // 테스트용
     return this._roomService.closeAudioByHost(userIds);
-  }
+  };
+
+  public muteOneAudio = (peerId: string) => {
+    const userIds: string[] = [peerId];
+    return this._roomService.closeAudioByHost(userIds);
+  };
 
   public onMuteMicrophone = () => {
     if (this._localAudioStream !== undefined) {
       this.muteMicrophone();
     }
-  }
+  };
 }

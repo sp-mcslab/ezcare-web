@@ -30,6 +30,7 @@ import {
   TRANSPORT_RECEIVER_CONNECT,
   UNBLOCK_USER,
   UNMUTE_HEADSET,
+  CLOSE_AUDIO_BY_HOST,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -301,6 +302,10 @@ export class RoomSocketService {
     socket.on(KICK_USER, this._roomViewModel.onKicked);
     socket.on(BLOCK_USER, this._roomViewModel.onBlocked);
     socket.on(REQUEST_TO_JOIN_ROOM, this._roomViewModel.onRequestToJoinRoom);
+    socket.on(CLOSE_AUDIO_BY_HOST, () => {
+      console.log(`webserver: CLOSE_AUDIO_BY_HOST is called`);
+      this._roomViewModel.onMuteMicrophone();
+    });
   };
 
   private _createSendTransport = (
@@ -728,4 +733,9 @@ export class RoomSocketService {
       );
     });
   };
+
+  public closeAudioByHost = (userIds: string[]) => {
+    const socket = this._requireSocket();
+    socket.emit(CLOSE_AUDIO_BY_HOST, userIds);
+  }
 }

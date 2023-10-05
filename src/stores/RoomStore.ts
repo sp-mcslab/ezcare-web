@@ -42,6 +42,7 @@ export interface RoomViewModel {
   onKicked: (userId: string) => void;
   onBlocked: (userId: string) => void;
   onRequestToJoinRoom: (userId: string) => void;
+  onMuteMicrophone: () => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -664,4 +665,17 @@ export class RoomStore implements RoomViewModel {
   public getEnableHideRemoteVideoByUserId = (userId: string) => {
     return this._remoteVideoSwitchByPeerId.get(userId);
   };
+
+  public muteAllAudio = () => {
+    const peerStatesExceptMe = this._peerStates.filter(ps => ps.uid !== this.uid);
+    const userIds = peerStatesExceptMe.map(ps => ps.uid);
+    userIds.forEach(id => console.log(`[muteAllAudio]socketid: ${id}`))// 테스트용
+    return this._roomService.closeAudioByHost(userIds);
+  }
+
+  public onMuteMicrophone = () => {
+    if (this._localAudioStream !== undefined) {
+      this.muteMicrophone();
+    }
+  }
 }

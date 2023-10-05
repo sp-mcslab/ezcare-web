@@ -189,6 +189,12 @@ const BLOCK_USER = "block-user";
  */
 const UNBLOCK_USER = "unblock-user";
 
+/**
+ * 호스트가 회원의 마이크를 종료시킬 때 전송하는 프로토콜이다.
+ */
+const CLOSE_AUDIO_BY_HOST = "close-audio-by-host";
+
+
 export {
   IP_ADDRESS,
   NAME_SPACE,
@@ -223,4 +229,5 @@ export {
   UNBLOCK_USER,
   HIDE_REMOTE_VIDEO,
   SHOW_REMOTE_VIDEO,
+  CLOSE_AUDIO_BY_HOST
 };

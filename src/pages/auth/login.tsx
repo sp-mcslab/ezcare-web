@@ -1,17 +1,28 @@
 import { NextPage } from "next";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { LoginStore } from "@/stores/LoginStore";
-import userGlobalStore from "@/stores/global/UserGlobalStore";
 import { useRouter } from "next/router";
 
 const LoginPage: NextPage = observer(() => {
   const [loginStore] = useState(new LoginStore());
   const router = useRouter();
 
-  if (userGlobalStore.successToLogin) {
-    router.replace("/rooms");
-    return <></>;
+  useEffect(() => {
+    if (loginStore.didLogin) {
+      router.replace("/rooms");
+    }
+  }, [loginStore.didLogin]);
+
+  useEffect(() => {
+    if (loginStore.errorMessage != null) {
+      alert(loginStore.errorMessage);
+      loginStore.errorMessageShown();
+    }
+  }, [loginStore.errorMessage]);
+
+  if (loginStore.didLogin) {
+    return <>Loading...</>;
   }
 
   return (
@@ -29,7 +40,13 @@ const LoginPage: NextPage = observer(() => {
           onChange={(e) => loginStore.updateUserPassword(e.target.value)}
         />
       </div>
-      <button onClick={() => loginStore.login()}>로그인</button>
+      <button
+        onClick={() => {
+          loginStore.login();
+        }}
+      >
+        로그인
+      </button>
     </div>
   );
 });

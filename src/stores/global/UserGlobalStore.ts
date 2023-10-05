@@ -1,27 +1,41 @@
 import { bool } from "aws-sdk/clients/signer";
-import { makeAutoObservable, observable, runInAction } from "mobx";
-import { verifyJWT } from "@/utils/JwtUtil";
-
-export class SessionToken {
-  constructor(readonly sessionToken: string) {
-    makeAutoObservable(this);
-  }
-}
+import { makeAutoObservable } from "mobx";
+import loginService, { LoginService } from "@/service/loginService";
+import { Result } from "@/models/common/Result";
+import {
+  getSessionTokenFromLocalStorage,
+  setSessionTokenLocalStorage,
+} from "@/utils/JwtUtil";
 
 export class UserGlobalStore {
-  private _currentUserId: string = "";
-  private _sessionToken: string = "";
+  private _didLogin: boolean = false;
 
-  constructor() {
+  constructor(private readonly _loginService: LoginService = loginService) {
     makeAutoObservable(this);
   }
 
-  public get successToLogin(): bool | undefined {
-    if (typeof window !== "undefined") {
-      this._sessionToken = localStorage.getItem("sessionToken")!!;
-      const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
+  public async login(id: string, password: string): Promise<Result<void>> {
+    const result = await this._loginService.login(id, password);
+    if (result.isSuccess) {
+      const sessionToken = result.getOrNull()!.sessionToken;
+      this._didLogin = true;
+      setSessionTokenLocalStorage(sessionToken);
+      return Result.success(undefined);
     }
-    return !!this._currentUserId;
+    this._didLogin = false;
+    return Result.error(new Error(result.throwableOrNull()!.message));
+  }
+
+  public tryToLoginWithSessionToken = async (): Promise<void> => {
+    const sessionToken = getSessionTokenFromLocalStorage();
+    if (sessionToken == null) {
+      return;
+    }
+    this._didLogin = await this._loginService.validationJwt(sessionToken);
+  };
+
+  public get didLogin(): bool | undefined {
+    return this._didLogin;
   }
 }
 

@@ -1,13 +1,17 @@
 import { bool } from "aws-sdk/clients/signer";
-import loginService, { LoginService } from "@/service/loginService";
-import { makeAutoObservable, observable, runInAction } from "mobx";
+import { makeAutoObservable } from "mobx";
+import userGlobalStore, {
+  UserGlobalStore,
+} from "@/stores/global/UserGlobalStore";
 
 export class LoginStore {
   private _userId: string = "";
   private _userPassword: string = "";
-  private _successToLogin: bool = false;
+  private _errorMessage: string | null = null;
 
-  constructor(private readonly _loginService: LoginService = loginService) {
+  constructor(
+    private readonly _userGlobalStore: UserGlobalStore = userGlobalStore
+  ) {
     makeAutoObservable(this);
   }
 
@@ -19,6 +23,14 @@ export class LoginStore {
     return this._userPassword;
   }
 
+  public get errorMessage(): string | null {
+    return this._errorMessage;
+  }
+
+  public errorMessageShown() {
+    this._errorMessage = null;
+  }
+
   public updateUserId = (id: string) => {
     this._userId = id;
   };
@@ -28,30 +40,22 @@ export class LoginStore {
   };
 
   public login = async (): Promise<void> => {
-    const loginResult = await this._loginService.login(
+    const loginResult = await this._userGlobalStore.login(
       this._userId,
       this._userPassword
     );
 
-    if (loginResult.isSuccess) {
-      runInAction(() => {
-        const resultData = loginResult.getOrNull()!!;
-        localStorage.setItem("sessionToken", resultData.sessionToken);
-        
-      });
-    } else {
-      alert("ID 혹은 비밀번호가 잘못되었습니다.");
+    if (loginResult.isFailure) {
+      this._errorMessage = loginResult.throwableOrNull()!.message;
     }
-    return;
   };
 
   public logout = () => {
     this._userId = "";
     this._userPassword = "";
-    this._successToLogin = false;
   };
 
-  public get loginState(): bool | undefined {
-    return this._successToLogin;
+  public get didLogin(): bool | undefined {
+    return this._userGlobalStore.didLogin;
   }
 }

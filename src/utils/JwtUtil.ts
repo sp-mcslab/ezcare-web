@@ -1,5 +1,15 @@
 import jwt from "jsonwebtoken";
 
+const SESSION_TOKEN_KEY = "sessionToken";
+
+export function setSessionTokenLocalStorage(token: string) {
+  localStorage.setItem(SESSION_TOKEN_KEY, token);
+}
+
+export function getSessionTokenFromLocalStorage(): string | null {
+  return localStorage.getItem(SESSION_TOKEN_KEY);
+}
+
 export function signJWT(id: string, PRIVATE_KEY: string) {
   //유효기간 7일
   return jwt.sign({ id }, PRIVATE_KEY, {
@@ -18,14 +28,14 @@ export function isValidToken(token: string, PRIVATE_KEY: string) {
     return false;
   }
 }
+
 export function getIdFromToken(token: string, PRIVATE_KEY: string) {
   try {
     // 인자로 받은 token decoded 후 id 반환
     const decodedToken = jwt.verify(token, PRIVATE_KEY);
     if (typeof decodedToken === "object" && "id" in decodedToken)
       return decodedToken.id;
-    else
-      return null;
+    else return null;
   } catch (error: any) {
     return null;
   }

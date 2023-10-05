@@ -1,14 +1,16 @@
 import { Result } from "@/models/common/Result";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
-import { SessionToken } from "@/stores/global/UserGlobalStore";
+import { SessionTokenDto } from "@/dto/SessionTokenDto";
 
 const HEADER = {
   "Content-Type": "application/json",
 };
 
 export class LoginService {
-
-  public async login(id: string, password: string): Promise<Result<SessionToken>> {
+  public async login(
+    id: string,
+    password: string
+  ): Promise<Result<SessionTokenDto>> {
     try {
       const response = await fetchAbsolute(`api/auth/login`, {
         method: "POST",
@@ -22,6 +24,19 @@ export class LoginService {
       }
     } catch (e) {
       return Result.createErrorUsingException(e);
+    }
+  }
+  public async validationJwt(token: string): Promise<boolean> {
+    try {
+      const response = await fetchAbsolute(`api/auth/validation`, {
+        method: "POST",
+        headers: {
+          "x-ezcare-session-token": token,
+        },
+      });
+      return response.ok;
+    } catch (e) {
+      return false;
     }
   }
 }

@@ -7,9 +7,7 @@ import { RoomDeleteRequestBody } from "@/models/room/RoomDeleteRequestBody";
 import { uuid } from "uuidv4";
 import { RoomDto } from "@/dto/RoomDto";
 
-export const findRoomById = async () => {
-};
-
+export const findRoomById = async () => {};
 
 const HOSPITAL_CODE = "A0013";
 const TENANT_CODE = "A001";
@@ -19,8 +17,8 @@ export const createRoom = async (
   createdAt: Date,
   openAt: Date,
   invitedUsers: string[],
-  hostedUsers: string[]): Promise<RoomDto> => {
-
+  hostedUsers: string[]
+): Promise<RoomDto> => {
   // 생성할 방의 고유 아이디 (기본키 id)
   const roomUniqueId = uuid();
 
@@ -46,14 +44,14 @@ export const createRoom = async (
       },
       Host: {
         createMany: {
-          data: hostedUsers.map(userid => ({
+          data: hostedUsers.map((userid) => ({
             userid: userid,
           })),
         },
       },
       Invite: {
         createMany: {
-          data: invitedUsers.map(userid => ({
+          data: invitedUsers.map((userid) => ({
             userid: userid,
           })),
         },
@@ -62,9 +60,22 @@ export const createRoom = async (
   });
 
   return RoomDto.fromEntity(roomEntity);
-
 };
 
+export const deleteRoomReq = async (roomId: string) => {
+  if (roomId == null) return undefined;
+  try {
+    await client.room.update({
+      where: {
+        id: roomId,
+      },
+      data: { deletedat: new Date() },
+    });
+    return roomId;
+  } catch (e) {
+    console.log("delete Error" + e);
+  }
+};
 
 // export const findRoomById = async (roomId: string): Promise<Room | null> => {
 //   return await prisma.room.findUnique({
@@ -150,10 +161,3 @@ export const createRoom = async (
 // };
 //
 //
-// export const deleteRoomReq = async (body: RoomDeleteRequestBody) => {
-//   const roomId: string = body.roomId;
-//   await client.room.update({
-//     where: { id: roomId },
-//     data: { deleted_at: new Date() },
-//   });
-// };

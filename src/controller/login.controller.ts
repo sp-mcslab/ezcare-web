@@ -6,6 +6,12 @@ import { findUser } from "@/repository/login.repository";
 export const login = async (req: NextApiRequest, res: NextApiResponse) => {
   const { id, password } = req.body; // 요청의 body에 담긴 사용자 정보 추출
   try {
+    if (id == null || password == null) {
+      res.status(404);
+      res.json({ message: "ID 혹은 비밀번호가 입력되지 않았습니다." });
+      return;
+    }
+
     const user = await findUser(id, password);
 
     // 로그인 실패 ; 사용자 정보 불일치

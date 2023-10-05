@@ -1,11 +1,7 @@
-import prisma from "../../prisma/client";
 import client from "prisma/client";
-import { RoomOverview } from "@/models/room/RoomOverview";
-import { RoomCreateRequestBody } from "@/models/room/RoomCreateRequestBody";
-import { Room } from "@/stores/RoomListStore";
-import { RoomDeleteRequestBody } from "@/models/room/RoomDeleteRequestBody";
 import { uuid } from "uuidv4";
 import { RoomDto } from "@/dto/RoomDto";
+import { UserDto } from "@/dto/UserDto";
 
 export const findRoomById = async () => {};
 
@@ -77,6 +73,75 @@ export const deleteRoomReq = async (roomId: string) => {
   }
 };
 
+export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
+  let where = {};
+  if (user.role === "nurse") {
+    //간호사 -> 만든 방, 호스트인 방, 초대받은 방
+    where = {
+      OR: [
+        {
+          creatorid: user.id,
+        },
+        {
+          Host: {
+            some: {
+              userid: user.id,
+            },
+          },
+        },
+        {
+          Invite: {
+            some: {
+              userid: user.id,
+            },
+          },
+        },
+      ],
+    };
+  } else if (user.role === "doctor") {
+    // 의사 -> 호스트인 방, 초대받은 방
+    where = {
+      OR: [
+        {
+          Host: {
+            some: {
+              userid: user.id,
+            },
+          },
+        },
+        {
+          Invite: {
+            some: {
+              userid: user.id,
+            },
+          },
+        },
+      ],
+    };
+  } else if (user.role === "patient") {
+    // 환자 -> 초대받은 방
+    where = {
+      OR: [
+        {
+          Invite: {
+            some: {
+              userid: user.id,
+            },
+          },
+        },
+      ],
+    };
+  }
+
+  const rooms = await client.room.findMany({
+    where: where,
+  });
+
+  return rooms.map((room) => {
+    return RoomDto.fromEntity(room);
+  });
+};
+
 // export const findRoomById = async (roomId: string): Promise<Room | null> => {
 //   return await prisma.room.findUnique({
 //     where: {
@@ -109,32 +174,7 @@ export const deleteRoomReq = async (roomId: string) => {
 //   });
 //   return block != null;
 // };
-// export const findRooms = async (pageNum: number): Promise<RoomOverview[]> => {
-//   const rooms = await client.room.findMany({
-//     where: { deleted_at: null },
-//     skip: pageNum * ROOM_NUM_PER_PAGE,
-//     take: ROOM_NUM_PER_PAGE,
-//     include: {
-//       study_history: {
-//         where: {
-//           exit_at: null,
-//         },
-//       },
-//     },
-//   });
-//   return rooms.map((room) => {
-//     return new RoomOverview(
-//       room.id,
-//       room.master_id,
-//       room.title,
-//       room.password ? true : false,
-//       room.thumbnail,
-//       room.study_history.length,
-//       MAX_ROOM_CAPACITY,
-//       [] //room.room_tags
-//     );
-//   });
-// };
+
 //
 // export const findRecentRooms = async (userId: string) => {
 //   const rooms = await client.study_history.findMany({

@@ -1,12 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { createRoom, deleteRoomReq } from "@/repository/room.repository";
 import { getIdFromToken } from "@/utils/JwtUtil";
+import { findRooms } from "@/repository/room.repository";
+import { findUserById } from "@/repository/user.repository";
+
+const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
 export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   // 진료실 생성
   const { name, openAt, invitedUserIds, hostUserIds } = req.body;
 
-  const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
   const creatorId = getIdFromToken(
     req.headers["x-ezcare-session-token"] as string,
     secretKey
@@ -74,6 +77,40 @@ export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     console.log("error: 500, ", e);
     res.status(500);
+  }
+};
+
+export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
+  try {
+    const userId = getIdFromToken(
+      req.headers["x-ezcare-session-token"] as string,
+      secretKey
+    ); // 사용자의 id get.
+    if (userId == null) {
+      res.status(401).end();
+      return;
+    }
+
+    const user = await findUserById(userId);
+    if (user == null) {
+      res.status(401).end();
+      return;
+    }
+
+    const rooms = await findRooms(user);
+    res.status(200);
+    res.json({
+      message: "진료실 목록이 조회되었습니다.",
+      data: rooms,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
     return;
   }
 };
@@ -123,31 +160,6 @@ export const getRoomAvailability = async (
   //   res
   //     .status(500)
   //     .end(new ResponseBody({ message: SERVER_INTERNAL_ERROR_MESSAGE }));
-  // }
-};
-
-export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
-  // try {
-  //   if (typeof req.query.page !== "string") {
-  //     res.status(400).send(new ResponseBody({ message: REQUEST_QUERY_ERROR }));
-  //     return;
-  //   }
-  //   const roomsGetBody = new RoomsGetRequest(req.query.page);
-  //   const result = await findRooms(roomsGetBody.pageNum);
-  //   res.status(201).json(
-  //     new ResponseBody({
-  //       data: result,
-  //       message: GET_ROOMS_SUCCESS,
-  //     })
-  //   );
-  // } catch (e) {
-  //   if (typeof e === "string") {
-  //     res.status(400).send(new ResponseBody({ message: e }));
-  //     return;
-  //   }
-  //   res
-  //     .status(500)
-  //     .send(new ResponseBody({ message: SERVER_INTERNAL_ERROR_MESSAGE }));
   // }
 };
 

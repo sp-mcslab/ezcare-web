@@ -304,7 +304,6 @@ export class RoomSocketService {
     socket.on(BLOCK_USER, this._roomViewModel.onBlocked);
     socket.on(REQUEST_TO_JOIN_ROOM, this._roomViewModel.onRequestToJoinRoom);
     socket.on(CLOSE_AUDIO_BY_HOST, () => {
-      console.log(`webserver: CLOSE_AUDIO_BY_HOST is called`);
       this._roomViewModel.onMuteMicrophone();
     });
     socket.on(CLOSE_VIDEO_BY_HOST, () => {

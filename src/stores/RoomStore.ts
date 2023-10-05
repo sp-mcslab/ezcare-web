@@ -672,7 +672,6 @@ export class RoomStore implements RoomViewModel {
       (ps) => ps.uid !== this.uid
     );
     const userIds = peerStatesExceptMe.map((ps) => ps.uid);
-    userIds.forEach((id) => console.log(`[muteAllAudio]socketid: ${id}`)); // 테스트용
     return this._roomService.closeAudioByHost(userIds);
   };
 
@@ -686,6 +685,11 @@ export class RoomStore implements RoomViewModel {
       (ps) => ps.uid !== this.uid
     );
     const userIds = peerStatesExceptMe.map((ps) => ps.uid);
+    return this._roomService.closeVideoByHost(userIds);
+  };
+
+  public closeOneVideo = (peerId: string) => {
+    const userIds: string[] = [peerId];
     return this._roomService.closeVideoByHost(userIds);
   };
 

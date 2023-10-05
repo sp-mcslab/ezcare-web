@@ -1,6 +1,7 @@
 import { RoomViewModel } from "@/stores/RoomStore";
 import { io, Socket } from "socket.io-client";
 import {
+  CANCEL_JOIN_REQUEST,
   APPROVE_JOINING_ROOM,
   BLOCK_USER,
   CLOSE_AUDIO_PRODUCER,
@@ -47,6 +48,7 @@ import { ChatMessage } from "@/models/room/ChatMessage";
 import { WaitingRoomData } from "@/models/room/WaitingRoomData";
 import {
   ApprovedJoiningRoomEvent,
+  CancelJoinRequestEvent,
   OtherPeerExitedRoomEvent,
   OtherPeerJoinedRoomEvent,
   RejectedJoiningRoomEvent,
@@ -309,6 +311,7 @@ export class RoomSocketService {
     socket.on(CLOSE_VIDEO_BY_HOST, () => {
       this._roomViewModel.onHideVideo();
     });
+    socket.on(CANCEL_JOIN_REQUEST, this._roomViewModel.onCancelJoinRequest);
   };
 
   private _createSendTransport = (

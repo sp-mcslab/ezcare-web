@@ -3,10 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { signJWT } from "@/utils/JwtUtil";
 import { findUser } from "@/repository/login.repository";
 
-export const login = async (
-  req: NextApiRequest,
-  res: NextApiResponse,
-) => {
+export const login = async (req: NextApiRequest, res: NextApiResponse) => {
   const { id, password } = req.body; // 요청의 body에 담긴 사용자 정보 추출
   try {
     const user = await findUser(id, password);
@@ -25,10 +22,10 @@ export const login = async (
     //응답
     res.status(200);
     res.json({
-      "message": "로그인에 성공했습니다.",
-      "data": {
-        "sessionToken": token,
-        "user": user,
+      message: "로그인에 성공했습니다.",
+      data: {
+        sessionToken: token,
+        user: user,
       },
     });
   } catch {

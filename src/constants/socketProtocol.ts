@@ -47,6 +47,11 @@ const APPROVE_JOINING_ROOM = "approveJoiningRoom";
 const REJECT_JOINING_ROOM = "rejectJoiningRoom";
 
 /**
+ * 입장 요청 후, 입장 전 탭을 닫았을 때, 입장 요청을 취소하기 위한 프로토콜이다.
+ */
+const CANCEL_JOIN_REQUEST = "cancelJoinRequest";
+
+/**
  * 방 접속 준비화면에 초기정보를 전달하기 위한 프로토콜이다.
  */
 const JOIN_WAITING_ROOM = "join-waiting-room";
@@ -208,6 +213,7 @@ export {
   REQUEST_TO_JOIN_ROOM,
   APPROVE_JOINING_ROOM,
   REJECT_JOINING_ROOM,
+  CANCEL_JOIN_REQUEST,
   JOIN_WAITING_ROOM,
   OTHER_PEER_JOINED_ROOM,
   OTHER_PEER_EXITED_ROOM,

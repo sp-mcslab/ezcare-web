@@ -2,10 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { isValidToken } from "@/utils/JwtUtil";
 
-export const validation = async (
-  req: NextApiRequest,
-  res: NextApiResponse,
-) => {
+export const validation = async (req: NextApiRequest, res: NextApiResponse) => {
   const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
   const tokenKey = "x-ezcare-session-token";
   const token = req.headers[tokenKey];

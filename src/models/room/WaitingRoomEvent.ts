@@ -17,3 +17,9 @@ export class OtherPeerExitedRoomEvent extends WaitingRoomEvent {
 export class ApprovedJoiningRoomEvent extends WaitingRoomEvent {}
 
 export class RejectedJoiningRoomEvent extends WaitingRoomEvent {}
+
+export class CancelJoinRequestEvent extends WaitingRoomEvent {
+  constructor(readonly cancelUserId: string) {
+    super();
+  }
+}

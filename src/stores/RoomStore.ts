@@ -9,6 +9,7 @@ import { MediaUtil } from "@/utils/MediaUtil";
 import { WaitingRoomData } from "@/models/room/WaitingRoomData";
 import {
   ApprovedJoiningRoomEvent,
+  CancelJoinRequestEvent,
   OtherPeerExitedRoomEvent,
   OtherPeerJoinedRoomEvent,
   RejectedJoiningRoomEvent,
@@ -44,6 +45,7 @@ export interface RoomViewModel {
   onRequestToJoinRoom: (userId: string) => void;
   onMuteMicrophone: () => void;
   onHideVideo: () => void;
+  onCancelJoinRequest: (userId: string) => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -360,6 +362,15 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     this._awaitingPeerIds = [...this._awaitingPeerIds, requesterId];
+  };
+
+  public onCancelJoinRequest = (userId: string) => {
+    console.log("onCancelJoinRequest: ", userId);
+    // TODO: 호스트가 맞는지 검증하기
+    if (this._state !== RoomState.JOINED) {
+      return;
+    }
+    this._awaitingPeerIds = this._awaitingPeerIds.filter((p) => p !== userId);
   };
 
   public updateUserId = (newUserId: string) => {

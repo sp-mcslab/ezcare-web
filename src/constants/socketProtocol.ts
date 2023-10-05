@@ -194,6 +194,10 @@ const UNBLOCK_USER = "unblock-user";
  */
 const CLOSE_AUDIO_BY_HOST = "close-audio-by-host";
 
+/**
+ * 호스트가 회원의 비디오를 종료시킬 때 전송하는 프로토콜이다.
+ */
+const CLOSE_VIDEO_BY_HOST = "close-video-by-host";
 
 export {
   IP_ADDRESS,
@@ -229,5 +233,6 @@ export {
   UNBLOCK_USER,
   HIDE_REMOTE_VIDEO,
   SHOW_REMOTE_VIDEO,
-  CLOSE_AUDIO_BY_HOST
+  CLOSE_AUDIO_BY_HOST,
+  CLOSE_VIDEO_BY_HOST,
 };

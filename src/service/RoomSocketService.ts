@@ -31,6 +31,7 @@ import {
   UNBLOCK_USER,
   UNMUTE_HEADSET,
   CLOSE_AUDIO_BY_HOST,
+  CLOSE_VIDEO_BY_HOST,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -305,6 +306,9 @@ export class RoomSocketService {
     socket.on(CLOSE_AUDIO_BY_HOST, () => {
       console.log(`webserver: CLOSE_AUDIO_BY_HOST is called`);
       this._roomViewModel.onMuteMicrophone();
+    });
+    socket.on(CLOSE_VIDEO_BY_HOST, () => {
+      this._roomViewModel.onHideVideo();
     });
   };
 
@@ -737,5 +741,10 @@ export class RoomSocketService {
   public closeAudioByHost = (userIds: string[]) => {
     const socket = this._requireSocket();
     socket.emit(CLOSE_AUDIO_BY_HOST, userIds);
-  }
+  };
+
+  public closeVideoByHost = (userIds: string[]) => {
+    const socket = this._requireSocket();
+    socket.emit(CLOSE_VIDEO_BY_HOST, userIds);
+  };
 }

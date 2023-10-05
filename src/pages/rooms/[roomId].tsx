@@ -286,6 +286,9 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
           {enabledHeadset ? "Mute Headset" : "Unmute Headset"}
         </button>
         <button onClick={() => roomStore.muteAllAudio()}>mute-all(host)</button>
+        <button onClick={() => roomStore.closeAllVideo()}>
+          close-all-Vids(host)
+        </button>
         <DeviceSelector roomStore={roomStore}></DeviceSelector>
         {isCurrentUserMaster && (
           <div>

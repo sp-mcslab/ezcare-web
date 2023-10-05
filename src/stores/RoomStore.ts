@@ -43,6 +43,7 @@ export interface RoomViewModel {
   onBlocked: (userId: string) => void;
   onRequestToJoinRoom: (userId: string) => void;
   onMuteMicrophone: () => void;
+  onHideVideo: () => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -680,9 +681,23 @@ export class RoomStore implements RoomViewModel {
     return this._roomService.closeAudioByHost(userIds);
   };
 
+  public closeAllVideo = () => {
+    const peerStatesExceptMe = this._peerStates.filter(
+      (ps) => ps.uid !== this.uid
+    );
+    const userIds = peerStatesExceptMe.map((ps) => ps.uid);
+    return this._roomService.closeVideoByHost(userIds);
+  };
+
   public onMuteMicrophone = () => {
     if (this._localAudioStream !== undefined) {
       this.muteMicrophone();
+    }
+  };
+
+  public onHideVideo = () => {
+    if (this._localVideoStream !== undefined) {
+      this.hideVideo();
     }
   };
 }

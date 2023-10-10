@@ -2,7 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { login } from "@/controller/login.controller";
 
-export default async function roomHandler(
+export default async function loginHandler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {

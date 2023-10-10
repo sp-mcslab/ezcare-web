@@ -26,6 +26,11 @@ export class UserGlobalStore {
     return Result.error(new Error(result.throwableOrNull()!.message));
   }
 
+  public logout = () => {
+    this._didLogin = false;
+    setSessionTokenLocalStorage("");
+  };
+
   public tryToLoginWithSessionToken = async (): Promise<void> => {
     const sessionToken = getSessionTokenFromLocalStorage();
     if (sessionToken == null) {

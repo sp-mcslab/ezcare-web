@@ -53,6 +53,7 @@ export class LoginStore {
   public logout = () => {
     this._userId = "";
     this._userPassword = "";
+    this._userGlobalStore.logout();
   };
 
   public get didLogin(): bool | undefined {

@@ -1,4 +1,5 @@
 import { RoomSocketService } from "@/service/RoomSocketService";
+import { RoomListService } from "@/service/roomListService";
 import { makeAutoObservable, observable, runInAction } from "mobx";
 import { InvalidStateError } from "mediasoup-client/lib/errors";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
@@ -25,6 +26,8 @@ import {
 import { PeerState } from "@/models/room/PeerState";
 import { BlockedUser } from "@/models/room/BlockedUser";
 import { uuidv4 } from "@firebase/util";
+import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
+import { RoomDto } from "@/dto/RoomDto";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -50,6 +53,7 @@ export interface RoomViewModel {
 
 export class RoomStore implements RoomViewModel {
   private readonly _roomService;
+  private readonly _roomListService;
 
   private _failedToSignIn: boolean = false;
 
@@ -92,10 +96,12 @@ export class RoomStore implements RoomViewModel {
 
   constructor(
     private _mediaUtil: MediaUtil = new MediaUtil(),
-    roomService?: RoomSocketService
+    roomService?: RoomSocketService,
+    roomListService?: RoomListService
   ) {
     makeAutoObservable(this);
     this._roomService = roomService ?? new RoomSocketService(this);
+    this._roomListService = roomListService ?? new RoomListService();
   }
 
   public get videoDeviceList() {
@@ -714,5 +720,22 @@ export class RoomStore implements RoomViewModel {
     if (this._localVideoStream !== undefined) {
       this.hideVideo();
     }
+  };
+
+  private _roomList: RoomDto[] = [];
+  public get RoomList(): RoomDto[] {
+    return this._roomList;
+  }
+
+  public loadRoomList = async (): Promise<void> => {
+    const sessionToken = getSessionTokenFromLocalStorage();
+    if (sessionToken == null) {
+      return;
+    }
+    const roomResult = await this._roomListService.getRoomList(sessionToken);
+    if (roomResult.isSuccess) {
+      this._roomList = roomResult.getOrNull()!;
+    }
+    return;
   };
 }

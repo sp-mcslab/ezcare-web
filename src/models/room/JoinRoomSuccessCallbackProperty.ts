@@ -11,4 +11,5 @@ export interface JoinRoomSuccessCallbackProperty {
    * 호스트 전용
    */
   readonly awaitingUserIds: string[];
+  readonly joiningUserIds: string[];
 }

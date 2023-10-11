@@ -27,6 +27,7 @@ import { PeerState } from "@/models/room/PeerState";
 import { BlockedUser } from "@/models/room/BlockedUser";
 import { uuidv4 } from "@firebase/util";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
+import { UserDto } from "@/dto/UserDto";
 import { RoomDto } from "@/dto/RoomDto";
 
 export interface RoomViewModel {
@@ -34,7 +35,11 @@ export interface RoomViewModel {
   onNotExistsRoomId: () => void;
   onWaitingRoomEvent: (event: WaitingRoomEvent) => void;
   onFailedToJoin: (message: string) => void;
-  onJoined: (peerStates: PeerState[], awaitingPeerIds: string[]) => void;
+  onJoined: (
+    peerStates: PeerState[],
+    awaitingPeerIds: string[],
+    joiningPeerIds: string[]
+  ) => void;
   onChangePeerState: (state: PeerState) => void;
   onReceivedChat: (message: ChatMessage) => void;
   onAddedConsumer: (
@@ -49,6 +54,8 @@ export interface RoomViewModel {
   onMuteMicrophone: () => void;
   onHideVideo: () => void;
   onCancelJoinRequest: (userId: string) => void;
+  onChangeJoinerList: (userId: string) => void;
+  onGetUsersInfo: (roomId: string) => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -81,6 +88,7 @@ export class RoomStore implements RoomViewModel {
   private _peerStates: PeerState[] = [];
   private _chatInput: string = "";
   private _awaitingPeerIds: string[] = [];
+  private _joiningPeerIds: string[] = [];
   private readonly _chatMessages: ChatMessage[] = observable.array([]);
   private _blacklist: BlockedUser[] = [];
   private _kicked: boolean = false;
@@ -152,6 +160,9 @@ export class RoomStore implements RoomViewModel {
     return this._awaitingPeerIds;
   }
 
+  public get joiningPeerIds(): string[] {
+    return this._joiningPeerIds;
+  }
   // ================================ 대기실 getter 시작 ================================
   /**
    * 임시 회원 ID입니다.
@@ -219,13 +230,6 @@ export class RoomStore implements RoomViewModel {
       return false;
     }
     return this._waitingRoomData.hasPassword;
-  }
-
-  public get roomJoiners(): RoomJoiner[] {
-    if (this._waitingRoomData === undefined) {
-      return [];
-    }
-    return this._waitingRoomData.joinerList;
   }
 
   public get passwordInput(): string {
@@ -379,6 +383,17 @@ export class RoomStore implements RoomViewModel {
     this._awaitingPeerIds = this._awaitingPeerIds.filter((p) => p !== userId);
   };
 
+  public onChangeJoinerList = (userId: string) => {
+    console.log("onChangeJoinerList ", userId);
+
+    if (this._joiningPeerIds.includes(userId)) return;
+    else this._joiningPeerIds = [...this._joiningPeerIds, userId];
+  };
+
+  public onGetUsersInfo = (roomId: string) => {
+    console.log("onGetUsersInfo: ", roomId);
+  };
+
   public updateUserId = (newUserId: string) => {
     this._uid = newUserId;
   };
@@ -435,12 +450,14 @@ export class RoomStore implements RoomViewModel {
 
   public onJoined = (
     peerStates: PeerState[],
-    awaitingPeerIds: string[]
+    awaitingPeerIds: string[],
+    joiningPeerIds: string[]
   ): void => {
     this._peerStates = peerStates;
     this._state = RoomState.JOINED;
     this._waitingRoomData = undefined;
     this._awaitingPeerIds = awaitingPeerIds;
+    this._joiningPeerIds = joiningPeerIds;
   };
 
   public changeCamera = async (deviceId: string) => {

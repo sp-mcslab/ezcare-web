@@ -121,16 +121,6 @@ const WaitingRoom: NextPage<{
         </button>
       </div>
       <div>{roomStore.waitingRoomMessage}</div>
-      <div>
-        <div>방 참여자 목록</div>
-        {roomStore.roomJoiners.map((joiner) => {
-          return (
-            <div key={joiner.id} style={{ padding: "8px" }}>
-              {joiner.name}
-            </div>
-          );
-        })}
-      </div>
 
       {/* TODO: 회원 기능 구현되면 삭제하기. 임시용 회원 ID 입력 필드임. */}
       <div>
@@ -287,6 +277,17 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
         <button onClick={() => roomStore.closeAllVideo()}>
           close-all-Vids(host)
         </button>
+        <div>
+          <div>방 참여자 목록</div>
+          {roomStore.joiningPeerIds.map((joiner) => {
+            return (
+              <>
+                <div>{joiner}</div>
+              </>
+            );
+          })}
+        </div>
+
         <DeviceSelector roomStore={roomStore}></DeviceSelector>
         {isCurrentUserMaster && (
           <div>

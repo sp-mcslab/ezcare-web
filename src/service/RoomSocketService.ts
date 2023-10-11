@@ -33,6 +33,7 @@ import {
   UNMUTE_HEADSET,
   CLOSE_AUDIO_BY_HOST,
   CLOSE_VIDEO_BY_HOST,
+  UPDATE_ROOM_JOINERS,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -149,6 +150,7 @@ export class RoomSocketService {
   private _listenWaitingRoomEvents = () => {
     const socket = this._requireSocket();
     socket.on(OTHER_PEER_JOINED_ROOM, (joiner: RoomJoiner) => {
+      console.log("other peer joined room");
       this._roomViewModel.onWaitingRoomEvent(
         new OtherPeerJoinedRoomEvent(joiner)
       );
@@ -243,7 +245,11 @@ export class RoomSocketService {
         }
         console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
         this._removeWaitingRoomEventsListener();
-        this._roomViewModel.onJoined(data.peerStates, data.awaitingUserIds);
+        this._roomViewModel.onJoined(
+          data.peerStates,
+          data.awaitingUserIds,
+          data.joiningUserIds
+        );
         try {
           // once we have rtpCapabilities from the Router, create Device
           this._device = new Device();
@@ -312,6 +318,10 @@ export class RoomSocketService {
       this._roomViewModel.onHideVideo();
     });
     socket.on(CANCEL_JOIN_REQUEST, this._roomViewModel.onCancelJoinRequest);
+    socket.on(UPDATE_ROOM_JOINERS, (joinerId: string) => {
+      console.log("update room joiners - other peer joined room : " + joinerId);
+      this._roomViewModel.onChangeJoinerList(joinerId);
+    });
   };
 
   private _createSendTransport = (
@@ -711,6 +721,10 @@ export class RoomSocketService {
       }
     );
   };
+
+  // public getUsersInfo = (roomId: string) => {
+  //   this._requireSocket().emit(GET_USERS_INFO, roomId);
+  // };
 
   public sendChat = (message: string) => {
     this._requireSocket().emit(SEND_CHAT, message);

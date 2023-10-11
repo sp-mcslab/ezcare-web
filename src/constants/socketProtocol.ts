@@ -204,6 +204,11 @@ const CLOSE_AUDIO_BY_HOST = "close-audio-by-host";
  */
 const CLOSE_VIDEO_BY_HOST = "close-video-by-host";
 
+/**
+ * 현재 참여 중인 사용자들의 정보 목록을 전송하는 프로토콜이다.
+ */
+const UPDATE_ROOM_JOINERS = "update-room-joiners";
+
 export {
   IP_ADDRESS,
   NAME_SPACE,
@@ -241,4 +246,5 @@ export {
   SHOW_REMOTE_VIDEO,
   CLOSE_AUDIO_BY_HOST,
   CLOSE_VIDEO_BY_HOST,
+  UPDATE_ROOM_JOINERS,
 };

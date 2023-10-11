@@ -23,7 +23,7 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   //openAt이 createdAt보다 과거인 경우
-  if (openAt < currentTime) {
+  if (new Date(openAt) < currentTime) {
     res.status(404);
     res.json({ message: "openAt이 현재보다 과거일 수 없습니다." });
     return;

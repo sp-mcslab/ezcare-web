@@ -792,4 +792,89 @@ export class RoomStore implements RoomViewModel {
     }
     return;
   };
+
+  // 방 생성
+  private _createdRoomName: string = "";
+  private _createdAt: Date = new Date();
+  private _inviteUserId: string = "";
+  private _inviteUserList: string[] = [];
+  private _hostUserList: string[] = [];
+
+  public get createdRoomName(): string {
+    return this._createdRoomName;
+  }
+
+  public updateCreatedRoomName = (data: string) => {
+    this._createdRoomName = data;
+  };
+
+  public get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  public updateCreatedAt = (data: any) => {
+    this._createdAt = new Date(data);
+  };
+  public get inviteUserId(): string {
+    return this._inviteUserId;
+  }
+
+  public UpdateInviteUserId = (userid: string) => {
+    this._inviteUserId = userid;
+  };
+
+  public get inviteUserList(): string[] {
+    return this._inviteUserList;
+  }
+
+  public pushInviteUserList = () => {
+    this._inviteUserList = this._inviteUserList.filter(
+      (element) => element !== this._inviteUserId
+    );
+    this._inviteUserList.push(this._inviteUserId);
+    this._inviteUserId = "";
+  };
+
+  public get hostUserList(): string[] {
+    return this._hostUserList;
+  }
+
+  public pushHostUserList = (hostid: string) => {
+    this._hostUserList = this._hostUserList.filter(
+      (element) => element !== hostid
+    );
+    this._hostUserList.push(hostid);
+  };
+
+  public popHostUserList = (hostid: string) => {
+    this._hostUserList = this._hostUserList.filter(
+      (element) => element !== hostid
+    );
+  };
+
+  public postRoom = async (): Promise<void> => {
+    const sessionToken = getSessionTokenFromLocalStorage();
+    if (sessionToken == null) {
+      return;
+    }
+    const roomResult = await this._roomListService.postRoomList(
+      sessionToken,
+      this._createdRoomName,
+      this._createdAt,
+      this._inviteUserList,
+      this._hostUserList
+    );
+    if (roomResult.isSuccess) {
+      runInAction(() => {
+        alert("방 생성이 완료되었습니다.");
+        console.log(roomResult);
+      });
+    } else {
+      runInAction(() => {
+        alert("방 생성에 실패했습니다.");
+        console.log(roomResult.throwableOrNull()!!.message);
+      });
+    }
+    return;
+  };
 }

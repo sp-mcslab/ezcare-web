@@ -1,24 +1,34 @@
 import client from "prisma/client";
 import { uuid } from "uuidv4";
 import { RoomDto } from "@/dto/RoomDto";
-import { UserDto } from "@/dto/UserDto";
-import { Room } from "@prisma/client";
+import { CallLogItemDto } from "@/dto/CallLogItemDto";
 
 const HOSPITAL_CODE = "A0013";
 const TENANT_CODE = "A001";
-export const findAllRooms = async (): Promise<Room[] | undefined> => {
-  try {
-    return await client.room.findMany({
-      orderBy: {
-        createdat: "desc", // Replace 'createdAt' with the field you want to sort by
-      },
+export const findRecordByRoomId = async (
+  roomId: string
+): Promise<CallLogItemDto[] | null> => {
+  return client.callRecord
+    .findMany({
+      where: { roomid: roomId },
+    })
+    .then((callLogItems) => {
+      if (!callLogItems || callLogItems.length === 0) {
+        return null;
+      }
+
+      return callLogItems.map((callLogItem) => {
+        return CallLogItemDto.fromEntity(callLogItem);
+      });
+    })
+    .catch((e) => {
+      console.log("find Records By roomId error 500 " + e);
+      throw e;
     });
-  } catch (e) {
-    console.log("find All Rooms Error 500 " + e);
-  }
 };
 
-export const createRoom = async (
+//TODO : 기록 저장할 때 사용하기
+export const createRecord = async (
   creatorId: string,
   name: string,
   createdAt: Date,
@@ -67,90 +77,6 @@ export const createRoom = async (
   });
 
   return RoomDto.fromEntity(roomEntity);
-};
-
-export const deleteRoomReq = async (roomId: string) => {
-  if (roomId == null) return undefined;
-  try {
-    await client.room.update({
-      where: {
-        id: roomId,
-      },
-      data: { deletedat: new Date() },
-    });
-    return roomId;
-  } catch (e) {
-    console.log("delete Error" + e);
-  }
-};
-
-export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
-  let where = {};
-  if (user.role === "nurse") {
-    //간호사 -> 만든 방, 호스트인 방, 초대받은 방
-    where = {
-      OR: [
-        {
-          creatorid: user.id,
-        },
-        {
-          Host: {
-            some: {
-              userid: user.id,
-            },
-          },
-        },
-        {
-          Invite: {
-            some: {
-              userid: user.id,
-            },
-          },
-        },
-      ],
-    };
-  } else if (user.role === "doctor") {
-    // 의사 -> 호스트인 방, 초대받은 방
-    where = {
-      OR: [
-        {
-          Host: {
-            some: {
-              userid: user.id,
-            },
-          },
-        },
-        {
-          Invite: {
-            some: {
-              userid: user.id,
-            },
-          },
-        },
-      ],
-    };
-  } else if (user.role === "patient") {
-    // 환자 -> 초대받은 방
-    where = {
-      OR: [
-        {
-          Invite: {
-            some: {
-              userid: user.id,
-            },
-          },
-        },
-      ],
-    };
-  }
-
-  const rooms = await client.room.findMany({
-    where: where,
-  });
-
-  return rooms.map((room) => {
-    return RoomDto.fromEntity(room);
-  });
 };
 
 // export const findRoomById = async (roomId: string): Promise<Room | null> => {

@@ -392,6 +392,7 @@ export class RoomStore implements RoomViewModel {
   public onChangeJoinerList = (userId: string) => {
     console.log("onChangeJoinerList ", userId);
 
+    console.log(this._joiningPeerIds.includes(userId));
     if (this._joiningPeerIds.includes(userId)) return;
     else this._joiningPeerIds = [...this._joiningPeerIds, userId];
   };

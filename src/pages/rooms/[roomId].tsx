@@ -157,11 +157,33 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
       }
     }, [roomStore.kicked, router]);
 
+    useEffect(() => {
+      if (roomStore.kickedToWaitingRoom) {
+        const roomId = router.query.roomId;
+        if (typeof roomId === "string") {
+          alert("방장에 의해 로비로 강퇴되었습니다.");
+          roomStore.doConnectWaitingRoom(roomId);
+        } else {
+          throw Error("roomId is not string");
+        }
+      }
+    }, [roomStore.kickedToWaitingRoom]);
+
     const handleKickButtonClick = (userId: string) => {
       const targetUserName = roomStore.requireUserNameBy(userId);
       const confirmed = confirm(`정말로 ${targetUserName}님을 강퇴할까요?`);
       if (confirmed) {
         roomStore.kickUser(userId);
+      }
+    };
+
+    const handleKickToWaitingRoomButtonClick = (userId: string) => {
+      const targetUserName = roomStore.requireUserNameBy(userId);
+      const confirmed = confirm(
+        `정말로 ${targetUserName}님을 대기실로 강퇴할까요?`
+      );
+      if (confirmed) {
+        roomStore.kickUserToWaitingRoom(userId);
       }
     };
 
@@ -206,6 +228,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                     roomStore.remoteAudioStreamByPeerIdEntries
                   }
                   onKickClick={handleKickButtonClick}
+                  onKickToWaitingRoomClick={handleKickToWaitingRoomButtonClick}
                   onBlockClick={handleBlockButtonClick}
                 />
               </td>
@@ -305,6 +328,7 @@ const RemoteMediaGroup: NextPage<{
   remoteVideoStreamByPeerIdEntries: [string, MediaStream][];
   remoteAudioStreamByPeerIdEntries: [string, MediaStream][];
   onKickClick: (userId: string) => void;
+  onKickToWaitingRoomClick: (userId: string) => void;
   onBlockClick: (userId: string) => void;
 }> = observer(
   ({
@@ -314,6 +338,7 @@ const RemoteMediaGroup: NextPage<{
     remoteVideoStreamByPeerIdEntries,
     remoteAudioStreamByPeerIdEntries,
     onKickClick,
+    onKickToWaitingRoomClick,
     onBlockClick,
   }) => {
     const masterPopupMenus = Object.values(MasterPopupMenus);
@@ -357,12 +382,17 @@ const RemoteMediaGroup: NextPage<{
                     }
                   />
                 )}
-                <button onClick={() => roomStore.muteOneAudio(peerId)}>
-                  mute-one(host)
-                </button>
-                <button onClick={() => roomStore.closeOneVideo(peerId)}>
-                  close-video
-                </button>
+                <div>
+                  <button onClick={() => roomStore.muteOneAudio(peerId)}>
+                    mute-one(host)
+                  </button>
+                  <button onClick={() => roomStore.closeOneVideo(peerId)}>
+                    close-video(host)
+                  </button>
+                  <button onClick={() => onKickToWaitingRoomClick(peerId)}>
+                    kick-to-waiting-room(host)
+                  </button>
+                </div>
               </div>
             );
           })}

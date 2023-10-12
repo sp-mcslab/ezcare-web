@@ -33,6 +33,7 @@ import {
   UNMUTE_HEADSET,
   CLOSE_AUDIO_BY_HOST,
   CLOSE_VIDEO_BY_HOST,
+  KICK_USER_TO_WAITINGR_ROOM,
   UPDATE_ROOM_JOINERS,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
@@ -309,6 +310,9 @@ export class RoomSocketService {
       this._roomViewModel.onChangePeerState(state);
     });
     socket.on(KICK_USER, this._roomViewModel.onKicked);
+    socket.on(KICK_USER_TO_WAITINGR_ROOM, (userId) => {
+      this._roomViewModel.onKickedToWaitingRoom(userId);
+    });
     socket.on(BLOCK_USER, this._roomViewModel.onBlocked);
     socket.on(REQUEST_TO_JOIN_ROOM, this._roomViewModel.onRequestToJoinRoom);
     socket.on(CLOSE_AUDIO_BY_HOST, () => {
@@ -734,6 +738,11 @@ export class RoomSocketService {
     this._requireSocket().emit(KICK_USER, userId);
   };
 
+  public kickUserToWaitingRoom = (userId: string) => {
+    const socket = this._requireSocket();
+    socket.emit(KICK_USER_TO_WAITINGR_ROOM, userId);
+  };
+
   public blockUser = (userId: string) => {
     this._requireSocket().emit(BLOCK_USER, userId);
   };
@@ -762,5 +771,9 @@ export class RoomSocketService {
   public closeVideoByHost = (userIds: string[]) => {
     const socket = this._requireSocket();
     socket.emit(CLOSE_VIDEO_BY_HOST, userIds);
+  };
+
+  public doConnectWaitingRoom = (roomId: string) => {
+    this._connectWaitingRoom(roomId);
   };
 }

@@ -49,6 +49,7 @@ export interface RoomViewModel {
   ) => void;
   onDisposedPeer: (disposedPeerId: string) => void;
   onKicked: (userId: string) => void;
+  onKickedToWaitingRoom: (userId: string) => void;
   onBlocked: (userId: string) => void;
   onRequestToJoinRoom: (userId: string) => void;
   onMuteMicrophone: () => void;
@@ -92,6 +93,7 @@ export class RoomStore implements RoomViewModel {
   private readonly _chatMessages: ChatMessage[] = observable.array([]);
   private _blacklist: BlockedUser[] = [];
   private _kicked: boolean = false;
+  private _kickedToWaitingRoom: boolean = false;
   private _videoDeviceList: MediaDeviceInfo[] = [];
   private _audioDeviceList: MediaDeviceInfo[] = [];
   private _currentVideoDeviceId: string | undefined = undefined;
@@ -304,6 +306,10 @@ export class RoomStore implements RoomViewModel {
     return this._kicked;
   }
 
+  public get kickedToWaitingRoom(): boolean {
+    return this._kickedToWaitingRoom;
+  }
+
   public get userMessage(): string | undefined {
     return this._userMessage;
   }
@@ -439,6 +445,9 @@ export class RoomStore implements RoomViewModel {
     }
     if (this._localAudioStream !== undefined) {
       mediaStream.addTrack(this._localAudioStream.getAudioTracks()[0]);
+    }
+    if (this.kickedToWaitingRoom) {
+      this._kickedToWaitingRoom = false;
     }
     this._roomService.join(mediaStream, this._passwordInput, this._uid);
   };
@@ -629,6 +638,10 @@ export class RoomStore implements RoomViewModel {
     this._roomService.kickUser(userId);
   };
 
+  public kickUserToWaitingRoom = (userId: string) => {
+    this._roomService.kickUserToWaitingRoom(userId);
+  };
+
   public blockUser = (userId: string) => {
     this._roomService.blockUser(userId);
   };
@@ -657,6 +670,26 @@ export class RoomStore implements RoomViewModel {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
       this._userMessage = `${kickedPeerState.name}님이 강퇴되었습니다.`;
+    }
+  };
+
+  public onKickedToWaitingRoom = (userId: string) => {
+    const isMe = userId === this._uid;
+    if (isMe) {
+      // 강퇴당한 참여자
+      this._kickedToWaitingRoom = true;
+      this._localAudioStream?.getTracks().forEach((t) => t.stop());
+      this._localVideoStream?.getTracks().forEach((t) => t.stop());
+    } else {
+      // 그외 참여자
+      const kickedPeerState = this._peerStates.find(
+        (peer) => peer.uid === userId
+      );
+      this.onDisposedPeer(userId);
+      if (kickedPeerState == null) {
+        throw Error("강퇴시킨 피어의 정보가 없습니다.");
+      }
+      this._userMessage = `${kickedPeerState.name}님이 대기실로 강퇴되었습니다.`;
     }
   };
 
@@ -737,6 +770,10 @@ export class RoomStore implements RoomViewModel {
     if (this._localVideoStream !== undefined) {
       this.hideVideo();
     }
+  };
+
+  public doConnectWaitingRoom = (roomId: string) => {
+    this._roomService.doConnectWaitingRoom(roomId);
   };
 
   private _roomList: RoomDto[] = [];

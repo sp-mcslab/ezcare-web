@@ -205,6 +205,11 @@ const CLOSE_AUDIO_BY_HOST = "close-audio-by-host";
 const CLOSE_VIDEO_BY_HOST = "close-video-by-host";
 
 /**
+ * 호스트가 회원을 로비로 강퇴시길 때 전송하는 프로토콜이다.
+ */
+const KICK_USER_TO_WAITINGR_ROOM = "kick-user-to-waiting-room";
+
+/**
  * 현재 참여 중인 사용자들의 정보 목록을 전송하는 프로토콜이다.
  */
 const UPDATE_ROOM_JOINERS = "update-room-joiners";
@@ -246,5 +251,6 @@ export {
   SHOW_REMOTE_VIDEO,
   CLOSE_AUDIO_BY_HOST,
   CLOSE_VIDEO_BY_HOST,
+  KICK_USER_TO_WAITINGR_ROOM,
   UPDATE_ROOM_JOINERS,
 };

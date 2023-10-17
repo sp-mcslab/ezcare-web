@@ -56,6 +56,7 @@ export interface RoomViewModel {
   onHideVideo: () => void;
   onCancelJoinRequest: (userId: string) => void;
   onChangeJoinerList: (userId: string) => void;
+  onRemoveJoinerList: (disposedPeerId: string) => void;
   onGetUsersInfo: (roomId: string) => void;
 }
 
@@ -395,6 +396,14 @@ export class RoomStore implements RoomViewModel {
     console.log(this._joiningPeerIds.includes(userId));
     if (this._joiningPeerIds.includes(userId)) return;
     else this._joiningPeerIds = [...this._joiningPeerIds, userId];
+  };
+
+  public onRemoveJoinerList = (disposedPeerId: string) => {
+    if (!this._joiningPeerIds.includes(disposedPeerId)) return;
+    else
+      this._joiningPeerIds = this._joiningPeerIds.filter(
+        (id) => id !== disposedPeerId
+      );
   };
 
   public onGetUsersInfo = (roomId: string) => {

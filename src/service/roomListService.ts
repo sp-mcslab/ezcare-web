@@ -60,7 +60,7 @@ export class RoomListService {
         headers: HEADER,
       });
       if (response.ok) {
-        return Result.success(response);
+        return Result.success(undefined);
       } else {
         return await Result.createErrorUsingResponseMessage(response);
       }

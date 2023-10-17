@@ -1,7 +1,6 @@
 import { NextPage } from "next";
 import React, { useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { RoomStore } from "@/stores/RoomStore";
 import { AdminStore } from "@/stores/AdminStore";
 import { useRouter } from "next/router";
 import {
@@ -13,7 +12,6 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import dayjs, { Dayjs } from 'dayjs';
 
 const LogPage: NextPage = observer(() => {
   const [adminStore] = useState(new AdminStore());
@@ -56,14 +54,18 @@ const LogPage: NextPage = observer(() => {
                   <TableCell>{i + 1}</TableCell>
                   <TableCell>{record.roomId}</TableCell>
                   <TableCell>{record.openAt.toString()}</TableCell>
-                  <TableCell>{record.deletedAt && record.deletedAt.toString()}</TableCell>
+                  <TableCell>
+                    {record.deletedAt && record.deletedAt.toString()}
+                  </TableCell>
                   <TableCell>{record.creatorId.toString()}</TableCell>
                   <TableCell>
-                  {record.participants && record.participants.map((part) => (
-                    <div>
-                      {part.userId} / {part.joinAt.toString()} / {part.exitAt && part.exitAt!!.toString()}
-                    </div>
-                  ))}
+                    {record.participants &&
+                      record.participants.map((part) => (
+                        <div>
+                          {part.userId} / {part.joinAt.toString()} /{" "}
+                          {part.exitAt && part.exitAt!!.toString()}
+                        </div>
+                      ))}
                   </TableCell>
                 </TableRow>
               ))}

@@ -3,10 +3,9 @@ import adminService, { AdminService } from "@/service/adminService";
 import { CallLogDto } from "@/dto/CallLogDto";
 
 export class AdminStore {
-
   private _errorMessage: string = "";
   private _roomRecord: CallLogDto[] = [];
-  
+
   constructor(private readonly _adminService: AdminService = adminService) {
     makeAutoObservable(this);
   }
@@ -38,5 +37,4 @@ export class AdminStore {
       });
     }
   };
-
 }

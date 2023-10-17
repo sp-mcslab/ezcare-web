@@ -11,7 +11,7 @@ export class AdminService {
     try {
       const response = await fetchAbsolute(`api/admin/call-log`, {
         method: "GET",
-        headers: HEADER
+        headers: HEADER,
       });
       if (response.ok) {
         return Result.createSuccessUsingResponseData(response);

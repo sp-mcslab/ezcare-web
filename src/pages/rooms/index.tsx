@@ -46,17 +46,21 @@ const ListPage: NextPage = observer(() => {
                 <TableCell style={{ width: "300px", textAlign: "center" }}>
                   제목
                 </TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {roomStore.RoomList.map((row, i) => (
-                <TableRow key={row.id}>
+              {roomStore.RoomList.map((room, i) => (
+                <TableRow key={room.id}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell
-                    onClick={() => router.replace("/rooms/" + row.id)}
+                    onClick={() => router.replace("/rooms/" + room.id)}
                     style={{ cursor: "pointer", textAlign: "center" }}
                   >
-                    {row.name}
+                    {room.name}
+                  </TableCell>
+                  <TableCell>
+                    <Button onClick={() => roomStore.deleteRoom(room.id)}>삭제</Button>
                   </TableCell>
                 </TableRow>
               ))}

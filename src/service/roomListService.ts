@@ -51,6 +51,24 @@ export class RoomListService {
       return Result.createErrorUsingException(e);
     }
   }
+
+  public async deleteRoomList(roomId: string) {
+    try {
+      const response = await fetchAbsolute(`api/rooms/${roomId}`, {
+        method: "DELETE",
+        body: JSON.stringify({roomId}),
+        headers: HEADER,
+      });
+      if (response.ok) {
+        return Result.success(response);
+      } else {
+        return await Result.createErrorUsingResponseMessage(response);
+      }
+    } catch (e) {
+      return Result.createErrorUsingException(e);
+    }
+  }
+
 }
 
 const roomListService = new RoomListService();

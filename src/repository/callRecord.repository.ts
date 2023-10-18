@@ -29,54 +29,25 @@ export const findRecordByRoomId = async (
 
 //TODO : 기록 저장할 때 사용하기
 export const createRecord = async (
-  creatorId: string,
-  name: string,
-  createdAt: Date,
-  openAt: Date,
-  invitedUsers: string[],
-  hostedUsers: string[]
-): Promise<RoomDto> => {
-  // 생성할 방의 고유 아이디 (기본키 id)
-  const roomUniqueId = uuid();
+  userId: string,
+  roomId: string,
+  joinAt: Date,
+  exitAt: Date
+): Promise<CallLogItemDto> => {
+  // 생성할 record의 고유 아이디 (기본키 id)
+  const recordUniqueId = uuid();
 
-  const roomEntity = await client.room.create({
+  const recordEntity = await client.callRecord.create({
     data: {
-      id: roomUniqueId,
-      User: {
-        connect: {
-          id: creatorId,
-        },
-      },
-      name: name,
-      createdat: createdAt,
-      openat: openAt,
-      deletedat: null,
-      Hospital: {
-        connect: {
-          code_tenantcode: {
-            code: HOSPITAL_CODE,
-            tenantcode: TENANT_CODE,
-          },
-        },
-      },
-      Host: {
-        createMany: {
-          data: hostedUsers.map((userid) => ({
-            userid: userid,
-          })),
-        },
-      },
-      Invite: {
-        createMany: {
-          data: invitedUsers.map((userid) => ({
-            userid: userid,
-          })),
-        },
-      },
+      id: recordUniqueId,
+      userid: userId,
+      roomid: roomId,
+      joinat: joinAt,
+      exitat: exitAt,
     },
   });
 
-  return RoomDto.fromEntity(roomEntity);
+  return CallLogItemDto.fromEntity(recordEntity);
 };
 
 // export const findRoomById = async (roomId: string): Promise<Room | null> => {

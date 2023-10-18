@@ -1,5 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createRoom, deleteRoomReq } from "@/repository/room.repository";
+import {
+  createRoom,
+  deleteRoomReq,
+  updateAllCallRecordOfRoom,
+} from "@/repository/room.repository";
 import { getIdFromToken } from "@/utils/JwtUtil";
 import { findRooms } from "@/repository/room.repository";
 import { findUserById } from "@/repository/user.repository";
@@ -61,6 +65,17 @@ export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
     if ((await deleteRoomReq(req.query.roomId as string)) == undefined)
       throw "존재하지 않는 진료실입니다.";
 
+    // 진료실에 남아있던 사용자들 exitat 모두 갱신
+    const result = updateAllCallRecordOfRoom(req.query.roomId as string);
+
+    if (!result) {
+      console.log("error : 404");
+      res.status(404);
+      res.json({
+        message: "사용자 퇴장 정보 갱신에 실패하였습니다.",
+      });
+      return;
+    }
     res.status(204);
     res.json({
       message: "진료실을 삭제했습니다.",

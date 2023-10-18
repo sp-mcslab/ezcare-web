@@ -36,6 +36,8 @@ export interface RoomViewModel {
   onWaitingRoomEvent: (event: WaitingRoomEvent) => void;
   onFailedToJoin: (message: string) => void;
   onJoined: (
+    userId: string,
+    roomId: string,
     peerStates: PeerState[],
     awaitingPeerIds: string[],
     joiningPeerIds: string[]
@@ -468,6 +470,8 @@ export class RoomStore implements RoomViewModel {
   };
 
   public onJoined = (
+    userId: string,
+    roomId: string,
     peerStates: PeerState[],
     awaitingPeerIds: string[],
     joiningPeerIds: string[]
@@ -477,6 +481,24 @@ export class RoomStore implements RoomViewModel {
     this._waitingRoomData = undefined;
     this._awaitingPeerIds = awaitingPeerIds;
     this._joiningPeerIds = joiningPeerIds;
+
+    //record 저장
+    const record = {
+      userId: userId,
+      roomId: roomId,
+      joinAt: new Date(),
+      exitAt: null, // You can set this to the appropriate value
+    };
+
+    const axios = require("axios");
+    axios
+      .post("/api/admin/call-log", record)
+      .then((response: { data: any }) => {
+        console.log("Record saved:", response.data);
+      })
+      .catch((error: any) => {
+        console.error("Error saving record:", error);
+      });
   };
 
   public changeCamera = async (deviceId: string) => {

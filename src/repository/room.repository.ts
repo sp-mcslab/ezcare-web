@@ -72,9 +72,9 @@ export const createRoom = async (
 export const deleteRoomReq = async (roomId: string) => {
   if (roomId == null) return undefined;
   try {
-    await client.room.update({
+    await client.room.updateMany({
       where: {
-        id: roomId,
+        AND: [{ id: roomId }, { deletedat: null }],
       },
       data: { deletedat: new Date() },
     });
@@ -151,6 +151,22 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
   return rooms.map((room) => {
     return RoomDto.fromEntity(room);
   });
+};
+
+export const updateAllCallRecordOfRoom = async (
+  roomId: string
+): Promise<boolean> => {
+  const newExitAt = new Date();
+  const updatedRecords = await client.callRecord.updateMany({
+    where: {
+      AND: [{ roomid: roomId }, { exitat: null }],
+    },
+    data: {
+      exitat: newExitAt, // Update the exitat field with the new value
+    },
+  });
+
+  return updatedRecords != undefined;
 };
 
 // export const findRoomById = async (roomId: string): Promise<Room | null> => {

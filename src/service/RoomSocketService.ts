@@ -247,6 +247,8 @@ export class RoomSocketService {
         console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
         this._removeWaitingRoomEventsListener();
         this._roomViewModel.onJoined(
+          uid,
+          data.roomId,
           data.peerStates,
           data.awaitingUserIds,
           data.joiningUserIds

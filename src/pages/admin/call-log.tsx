@@ -61,7 +61,7 @@ const LogPage: NextPage = observer(() => {
                   <TableCell>
                     {record.participants &&
                       record.participants.map((part) => (
-                        <div>
+                        <div key={part.userId}>
                           {part.userId} / {part.joinAt.toString()} /{" "}
                           {part.exitAt && part.exitAt!!.toString()}
                         </div>

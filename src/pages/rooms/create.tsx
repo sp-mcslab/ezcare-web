@@ -57,7 +57,7 @@ const ListPage: NextPage = observer(() => {
             <DateTimePicker
               format="YYYY-MM-DD hh:mm"
               showDaysOutsideCurrentMonth
-              defaultValue={dayjs().add(5, 'minute')}
+              defaultValue={dayjs()}
               onChange={(e) => {
                 roomStore.updateCreatedAt(e)
               }}

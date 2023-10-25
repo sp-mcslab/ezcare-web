@@ -909,4 +909,12 @@ export class RoomStore implements RoomViewModel {
     }
     return;
   };
+
+  public deleteRoom = async (roomId: string): Promise<void> => {
+    const roomResult = await this._roomListService.deleteRoomList(roomId);
+    if (!roomResult.isSuccess) {
+      console.log(roomResult.throwableOrNull()!!.message);
+    }
+    return;
+  };
 }

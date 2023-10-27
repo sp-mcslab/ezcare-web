@@ -31,6 +31,11 @@ const RoomScaffold: NextPage = observer(() => {
     router.replace("/login");
     return <></>;
   }
+  useEffect(() => {
+    (async () => {
+      await roomStore.getRoleWithSessionToken();
+    })();
+  }, [roomStore]);
 
   switch (roomStore.state) {
     case RoomState.NOT_EXISTS:
@@ -113,12 +118,15 @@ const WaitingRoom: NextPage<{
           입장
         </button>
         {/*TODO: 임시로 두는 버튼입니다. 추후에 회원 기능이 구현되면 회원 타입이 환자인 경우만 보여야 합니다.*/}
-        <button
-          disabled={!roomStore.enableJoinButton}
-          onClick={() => roomStore.requestToJoinRoom()}
-        >
-          입장요청
-        </button>
+        {/*231024 : 실제 이지케어텍 api가 아닌 자체 db로 작업 완료. 이후 수정 요망.*/}
+        {roomStore.userRole == "patient" || roomStore.userRole == "" ? (
+            <button
+            disabled={!roomStore.enableJoinButton}
+            onClick={() => roomStore.requestToJoinRoom()}
+          >
+            입장요청
+          </button>
+        ) : undefined}
       </div>
       <div>{roomStore.waitingRoomMessage}</div>
 

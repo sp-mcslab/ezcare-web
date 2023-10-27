@@ -29,6 +29,7 @@ import { uuidv4 } from "@firebase/util";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { UserDto } from "@/dto/UserDto";
 import { RoomDto } from "@/dto/RoomDto";
+import userService, { UserService } from "@/service/userService";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -65,7 +66,7 @@ export interface RoomViewModel {
 export class RoomStore implements RoomViewModel {
   private readonly _roomService;
   private readonly _roomListService;
-
+  private readonly _userService: UserService = userService;
   private _failedToSignIn: boolean = false;
 
   private _state: RoomState = RoomState.CREATED;
@@ -916,5 +917,27 @@ export class RoomStore implements RoomViewModel {
       console.log(roomResult.throwableOrNull()!!.message);
     }
     return;
+  };
+
+  //유저 권한, 호스트 여부 조회
+  private _userRole: string = "";
+  private _isHost: boolean = false;
+
+  public get userRole(): string | null {
+    return this._userRole;
+  }
+  public get isHost(): boolean | null {
+    return this._isHost;
+  }
+  
+  public getRoleWithSessionToken = async (): Promise<void> => {
+    const sessionToken = getSessionTokenFromLocalStorage();
+    if (sessionToken == null) {
+      return;
+    }
+    const validResult = await this._userService.findUserRole(sessionToken);
+    if (validResult.isSuccess) {
+      this._userRole = validResult.getOrNull()!.role;
+    }
   };
 }

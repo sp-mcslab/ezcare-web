@@ -31,7 +31,6 @@ export class UserService {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}/host`, {
         method: "GET",
-        body: JSON.stringify({roomId}),
         headers: {
           "x-ezcare-session-token": token,
           "Content-Type": "application/json",

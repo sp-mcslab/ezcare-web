@@ -39,6 +39,16 @@ const ListPage: NextPage = observer(() => {
     },
   ];
   
+  useEffect(() => {
+    (async () => {
+      await roomStore.getRoleWithSessionToken();
+      if (roomStore.userRole != "nurse") {
+        router.replace("/rooms");
+        return <></>;
+      }
+    })();
+  }, [roomStore]);
+  
   return (
     <div className="App">
       <div style={{ fontSize: "30px", paddingTop: "50px" }}>방 생성</div>

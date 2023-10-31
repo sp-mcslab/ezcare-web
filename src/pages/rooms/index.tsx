@@ -21,6 +21,17 @@ const ListPage: NextPage = observer(() => {
     roomStore.loadRoomList();
   }, [roomStore.loadRoomList]);
 
+  useEffect(() => {
+    (async () => {
+      await roomStore.getRoleWithSessionToken();
+    })();
+  }, [roomStore]);
+
+  if (roomStore.failedToSignIn) {
+    router.replace("/login");
+    return <></>;
+  }
+  
   return (
     <div className="App">
       <div
@@ -32,11 +43,13 @@ const ListPage: NextPage = observer(() => {
       >
         방 목록
       </div>
-      <div
-        style={{ display: "inline-block", float: "right", paddingTop: "50px" }}
-      >
-        <Button onClick={() => router.replace("/rooms/create")}>방 생성</Button>
-      </div>
+      {roomStore.userRole == "nurse" ? (
+        <div
+          style={{ display: "inline-block", float: "right", paddingTop: "50px" }}
+        >
+          <Button onClick={() => router.replace("/rooms/create")}>방 생성</Button>
+        </div>
+      ) : undefined}
       <div>
         <TableContainer>
           <Table>
@@ -46,7 +59,9 @@ const ListPage: NextPage = observer(() => {
                 <TableCell style={{ width: "300px", textAlign: "center" }}>
                   제목
                 </TableCell>
-                <TableCell></TableCell>
+                {roomStore.userRole == "nurse" ? (
+                  <TableCell></TableCell>
+                ) : undefined}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -59,9 +74,11 @@ const ListPage: NextPage = observer(() => {
                   >
                     {room.name}
                   </TableCell>
-                  <TableCell>
-                    <Button onClick={() => roomStore.deleteRoom(room.id)}>삭제</Button>
-                  </TableCell>
+                  {roomStore.userRole == "nurse" ? (
+                    <TableCell>
+                      <Button onClick={() => roomStore.deleteRoom(room.id)}>삭제</Button>
+                    </TableCell>
+                  ) : undefined}
                 </TableRow>
               ))}
             </TableBody>

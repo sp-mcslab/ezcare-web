@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getIdFromToken } from "@/utils/JwtUtil";
-import { findUserById, findUserRoleById } from "@/repository/user.repository";
+import { findUserRoleById } from "@/repository/user.repository";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 

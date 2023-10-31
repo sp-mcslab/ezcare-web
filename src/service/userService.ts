@@ -26,6 +26,22 @@ export class UserService {
       return Result.createErrorUsingException(e);
     }
   }
+
+  public async findUserIsHost(token: string, roomId: string): Promise<boolean> {
+    try {
+      const response = await fetchAbsolute(`api/rooms/${roomId}/host`, {
+        method: "GET",
+        body: JSON.stringify({roomId}),
+        headers: {
+          "x-ezcare-session-token": token,
+          "Content-Type": "application/json",
+        },
+      });
+      return response.ok;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 const userService = new UserService();

@@ -2,7 +2,7 @@ import client from "prisma/client";
 import { uuid } from "uuidv4";
 import { RoomDto } from "@/dto/RoomDto";
 import { UserDto } from "@/dto/UserDto";
-import { Room } from "@prisma/client";
+import { Host, Room } from "@prisma/client";
 
 const HOSPITAL_CODE = "A0013";
 const TENANT_CODE = "A001";
@@ -167,6 +167,21 @@ export const updateAllCallRecordOfRoom = async (
   });
 
   return updatedRecords != undefined;
+};
+
+export const findUserHostByRoomId = async (
+  roomid: string
+): Promise<Host[] | null> => {
+  try {
+    return await client.host.findMany({
+      where: {
+        roomid: roomid,
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
 };
 
 // export const findRoomById = async (roomId: string): Promise<Room | null> => {

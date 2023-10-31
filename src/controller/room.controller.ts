@@ -3,6 +3,7 @@ import {
   createRoom,
   deleteRoomReq,
   updateAllCallRecordOfRoom,
+  findUserHostByRoomId,
 } from "@/repository/room.repository";
 import { getIdFromToken } from "@/utils/JwtUtil";
 import { findRooms } from "@/repository/room.repository";
@@ -126,6 +127,45 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     console.log("error: 500", e);
     res.status(500);
+    return;
+  }
+};
+
+export const getHostById = async (req: NextApiRequest, res: NextApiResponse) => {
+  try {
+    const userId = getIdFromToken(
+      req.headers["x-ezcare-session-token"] as string,
+      secretKey
+    ); // 사용자의 id get.
+
+    const roomId = req.query.roomId;
+
+    if (roomId == null) {
+      res.status(401).end();
+      return;
+    }
+
+    const hosts = await findUserHostByRoomId(roomId as string);
+    if (hosts == null) {
+      res.status(401).end();
+      return;
+    }
+
+    for (const host of hosts) {
+      if (host.userid == userId) {
+        res.status(200);
+        res.json({ message: "호스트 목록이 조회되었습니다." });
+        return;
+      }
+    }
+
+    res.status(404);
+    res.json({ message: "호스트 권한이 조회되지 않았습니다." });
+    return;
+
+  } catch (e) {
+    res.status(404);
+    res.json({ message: "호스트 권한이 조회되지 않았습니다." });
     return;
   }
 };

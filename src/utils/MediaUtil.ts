@@ -12,6 +12,11 @@ const MEDIA_CONSTRAINTS = {
   },
 };
 
+const displayMediaOptions = {
+  audio: false,
+  video: true,
+};
+
 export class MediaUtil {
   public fetchLocalMedia = async ({
     video = false,
@@ -30,6 +35,16 @@ export class MediaUtil {
     return await navigator.mediaDevices.getUserMedia({
       video: { deviceId: videoDeviceId },
     });
+  };
+
+  public fetchScreenCaptureVideo = async () => {
+    return await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+  };
+
+  // 공유화면 mediaTrack의 크기 제약조건
+  public SCREEN_CAPTURE_MEDIA_CONSTRAINTS = {
+    width: { min: 800, max: 1920, ideal: 640 },
+    height: { min: 400, max: 1080, ideal: 400 },
   };
 
   public fetchLocalAudioInput = async (

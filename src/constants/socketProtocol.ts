@@ -108,7 +108,7 @@ const CONSUME = "consume";
 const CONSUME_RESUME = "consumer-resume";
 
 /**
- * 요청을 보낸 클라이언트의 생성자는 제외한 모든 생성자를 요청한다.
+ * 요청을 보낸 클라이언트의 생성자를 제외한 모든 생성자를 요청한다.
  *
  * 클라이언트에서 서버로 전송된다.
  */

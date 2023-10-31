@@ -48,6 +48,7 @@ export interface RoomViewModel {
   onAddedConsumer: (
     peerId: string,
     track: MediaStreamTrack,
+    appData: Record<string, unknown>,
     kind: MediaKind
   ) => void;
   onDisposedPeer: (disposedPeerId: string) => void;
@@ -73,6 +74,7 @@ export class RoomStore implements RoomViewModel {
 
   private _localVideoStream?: MediaStream = undefined;
   private _localAudioStream?: MediaStream = undefined;
+  private _localScreenVideoStream?: MediaStream = undefined;
   private _enabledHeadset: boolean = true;
 
   // ======================= 대기실 관련 =======================
@@ -88,6 +90,9 @@ export class RoomStore implements RoomViewModel {
     observable.map(new Map());
   private readonly _remoteAudioStreamsByPeerId: Map<string, MediaStream> =
     observable.map(new Map());
+  private readonly _remoteScreenVideoStreamsByPeerId: Map<string, MediaStream> =
+    observable.map(new Map());
+  // TODO: remoteScreenVideoSwitchByPeerId 가 필요할지 생각 후 추가
 
   private _masterId?: string = undefined;
   private _peerStates: PeerState[] = [];
@@ -150,12 +155,20 @@ export class RoomStore implements RoomViewModel {
     return this._localAudioStream;
   }
 
+  public get localScreenVideoStream(): MediaStream | undefined {
+    return this._localScreenVideoStream;
+  }
+
   public get enabledLocalVideo(): boolean {
     return this._localVideoStream !== undefined;
   }
 
   public get enabledLocalAudio(): boolean {
     return this._localAudioStream !== undefined;
+  }
+
+  public get enabledLocalScreenVideo(): boolean {
+    return this._localScreenVideoStream !== undefined;
   }
 
   public get enabledHeadset(): boolean {
@@ -290,6 +303,10 @@ export class RoomStore implements RoomViewModel {
     return [...this._remoteAudioStreamsByPeerId];
   }
 
+  public get remoteScreenVideoStreamByPeerIdEntries(): [string, MediaStream][] {
+    return [...this._remoteScreenVideoStreamsByPeerId.entries()];
+  }
+
   public get chatInput(): string {
     return this._chatInput;
   }
@@ -323,20 +340,27 @@ export class RoomStore implements RoomViewModel {
   };
 
   public onConnectedWaitingRoom = async (waitingRoomData: WaitingRoomData) => {
-    const mediaStream = await this._mediaUtil.fetchLocalMedia({
-      video: true,
-      audio: true,
-    });
-    runInAction(() => {
-      this._localVideoStream =
-        this._mediaUtil.getMediaStreamUsingFirstVideoTrackOf(mediaStream);
-      this._localAudioStream =
-        this._mediaUtil.getMediaStreamUsingFirstAudioTrackOf(mediaStream);
-      this._state = RoomState.WAITING_ROOM;
-      this._waitingRoomData = waitingRoomData;
-      this._masterId = waitingRoomData.masterId;
-      this._blacklist = waitingRoomData.blacklist;
-    });
+    const mediaStream = await this._mediaUtil
+      .fetchLocalMedia({
+        video: true,
+        audio: true,
+      })
+      // 카메라와 마이크가 둘다 연결되어있으면 mediaStream 불러옴
+      .then((mediaStream) => {
+        console.log("mediastream 받아오기 성공");
+        runInAction(() => {
+          this._localVideoStream =
+            this._mediaUtil.getMediaStreamUsingFirstVideoTrackOf(mediaStream);
+          this._localAudioStream =
+            this._mediaUtil.getMediaStreamUsingFirstAudioTrackOf(mediaStream);
+          this._state = RoomState.WAITING_ROOM;
+          this._waitingRoomData = waitingRoomData;
+          this._masterId = waitingRoomData.masterId;
+          this._blacklist = waitingRoomData.blacklist;
+        });
+      })
+      // 카메라 or 마이크가 없으면 mediaStream 불러오지 못해서 error 출력 -> 로비에서 연결 중... 무한 출력
+      .catch((error) => console.error(`${error}: mediastream 받아오기 실패`));
   };
 
   public onNotExistsRoomId = () => {
@@ -642,6 +666,7 @@ export class RoomStore implements RoomViewModel {
   public onAddedConsumer = (
     peerId: string,
     track: MediaStreamTrack,
+    appData: Record<string, unknown>,
     kind: MediaKind
   ) => {
     switch (kind) {
@@ -649,9 +674,25 @@ export class RoomStore implements RoomViewModel {
         this._remoteAudioStreamsByPeerId.set(peerId, new MediaStream([track]));
         break;
       case "video":
-        this._remoteVideoStreamsByPeerId.set(peerId, new MediaStream([track]));
-        this._remoteVideoSwitchByPeerId.set(peerId, true);
-        break;
+        if (!appData.isScreenShare) {
+          // 카메라에서 받아온 video mediastream
+          this._remoteVideoStreamsByPeerId.set(
+            peerId,
+            new MediaStream([track])
+          );
+          this._remoteVideoSwitchByPeerId.set(peerId, true);
+          console.log(
+            `화면공유 8-1: 캠화면 등록 appData: ${appData}, isScreenShare: ${appData.isScreenShare}`
+          );
+          break;
+        } else if (appData.isScreenShare) {
+          // 공유화면에서 받아온 video mdediastream
+          this._remoteScreenVideoStreamsByPeerId.set(
+            peerId,
+            new MediaStream([track])
+          );
+          break;
+        }
     }
   };
 
@@ -747,6 +788,8 @@ export class RoomStore implements RoomViewModel {
   public onDisposedPeer = (peerId: string): void => {
     this._remoteVideoStreamsByPeerId.delete(peerId);
     this._remoteAudioStreamsByPeerId.delete(peerId);
+    // TODO: 화면공유 dispose 테스트 후 사용 결정
+    // this._remoteScreenVideoStreamsByPeerId.delete(peerId);
     this._peerStates = this._peerStates.filter((peer) => peer.uid !== peerId);
   };
 
@@ -911,6 +954,40 @@ export class RoomStore implements RoomViewModel {
     return;
   };
 
+  public shareMyScreen = async () => {
+    const modifiedMediaTrack = this._mediaUtil
+      .fetchScreenCaptureVideo()
+      .then(async (stream) => {
+        // 공유화면 video 추출 후 producer 생성
+        const displayMediaTrack = stream.getVideoTracks()[0];
+        await displayMediaTrack
+          .applyConstraints(this._mediaUtil.SCREEN_CAPTURE_MEDIA_CONSTRAINTS)
+          .then(async () => {
+            await runInAction(async () => {
+              this._localScreenVideoStream = new MediaStream([
+                displayMediaTrack,
+              ]);
+              await this._roomService.produceScreenVideoTrack(
+                displayMediaTrack
+              );
+            });
+          })
+          .catch((error) => console.error(`공유화면 크기 조절 실패: ${error}`));
+      })
+      .catch((error) => console.error(`공유화면 불러오기 실패: ${error}`));
+  };
+
+  public stopShareMyScreen = () => {
+    if (this._localScreenVideoStream === undefined) {
+      throw new InvalidStateError(
+        "로컬 공유화면이 없는 상태에서 화면공유를 끄려 했습니다."
+      );
+    }
+    this._roomService.closeScreenVideoProducer();
+    this._localScreenVideoStream.getTracks().forEach((track) => track.stop());
+    this._localScreenVideoStream = undefined;
+  };
+
   public deleteRoom = async (roomId: string): Promise<void> => {
     const roomResult = await this._roomListService.deleteRoomList(roomId);
     if (!roomResult.isSuccess) {
@@ -929,7 +1006,7 @@ export class RoomStore implements RoomViewModel {
   public get isHost(): boolean | null {
     return this._isHost;
   }
-  
+
   public getRoleWithSessionToken = async (): Promise<void> => {
     const sessionToken = getSessionTokenFromLocalStorage();
     if (sessionToken == null) {

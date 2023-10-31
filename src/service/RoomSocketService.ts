@@ -79,6 +79,7 @@ interface ConsumeParams {
   readonly kind: MediaKind;
   readonly rtpParameters: RtpParameters;
   readonly serverConsumerId: string;
+  readonly appData: Record<string, unknown>; // 테스트 중
 }
 
 interface ReceiveTransportWrapper {
@@ -98,12 +99,19 @@ interface UserAndProducerId {
   userId: string;
 }
 
+interface ProducerIdAndAppData {
+  userId: string;
+  producerId: string;
+  appData?: Record<string, unknown>;
+}
+
 export class RoomSocketService {
   private _socket?: Socket;
 
   private _sendTransport?: Transport;
   private _audioProducer?: Producer;
   private _videoProducer?: Producer;
+  private _screenVideoProducer?: Producer;
 
   private _receiveTransportWrappers: ReceiveTransportWrapper[] = [];
 
@@ -278,11 +286,23 @@ export class RoomSocketService {
       async ({
         producerId,
         userId,
+        remoteAppData,
       }: {
         producerId: string;
         userId: string;
+        remoteAppData?: Record<string, unknown>;
       }) => {
-        await this._createReceiveTransport(producerId, userId, device);
+        console.log(
+          `NEW_PRODUCER remoteAppData.isScreenShare: ${
+            remoteAppData ? remoteAppData.isScreenShare : "undefined"
+          }`
+        );
+        await this._createReceiveTransport(
+          producerId,
+          userId,
+          device,
+          remoteAppData
+        );
       }
     );
     socket.on(SEND_CHAT, (message: ChatMessage) => {
@@ -443,6 +463,11 @@ export class RoomSocketService {
     callback: ({ id }: { id: string }) => void,
     errback: (error: Error) => void
   ) => {
+    console.log(
+      `onProducedSendTransport의 parameters.appData: ${
+        parameters.appData != null
+      }, isScreenShare: ${parameters.appData.isScreenShare}`
+    );
     try {
       // tell the server to create a Producer
       // with the following parameters and produce
@@ -468,15 +493,16 @@ export class RoomSocketService {
   private _getRemoteProducersAndCreateReceiveTransport = (device: Device) => {
     this._requireSocket().emit(
       GET_PRODUCER_IDS,
-      (userProducerIds: UserAndProducerId[]) => {
-        console.log(userProducerIds);
+      (idsAndAppData: ProducerIdAndAppData[]) => {
+        console.log(idsAndAppData);
         // for each of the producer create a consumer
         // producerIds.forEach(id => signalNewConsumerTransport(id))
-        userProducerIds.forEach(async (userProducerIdSet) => {
+        idsAndAppData.forEach(async (userProducerIdSetAndAppData) => {
           await this._createReceiveTransport(
-            userProducerIdSet.producerId,
-            userProducerIdSet.userId,
-            device
+            userProducerIdSetAndAppData.producerId,
+            userProducerIdSetAndAppData.userId,
+            device,
+            userProducerIdSetAndAppData.appData
           );
         });
       }
@@ -486,7 +512,8 @@ export class RoomSocketService {
   private _createReceiveTransport = async (
     remoteProducerId: string,
     userId: string,
-    device: Device
+    device: Device,
+    remoteAppData?: Record<string, unknown>
   ) => {
     const receiveTransportWrapper = this._receiveTransportWrappers.find(
       (w) => w.userId === userId
@@ -497,7 +524,8 @@ export class RoomSocketService {
         remoteProducerId,
         receiveTransportWrapper.serverReceiveTransportId,
         userId,
-        device
+        device,
+        remoteAppData
       );
       return;
     }
@@ -548,7 +576,8 @@ export class RoomSocketService {
           remoteProducerId,
           params.id,
           userId,
-          device
+          device,
+          remoteAppData
         );
       }
     );
@@ -559,17 +588,24 @@ export class RoomSocketService {
     remoteProducerId: string,
     serverReceiveTransportId: string,
     userId: string,
-    device: Device
+    device: Device,
+    remoteAppData?: Record<string, unknown> // 테스트 중
   ) => {
     // for consumer, we need to tell the server first
     // to create a consumer based on the rtpCapabilities and consume
     // if the router can consume, it will send back a set of params as below
+    console.log(
+      `consumeRecvTransport의 remoteAppData.isScreenShare: ${
+        remoteAppData ? remoteAppData.isScreenShare : "undefined"
+      }`
+    );
     await this._requireSocket().emit(
       CONSUME,
       {
         rtpCapabilities: device.rtpCapabilities,
         remoteProducerId,
         serverReceiveTransportId: serverReceiveTransportId,
+        remoteAppData,
       },
       async (params: ConsumeParams | ErrorParams) => {
         if ((params as ErrorParams).error !== undefined) {
@@ -583,10 +619,10 @@ export class RoomSocketService {
           return;
         }
 
-        console.log(`Consumer Params ${params}`);
         // then consume with the local consumer transport
         // which creates a consumer
         const consumer = await receiveTransport.consume(params);
+
         this._receiveTransportWrappers = [
           ...this._receiveTransportWrappers,
           {
@@ -601,6 +637,7 @@ export class RoomSocketService {
         this._roomViewModel.onAddedConsumer(
           userId,
           consumer.track,
+          consumer.appData,
           params.kind
         );
 
@@ -615,7 +652,12 @@ export class RoomSocketService {
     if (this._sendTransport == null) {
       return;
     }
-    this._videoProducer = await this._sendTransport.produce({ track });
+    this._videoProducer = await this._sendTransport.produce({
+      track,
+      appData: {
+        isScreenShare: false,
+      },
+    });
   };
 
   public produceAudioTrack = async (track: MediaStreamTrack) => {
@@ -623,6 +665,18 @@ export class RoomSocketService {
       return;
     }
     this._audioProducer = await this._sendTransport.produce({ track });
+  };
+
+  public produceScreenVideoTrack = async (track: MediaStreamTrack) => {
+    if (this._sendTransport == null) {
+      return;
+    }
+    this._screenVideoProducer = await this._sendTransport.produce({
+      track,
+      appData: {
+        isScreenShare: true,
+      },
+    });
   };
 
   public closeVideoProducer = () => {
@@ -661,10 +715,23 @@ export class RoomSocketService {
     await producer.replaceTrack(track);
   };
 
+  public closeScreenVideoProducer = () => {
+    const producer = this._screenVideoProducer;
+    if (producer == null) {
+      return;
+    }
+    producer.close();
+    this._screenVideoProducer = undefined;
+  };
+
   public hideRemoteVideo = (userId: string) => {
     this._receiveTransportWrappers = this._receiveTransportWrappers.filter(
       (wrapper) => {
-        if (wrapper.userId === userId && wrapper.consumer.kind === "video") {
+        if (
+          wrapper.userId === userId &&
+          wrapper.consumer.kind === "video" &&
+          !wrapper.consumer.appData.isScreenShare
+        ) {
           this._requireSocket().emit(HIDE_REMOTE_VIDEO, wrapper.producerId);
           wrapper.consumer.close();
           return false;

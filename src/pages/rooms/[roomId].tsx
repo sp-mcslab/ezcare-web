@@ -120,7 +120,7 @@ const WaitingRoom: NextPage<{
         {/*TODO: 임시로 두는 버튼입니다. 추후에 회원 기능이 구현되면 회원 타입이 환자인 경우만 보여야 합니다.*/}
         {/*231024 : 실제 이지케어텍 api가 아닌 자체 db로 작업 완료. 이후 수정 요망.*/}
         {roomStore.userRole == "patient" || roomStore.userRole == "" ? (
-            <button
+          <button
             disabled={!roomStore.enableJoinButton}
             onClick={() => roomStore.requestToJoinRoom()}
           >
@@ -147,6 +147,8 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     const enabledVideo = roomStore.enabledLocalVideo;
     const enabledAudio = roomStore.enabledLocalAudio;
     const enabledHeadset = roomStore.enabledHeadset;
+    const enabledScreenVideo = roomStore.enabledLocalScreenVideo;
+
     const isCurrentUserMaster = roomStore.isCurrentUserMaster;
     const router = useRouter();
     const [openSettingDialog, setOpenSettingDialog] = React.useState(false);
@@ -235,6 +237,9 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                   remoteAudioStreamByPeerIdEntries={
                     roomStore.remoteAudioStreamByPeerIdEntries
                   }
+                  remoteScreenVideoStreamByPeerIdEntries={
+                    roomStore.remoteScreenVideoStreamByPeerIdEntries
+                  }
                   onKickClick={handleKickButtonClick}
                   onKickToWaitingRoomClick={handleKickToWaitingRoomButtonClick}
                   onBlockClick={handleBlockButtonClick}
@@ -308,6 +313,16 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
         <button onClick={() => roomStore.closeAllVideo()}>
           close-all-Vids(host)
         </button>
+        <button
+          id="screenShareToggle"
+          onClick={() => {
+            enabledScreenVideo
+              ? roomStore.stopShareMyScreen()
+              : roomStore.shareMyScreen();
+          }}
+        >
+          {enabledScreenVideo ? "Stop Screen Share" : "Screen Share"}
+        </button>
         <div>
           <div>방 참여자 목록</div>
           {roomStore.joiningPeerIds.map((joiner) => {
@@ -335,6 +350,7 @@ const RemoteMediaGroup: NextPage<{
   peerStates: PeerState[];
   remoteVideoStreamByPeerIdEntries: [string, MediaStream][];
   remoteAudioStreamByPeerIdEntries: [string, MediaStream][];
+  remoteScreenVideoStreamByPeerIdEntries: [string, MediaStream][];
   onKickClick: (userId: string) => void;
   onKickToWaitingRoomClick: (userId: string) => void;
   onBlockClick: (userId: string) => void;
@@ -345,6 +361,7 @@ const RemoteMediaGroup: NextPage<{
     peerStates,
     remoteVideoStreamByPeerIdEntries,
     remoteAudioStreamByPeerIdEntries,
+    remoteScreenVideoStreamByPeerIdEntries,
     onKickClick,
     onKickToWaitingRoomClick,
     onBlockClick,
@@ -379,9 +396,10 @@ const RemoteMediaGroup: NextPage<{
                   videoStream={mediaStream}
                   roomStore={roomStore}
                 />
+                캠화면입니다!!!!!!!!!!!!!!
                 {peerState.enabledMicrophone ? "" : "마이크 끔!"}
                 {peerState.enabledHeadset ? "" : "헤드셋 끔!"}
-                {isCurrentUserMaster && (
+                {!isCurrentUserMaster && ( // 테스트 후 느낌표 지우기
                   <PopupMenu
                     label={"더보기"}
                     menuItems={masterPopupMenus}
@@ -401,6 +419,25 @@ const RemoteMediaGroup: NextPage<{
                     kick-to-waiting-room(host)
                   </button>
                 </div>
+              </div>
+            );
+          })}
+        </div>
+        <div>
+          {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
+            const [peerId, mediaStream] = entry;
+            const peerState = peerStates.find((p) => p.uid === peerId);
+            if (peerState === undefined) {
+              throw Error("피어 상태가 존재하지 않습니다.");
+            }
+            return (
+              <div key={`${peerId}-screen`}>
+                <ScreenShareVideo
+                  id={`${peerId}-screen`}
+                  videoStream={mediaStream}
+                  roomStore={roomStore}
+                ></ScreenShareVideo>
+                공유화면입니다~!!!!!!!!
               </div>
             );
           })}
@@ -561,6 +598,26 @@ const Video: NextPage<{
       muted
       onClick={() => handleVideoControl({ userId: id })}
     ></video>
+  );
+};
+
+// 공유 화면 컴포넌트
+const ScreenShareVideo: NextPage<{
+  id: string;
+  videoStream: MediaStream | undefined;
+  roomStore: RoomStore;
+}> = ({ id, videoStream, roomStore }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video != null) {
+      video.srcObject = videoStream === undefined ? null : videoStream;
+    }
+  }, [videoStream]);
+
+  return (
+    <video ref={videoRef} id={id} autoPlay className="video" muted></video>
   );
 };
 

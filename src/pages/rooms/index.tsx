@@ -31,7 +31,7 @@ const ListPage: NextPage = observer(() => {
     router.replace("/login");
     return <></>;
   }
-  
+
   return (
     <div className="App">
       <div
@@ -45,9 +45,19 @@ const ListPage: NextPage = observer(() => {
       </div>
       {roomStore.userRole == "nurse" ? (
         <div
-          style={{ display: "inline-block", float: "right", paddingTop: "50px" }}
+          style={{
+            display: "inline-block",
+            float: "right",
+            paddingTop: "50px",
+          }}
         >
-          <Button onClick={() => router.replace("/rooms/create")}>방 생성</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.replace("/rooms/create")}
+          >
+            방 생성
+          </Button>
         </div>
       ) : undefined}
       <div>
@@ -76,7 +86,13 @@ const ListPage: NextPage = observer(() => {
                   </TableCell>
                   {roomStore.userRole == "nurse" ? (
                     <TableCell>
-                      <Button onClick={() => roomStore.deleteRoom(room.id)}>삭제</Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => roomStore.deleteRoom(room.id)}
+                      >
+                        삭제
+                      </Button>
                     </TableCell>
                   ) : undefined}
                 </TableRow>
@@ -85,8 +101,12 @@ const ListPage: NextPage = observer(() => {
           </Table>
         </TableContainer>
       </div>
-      <div>
-        <Button onClick={() => router.replace("/auth/logout")}>로그아웃</Button>
+      <div style={{ paddingTop: "25px" }}>
+        <Button
+          onClick={() => router.replace("/auth/logout")}
+        >
+          로그아웃
+        </Button>
       </div>
     </div>
   );

@@ -10,12 +10,12 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
 } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from "dayjs";
 
 const ListPage: NextPage = observer(() => {
   const [roomStore] = useState(new RoomStore());
@@ -38,7 +38,7 @@ const ListPage: NextPage = observer(() => {
       role: "환자",
     },
   ];
-  
+
   useEffect(() => {
     (async () => {
       await roomStore.getRoleWithSessionToken();
@@ -48,7 +48,7 @@ const ListPage: NextPage = observer(() => {
       }
     })();
   }, [roomStore]);
-  
+
   return (
     <div className="App">
       <div style={{ fontSize: "30px", paddingTop: "50px" }}>방 생성</div>
@@ -59,6 +59,7 @@ const ListPage: NextPage = observer(() => {
           <input
             placeholder="방 제목"
             value={roomStore.createdRoomName}
+            style={{ padding: "8px" }}
             onChange={(e) => roomStore.updateCreatedRoomName(e.target.value)}
           />
         </div>
@@ -69,7 +70,7 @@ const ListPage: NextPage = observer(() => {
               showDaysOutsideCurrentMonth
               defaultValue={dayjs()}
               onChange={(e) => {
-                roomStore.updateCreatedAt(e)
+                roomStore.updateCreatedAt(e);
               }}
             />
           </LocalizationProvider>
@@ -89,17 +90,22 @@ const ListPage: NextPage = observer(() => {
               {rows.map((row, i) => (
                 <TableRow key={row.id}>
                   <TableCell>
-
-                  <Button
-                    disabled={row.role=="환자"}
-                    onClick={() => roomStore.pushHostUserList(row.id)}>
-                    등록
-                  </Button>
-                  <Button
-                    disabled={row.role=="환자"}
-                    onClick={() => roomStore.popHostUserList(row.id)}>
-                    해제
-                  </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      disabled={row.role == "환자"}
+                      onClick={() => roomStore.pushHostUserList(row.id)}
+                    >
+                      등록
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      disabled={row.role == "환자"}
+                      onClick={() => roomStore.popHostUserList(row.id)}
+                    >
+                      해제
+                    </Button>
                   </TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.role}</TableCell>
@@ -112,11 +118,24 @@ const ListPage: NextPage = observer(() => {
       <div style={{ paddingTop: "30px" }}>
         <input
           placeholder="환자코드 혹은 사번"
+          style={{ padding: "8px" }}
           value={roomStore.inviteUserId}
           onChange={(e) => roomStore.UpdateInviteUserId(e.target.value)}
         />
-        <Button onClick={() => roomStore.pushInviteUserList()}>초대</Button>
-        <Button onClick={() => roomStore.postRoom()}>방 생성</Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => roomStore.pushInviteUserList()}
+        >
+          초대
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => roomStore.postRoom()}
+        >
+          방 생성
+        </Button>
       </div>
     </div>
   );

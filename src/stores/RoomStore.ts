@@ -10,13 +10,11 @@ import { MediaUtil } from "@/utils/MediaUtil";
 import { WaitingRoomData } from "@/models/room/WaitingRoomData";
 import {
   ApprovedJoiningRoomEvent,
-  CancelJoinRequestEvent,
   OtherPeerExitedRoomEvent,
   OtherPeerJoinedRoomEvent,
   RejectedJoiningRoomEvent,
   WaitingRoomEvent,
 } from "@/models/room/WaitingRoomEvent";
-import { RoomJoiner } from "@/models/room/RoomJoiner";
 import {
   ALREADY_JOINED_ROOM_MESSAGE,
   BLACKLIST_CANNOT_JOIN_ROOM_MESSAGE,
@@ -27,7 +25,6 @@ import { PeerState } from "@/models/room/PeerState";
 import { BlockedUser } from "@/models/room/BlockedUser";
 import { uuidv4 } from "@firebase/util";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
-import { UserDto } from "@/dto/UserDto";
 import { RoomDto } from "@/dto/RoomDto";
 import userService, { UserService } from "@/service/userService";
 
@@ -871,7 +868,7 @@ export class RoomStore implements RoomViewModel {
 
   // 방 생성
   private _createdRoomName: string = "";
-  private _createdAt: Date = new Date();
+  private _createdAt: number = 0;
   private _inviteUserId: string = "";
   private _inviteUserList: string[] = [];
   private _hostUserList: string[] = [];
@@ -884,12 +881,12 @@ export class RoomStore implements RoomViewModel {
     this._createdRoomName = data;
   };
 
-  public get createdAt(): Date {
+  public get createdAt(): number {
     return this._createdAt;
   }
 
   public updateCreatedAt = (data: any) => {
-    this._createdAt = new Date(data);
+    this._createdAt = new Date(data).getTime() - new Date().getTime();
   };
   public get inviteUserId(): string {
     return this._inviteUserId;
@@ -1023,7 +1020,10 @@ export class RoomStore implements RoomViewModel {
     if (sessionToken == null) {
       return;
     }
-    const validResult = await this._userService.findUserIsHost(sessionToken, roomId);
+    const validResult = await this._userService.findUserIsHost(
+      sessionToken,
+      roomId
+    );
     this._isHost = validResult;
   };
 }

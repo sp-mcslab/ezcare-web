@@ -24,7 +24,8 @@ export const createRoom = async (
   createdAt: Date,
   openAt: Date,
   invitedUsers: string[],
-  hostedUsers: string[]
+  hostedUsers: string[],
+  flag: boolean
 ): Promise<RoomDto> => {
   // 생성할 방의 고유 아이디 (기본키 id)
   const roomUniqueId = uuid();
@@ -41,6 +42,7 @@ export const createRoom = async (
       createdat: createdAt,
       openat: openAt,
       deletedat: null,
+      flag: flag,
       Hospital: {
         connect: {
           code_tenantcode: {
@@ -76,7 +78,7 @@ export const deleteRoomReq = async (roomId: string) => {
       where: {
         AND: [{ id: roomId }, { deletedat: null }],
       },
-      data: { deletedat: new Date() },
+      data: { deletedat: new Date(), flag: false },
     });
     return roomId;
   } catch (e) {
@@ -162,7 +164,7 @@ export const updateAllCallRecordOfRoom = async (
       AND: [{ roomid: roomId }, { exitat: null }],
     },
     data: {
-      exitat: newExitAt, // Update the exitat field with the new value
+      exitat: newExitAt,
     },
   });
 
@@ -182,6 +184,25 @@ export const findUserHostByRoomId = async (
     console.log(e);
     return null;
   }
+};
+
+export const checkAndUpdateFlag = async (): Promise<boolean | null> => {
+  const presentTime = new Date(); // 비교할 현재 시간
+  console.log(presentTime + " : checking Flag per sec");
+  const result = await client.room.updateMany({
+    where: {
+      AND: [
+        { deletedat: null },
+        { flag: false },
+        { openat: { lte: presentTime } },
+      ],
+    },
+    data: {
+      flag: true,
+    },
+  });
+
+  return !!result;
 };
 
 // export const findRoomById = async (roomId: string): Promise<Room | null> => {

@@ -8,19 +8,28 @@ import {
 import { getIdFromToken } from "@/utils/JwtUtil";
 import { findRooms } from "@/repository/room.repository";
 import { findUserById } from "@/repository/user.repository";
+import roomService from "@/service/room.service";
+import schedule from "node-schedule";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
 export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   // 진료실 생성
+  // TODO - openAt을 현재로부터 몇 초 뒤 로 계산하여 저장하기.
   const { name, openAt, invitedUserIds, hostUserIds } = req.body;
 
   const creatorId = getIdFromToken(
     req.headers["x-ezcare-session-token"] as string,
     secretKey
   ); // 방 생성자의 id get.
-  const currentTime = new Date();
 
+  let flag = false;
+  if (openAt == 0) flag = true;
+
+  const currentTime = new Date();
+  const openTime = new Date((currentTime.getTime() + openAt) as number);
+
+  console.log("current Time : " + currentTime + "/ open Time : " + openTime);
   //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
   if (creatorId == null) {
     res.status(401).end();
@@ -28,7 +37,7 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   //openAt이 createdAt보다 과거인 경우
-  if (new Date(openAt) < currentTime) {
+  if (openAt < 0) {
     res.status(404);
     res.json({ message: "openAt이 현재보다 과거일 수 없습니다." });
     return;
@@ -39,9 +48,10 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
       creatorId,
       name,
       currentTime,
-      openAt,
+      openTime,
       invitedUserIds,
-      hostUserIds
+      hostUserIds,
+      flag
     );
 
     res.status(201);
@@ -98,6 +108,11 @@ export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
 
 export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
+    const schedule = require("node-schedule");
+    const job = schedule.scheduleJob("1 * * * * *", function () {
+      roomService.checkAndUpdateFlag();
+    });
+
     const userId = getIdFromToken(
       req.headers["x-ezcare-session-token"] as string,
       secretKey
@@ -131,7 +146,10 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export const getHostById = async (req: NextApiRequest, res: NextApiResponse) => {
+export const getHostById = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
   try {
     const userId = getIdFromToken(
       req.headers["x-ezcare-session-token"] as string,
@@ -162,7 +180,6 @@ export const getHostById = async (req: NextApiRequest, res: NextApiResponse) => 
     res.status(404);
     res.json({ message: "호스트 권한이 조회되지 않았습니다." });
     return;
-
   } catch (e) {
     res.status(404);
     res.json({ message: "호스트 권한이 조회되지 않았습니다." });

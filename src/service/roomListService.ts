@@ -27,11 +27,11 @@ export class RoomListService {
   }
 
   public async postRoomList(
-  token: string,
-  name: string,
-	openAt: Date,
-	invitedUserIds: string[], // 초대된 회원의 ID 목록
-	hostUserIds : string[]
+    token: string,
+    name: string,
+    openAt: number,
+    invitedUserIds: string[], // 초대된 회원의 ID 목록
+    hostUserIds: string[]
   ): Promise<Result<RoomDto[]>> {
     try {
       const response = await fetchAbsolute(`api/rooms`, {
@@ -56,7 +56,7 @@ export class RoomListService {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}`, {
         method: "DELETE",
-        body: JSON.stringify({roomId}),
+        body: JSON.stringify({ roomId }),
         headers: HEADER,
       });
       if (response.ok) {
@@ -68,7 +68,6 @@ export class RoomListService {
       return Result.createErrorUsingException(e);
     }
   }
-
 }
 
 const roomListService = new RoomListService();

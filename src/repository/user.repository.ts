@@ -14,7 +14,9 @@ export const findUserById = async (id: string): Promise<User | null> => {
   }
 };
 
-export const findUserRoleById = async (id: string): Promise<{ role: UserRole } | null> => {
+export const findUserRoleById = async (
+  id: string
+): Promise<{ role: UserRole } | null> => {
   try {
     return await prisma.user.findUnique({
       where: {

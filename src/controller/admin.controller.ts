@@ -76,4 +76,47 @@ export const postCallLog = async (
   }
 };
 
-//TODO: 입장/퇴장 시나리오에 CallRecord 삽입 로직 넣기 (개인별)
+export const getTotalCallTime = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const rooms = await findAllRooms();
+
+    if (!rooms || rooms.length === 0) {
+      res.status(400).json({ message: "No rooms found" });
+      return;
+    }
+
+    let totalCallTime = 0;
+    rooms.map(async (room) => {
+      if (room.createdat == null) {
+        console.log("error:400 : 잘못된 데이터 형식입니다.");
+        res.status(400).json({ message: "Bad Request" });
+        return;
+      }
+
+      if (room.deletedat == null) {
+        const presentTime = new Date();
+        totalCallTime =
+          totalCallTime + (presentTime.getTime() - room.openat.getTime());
+      } else
+        totalCallTime =
+          totalCallTime + (room.deletedat.getTime() - room.openat.getTime());
+    });
+
+    res.status(200).json({
+      message: "전체 진료시간을 조회했습니다. (밀리초)",
+      data: totalCallTime,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};

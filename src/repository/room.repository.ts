@@ -186,9 +186,8 @@ export const findUserHostByRoomId = async (
   }
 };
 
-export const checkAndUpdateFlag = async (): Promise<boolean | null> => {
+export const checkRoomOpened = async (): Promise<boolean | null> => {
   const presentTime = new Date(); // 비교할 현재 시간
-  console.log(presentTime + " : checking Flag per sec");
   const result = await client.room.updateMany({
     where: {
       AND: [
@@ -199,6 +198,24 @@ export const checkAndUpdateFlag = async (): Promise<boolean | null> => {
     },
     data: {
       flag: true,
+    },
+  });
+
+  return !!result;
+};
+
+export const checkRoomClosed = async (): Promise<boolean | null> => {
+  const presentTime = new Date(); // 비교할 현재 시간
+  const result = await client.room.updateMany({
+    where: {
+      AND: [
+        { NOT: { deletedat: null } },
+        { flag: true },
+        { deletedat: { lte: presentTime } },
+      ],
+    },
+    data: {
+      flag: false,
     },
   });
 

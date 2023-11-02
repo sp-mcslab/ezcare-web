@@ -4,7 +4,7 @@ import { RoomOverview } from "@/models/room/RoomOverview";
 import { Room } from "@/stores/RoomListStore";
 import { RoomDeleteRequestBody } from "@/models/room/RoomDeleteRequestBody";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
-import { checkAndUpdateFlag } from "@/repository/room.repository";
+import { checkRoomClosed, checkRoomOpened } from "@/repository/room.repository";
 
 const HEADER = {
   "Content-Type": "application/json",
@@ -85,7 +85,8 @@ export class RoomService {
 
   public async checkAndUpdateFlag() {
     try {
-      checkAndUpdateFlag();
+      checkRoomOpened();
+      checkRoomClosed();
     } catch (e) {
       console.log(e);
     }

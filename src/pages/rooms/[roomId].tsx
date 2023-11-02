@@ -129,7 +129,7 @@ const WaitingRoom: NextPage<{
           >
             입장요청
           </button>
-        ) }
+        )}
       </div>
       <div>{roomStore.waitingRoomMessage}</div>
 
@@ -315,7 +315,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
           {enabledHeadset ? "Mute Headset" : "Unmute Headset"}
         </button>
         {roomStore.isHost && (
-          <div style={{ display: "inline-block"}}>
+          <div style={{ display: "inline-block" }}>
             <button onClick={() => roomStore.muteAllAudio()}>
               mute-all(host)
             </button>
@@ -458,7 +458,14 @@ const RemoteMediaGroup: NextPage<{
         <div>
           {remoteAudioStreamByPeerIdEntries.map((entry) => {
             const [peerId, mediaStream] = entry;
-            return <Audio key={peerId} id={peerId} audioStream={mediaStream} />;
+            return (
+              <Audio
+                key={peerId}
+                id={peerId}
+                audioStream={mediaStream}
+                roomStore={roomStore}
+              />
+            );
           })}
         </div>
       </>
@@ -474,6 +481,7 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
         await initDevice();
         const videoLabel = roomStore.localVideoStream?.getTracks()[0].label;
         const audioLabel = roomStore.localAudioStream?.getTracks()[0].label;
+
         // 트랙에서 가져온 id 값이 실제 장치 id와 다르다. 하지만 label은 똑같기 때문에 label로 id를 찾는다.
         roomStore.setCurrentVideoDeviceId(
           roomStore.videoDeviceList.find((video) => video.label === videoLabel)
@@ -483,6 +491,7 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
           roomStore.audioDeviceList.find((audio) => audio.label === audioLabel)
             ?.deviceId
         );
+        // 스피커는 initDevice 에서 id를 추가함
       })();
     }, []);
 
@@ -499,11 +508,20 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
         (device) => device.kind === "audioinput"
       );
       roomStore.setAudioDeviceList(audioInput);
-      // TODO(대현) 스피커 구현
-      // const audioOutput = devices.filter(
-      //   (device) => device.kind === "audiooutput"
-      // );
-      // setAudioOutputDeviceList(audioOutput);
+      // 사용가능한 스피커 목록 불러오기
+      const audioOutput = devices.filter(
+        (device) => device.kind === "audiooutput"
+      );
+      roomStore.setSpeakerDeviceList(audioOutput);
+      // 사용할 스피커 deviceId 상태 저장
+      const defaultDeviceId = audioOutput.find(
+        (speaker) => speaker.label === "default"
+      )?.deviceId;
+      // TODO: 이 부분 [0]이 아니라 default 장치를 세팅할 수 있는지 확인
+      if (defaultDeviceId !== undefined) {
+        console.log(`[initDevice]: defaultDeviceId: ${defaultDeviceId}`);
+        roomStore.setCurrentSpeakerDeviceId(defaultDeviceId);
+      }
     };
 
     // 장치가 추가되거나 제거되었을 때 발생하는 이벤트
@@ -511,6 +529,7 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
     // TODO(대현) 현재 사용 가능한 장치 중 첫 번째 장치로 대치함. -> 다른 방법 있는지 생각.
     navigator.mediaDevices.ondevicechange = async function () {
       await initDevice();
+      // 조건문: 각 device 리스트에 현재 deviceId 와 일치하는 device 가 없다면 ...
       if (
         !roomStore.videoDeviceList.some(
           (device) => device.deviceId === roomStore.currentVideoDeviceId
@@ -531,6 +550,16 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
           roomStore.audioDeviceList[0].deviceId
         );
       }
+      if (
+        !roomStore.speakerDeviceList.some(
+          (device) => device.deviceId === roomStore.currentSpeakerDeviceId
+        )
+      ) {
+        await roomStore.changeSpeaker(roomStore.speakerDeviceList[0].deviceId);
+        roomStore.setCurrentAudioDeviceId(
+          roomStore.audioDeviceList[0].deviceId
+        );
+      }
     };
 
     const handleChangeCamera = async (
@@ -544,6 +573,13 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
     ) => {
       roomStore.setCurrentAudioDeviceId(e.target.value);
       await roomStore.changeAudio(e.target.value);
+    };
+    const handleChangeSpeaker = async (
+      e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+      console.log(`selected device id: ${e.target.value}`);
+      roomStore.setCurrentSpeakerDeviceId(e.target.value);
+      await roomStore.changeSpeaker(e.target.value);
     };
 
     return (
@@ -568,12 +604,13 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
             </option>
           ))}
         </select>
-        {/*  TODO 오디오 출력장치 바꾸는 거 구현*/}
-        {/*<select>*/}
-        {/*  {audioOutputDevicesList.map((device) => (*/}
-        {/*    <option value={device.deviceId}>{device.label}</option>*/}
-        {/*  ))}*/}
-        {/*</select>*/}
+        <select onChange={(e) => handleChangeSpeaker(e)}>
+          {roomStore.speakerDeviceList.map((device, index) => (
+            <option key={index} value={device.deviceId}>
+              {device.label}
+            </option>
+          ))}
+        </select>
       </div>
     );
   }
@@ -637,8 +674,18 @@ const ScreenShareVideo: NextPage<{
 const Audio: NextPage<{
   id: string;
   audioStream: MediaStream | undefined;
-}> = ({ id, audioStream }) => {
-  const audioRef = useRef<HTMLVideoElement>(null);
+  roomStore: RoomStore;
+}> = ({ id, audioStream, roomStore }) => {
+  const audioRef = useRef<HTMLMediaElement>(null);
+
+  // 컴포넌트가 마운트 될 때만 실행
+  useEffect(() => {
+    roomStore.setAudioComponentRefs(audioRef);
+    return () => {
+      // umount 된 audio component 삭제
+      roomStore.deleteAudioComponentRef(id);
+    };
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;

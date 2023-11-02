@@ -292,11 +292,6 @@ export class RoomSocketService {
         userId: string;
         remoteAppData?: Record<string, unknown>;
       }) => {
-        console.log(
-          `NEW_PRODUCER remoteAppData.isScreenShare: ${
-            remoteAppData ? remoteAppData.isScreenShare : "undefined"
-          }`
-        );
         await this._createReceiveTransport(
           producerId,
           userId,
@@ -594,11 +589,6 @@ export class RoomSocketService {
     // for consumer, we need to tell the server first
     // to create a consumer based on the rtpCapabilities and consume
     // if the router can consume, it will send back a set of params as below
-    console.log(
-      `consumeRecvTransport의 remoteAppData.isScreenShare: ${
-        remoteAppData ? remoteAppData.isScreenShare : "undefined"
-      }`
-    );
     await this._requireSocket().emit(
       CONSUME,
       {

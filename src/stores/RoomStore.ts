@@ -27,6 +27,7 @@ import { uuidv4 } from "@firebase/util";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { RoomDto } from "@/dto/RoomDto";
 import userService, { UserService } from "@/service/userService";
+import { RefObject } from "react";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -102,13 +103,19 @@ export class RoomStore implements RoomViewModel {
   private _kickedToWaitingRoom: boolean = false;
   private _videoDeviceList: MediaDeviceInfo[] = [];
   private _audioDeviceList: MediaDeviceInfo[] = [];
+  private _speakerDeviceList: MediaDeviceInfo[] = [];
   private _currentVideoDeviceId: string | undefined = undefined;
   private _currentAudioDeviceId: string | undefined = undefined;
+  private _currentSpeakerDeviceId: string | undefined = undefined;
 
   /**
    * 회원에게 알림을 보내기위한 메시지이다.
    */
   private _userMessage?: string = undefined;
+
+  // <Audio> 마다 audioOutput을 연결하기 위한 Ref들
+  private _audioComponentRefs: Map<string, React.RefObject<HTMLMediaElement>> =
+    new Map();
 
   constructor(
     private _mediaUtil: MediaUtil = new MediaUtil(),
@@ -128,12 +135,20 @@ export class RoomStore implements RoomViewModel {
     return this._audioDeviceList;
   }
 
+  public get speakerDeviceList() {
+    return this._speakerDeviceList;
+  }
+
   public get currentVideoDeviceId() {
     return this._currentVideoDeviceId;
   }
 
   public get currentAudioDeviceId() {
     return this._currentAudioDeviceId;
+  }
+
+  public get currentSpeakerDeviceId() {
+    return this._currentSpeakerDeviceId;
   }
 
   public get state(): RoomState {
@@ -543,6 +558,23 @@ export class RoomStore implements RoomViewModel {
     });
   };
 
+  public changeSpeaker = async (deviceId: string) => {
+    /*
+     * HTMLMediaElement.setSinkId() 설명:
+     * 1. typescript에서 지원하지 않아서 type 무시하였음
+     * 참고: https://stackoverflow.com/questions/58222222/setsinkid-does-not-exist-on-htmlmediaelement
+     * 2. Desktop 의 Chrome, FireFox, Edge, Opera 외 지원하지 않음
+     */
+    for (let [_, ref] of this._audioComponentRefs) {
+      if (ref.current) {
+        await (ref.current as any)
+          .setSinkId(deviceId)
+          .then(() => console.log(`${deviceId} is set to ${ref.current?.id}`))
+          .catch((error: any) => console.error(`setSinkId Error: ${error}`));
+      }
+    }
+  };
+
   public showVideo = async () => {
     if (this._localVideoStream !== undefined) {
       throw new InvalidStateError(
@@ -796,6 +828,9 @@ export class RoomStore implements RoomViewModel {
   public setAudioDeviceList = (audioDeviceList: MediaDeviceInfo[]) => {
     this._audioDeviceList = audioDeviceList;
   };
+  public setSpeakerDeviceList = (speakerDeviceList: MediaDeviceInfo[]) => {
+    this._speakerDeviceList = speakerDeviceList;
+  };
 
   public setCurrentVideoDeviceId = (id: string | undefined) => {
     this._currentVideoDeviceId = id;
@@ -803,6 +838,38 @@ export class RoomStore implements RoomViewModel {
   public setCurrentAudioDeviceId = (id: string | undefined) => {
     this._currentAudioDeviceId = id;
   };
+  public setCurrentSpeakerDeviceId = (id: string | undefined) => {
+    this._currentSpeakerDeviceId = id;
+  };
+
+  public setAudioComponentRefs = (ref: React.RefObject<HTMLMediaElement>) => {
+    if (ref.current) {
+      const id = ref.current.id;
+      if (!this._audioComponentRefs.has(id)) {
+        this._audioComponentRefs.set(id, ref);
+        console.log(`AudioRef 추가 성공: ${id}`);
+      } else {
+        console.log(`AudioRef 이미 있음`);
+      }
+    } else {
+      console.log(`ref.current 가 존재하지 않음`);
+    }
+  };
+
+  public deleteAudioComponentRef = (id: string) => {
+    this._audioComponentRefs.delete(id);
+    let isDeleted = true;
+    for (let [refId, _] of this._audioComponentRefs) {
+      if (refId === id) {
+        isDeleted = false;
+        console.log(`unmount 된 Audio ref가 사라지지 않았습니다 : ${refId}`);
+      }
+    }
+    if (isDeleted) {
+      console.log(`Audio ref가 성공적으로 삭제되었습니다 : ${id}`);
+    }
+  };
+
   public getEnableHideRemoteVideoByUserId = (userId: string) => {
     return this._remoteVideoSwitchByPeerId.get(userId);
   };

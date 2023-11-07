@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Button, createTheme, ThemeProvider } from "@mui/material";
 
 interface PopupMenuProps {
   label: string;
@@ -6,6 +7,13 @@ interface PopupMenuProps {
   onMenuItemClick: (item: string) => void;
 }
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#616161",
+    },
+  },
+});
 /**
  * 임시 팝업 메뉴이다.
  * @param label 팝업 메뉴 버튼의 레이블 텍스트이다.
@@ -27,15 +35,28 @@ const PopupMenu: React.FC<PopupMenuProps> = ({
 
   return (
     <div>
-      <button onClick={() => setIsOpen(!isOpen)}>{label}</button>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {label}
+      </Button>
       {isOpen && (
-        <ul>
-          {menuItems.map((item) => (
-            <li key={item} onClick={() => handleClick(item)}>
-              {item}
-            </li>
-          ))}
-        </ul>
+        <ThemeProvider theme={theme}>
+          <div>
+            {menuItems.map((item) => (
+              <Button
+                variant="contained"
+                color="primary"
+                key={item}
+                onClick={() => handleClick(item)}
+              >
+                {item}
+              </Button>
+            ))}
+          </div>
+        </ThemeProvider>
       )}
     </div>
   );

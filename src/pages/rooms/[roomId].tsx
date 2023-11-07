@@ -8,12 +8,16 @@ import { RoomState } from "@/models/room/RoomState";
 import { PeerState } from "@/models/room/PeerState";
 import PopupMenu from "@/components/PopupMenu";
 import { getEnumKeyByEnumValue } from "@/utils/EnumUtil";
-import Button from "@mui/material/Button";
 import { RoomSettingDialog } from "@/components/RoomSettingDialog";
+import { Button, createTheme, ThemeProvider } from "@mui/material";
+import styles from "../../styles/room.module.scss";
 
 enum MasterPopupMenus {
   Kick = "강퇴",
   Block = "차단",
+  Mute = "마이크 뮤트",
+  Close = "비디오 끄기",
+  KickWait = "대기실로 강퇴",
 }
 
 const RoomScaffold: NextPage = observer(() => {
@@ -52,12 +56,30 @@ const RoomScaffold: NextPage = observer(() => {
   }
 });
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#616161",
+    },
+  },
+});
+
 const NotExistsPage: NextPage = () => {
   const router = useRouter();
   return (
     <>
-      존재하지 않는 방입니다.
-      <Button onClick={() => router.replace("/")}>홈으로</Button>
+      <div style={{ textAlign: "center", paddingTop: "50px" }}>
+        <div>존재하지 않는 방입니다.</div>
+        <div style={{ paddingTop: "50px" }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.replace("/")}
+          >
+            홈으로
+          </Button>
+        </div>
+      </div>
     </>
   );
 };
@@ -67,79 +89,99 @@ const WaitingRoom: NextPage<{
 }> = observer(({ roomStore }) => {
   return (
     <>
-      <Video
-        id="localVideo"
-        videoStream={roomStore.localVideoStream}
-        roomStore={roomStore}
-      />
-      <button
-        id="videoToggle"
-        onClick={() =>
-          roomStore.enabledLocalVideo
-            ? roomStore.hideVideo()
-            : roomStore.showVideo()
-        }
-      >
-        {roomStore.enabledLocalVideo ? "Hide Video" : "Show Video"}
-      </button>
-      <button
-        id="audioToggle"
-        onClick={() =>
-          roomStore.enabledLocalAudio
-            ? roomStore.muteMicrophone()
-            : roomStore.unmuteMicrophone()
-        }
-      >
-        {roomStore.enabledLocalAudio ? "Mute Audio" : "Unmute Audio"}
-      </button>
-      <button
-        id="headphoneToggle"
-        onClick={() =>
-          roomStore.enabledHeadset
-            ? roomStore.muteHeadset()
-            : roomStore.unmuteHeadset()
-        }
-      >
-        {roomStore.enabledHeadset ? "Mute Headset" : "Unmute Headset"}
-      </button>
-      <div style={{ padding: "16px" }}>
-        {roomStore.failedToJoinMessage !== undefined ? (
-          <div>{roomStore.failedToJoinMessage}</div>
-        ) : undefined}
-        {roomStore.hasPassword ? (
-          <input
-            type="password"
-            placeholder="비밀번호 입력..."
-            value={roomStore.passwordInput}
-            onChange={(e) => roomStore.updatePasswordInput(e.target.value)}
-          />
-        ) : undefined}
-        <button
-          disabled={!roomStore.enableJoinButton}
-          onClick={() => roomStore.joinRoom()}
-        >
-          입장
-        </button>
-        {/*TODO: 임시로 두는 버튼입니다. 추후에 회원 기능이 구현되면 회원 타입이 환자인 경우만 보여야 합니다.*/}
-        {/*231024 : 실제 이지케어텍 api가 아닌 자체 db로 작업 완료. 이후 수정 요망.*/}
-        {(roomStore.userRole == "patient" || roomStore.userRole == "") && (
-          <button
-            disabled={!roomStore.enableJoinButton}
-            onClick={() => roomStore.requestToJoinRoom()}
-          >
-            입장요청
-          </button>
-        )}
-      </div>
-      <div>{roomStore.waitingRoomMessage}</div>
-
-      {/* TODO: 회원 기능 구현되면 삭제하기. 임시용 회원 ID 입력 필드임. */}
-      <div>
-        <div>회원 ID:</div>
-        <input
-          value={roomStore.uid}
-          onChange={(e) => roomStore.updateUserId(e.target.value)}
+      <div style={{ textAlign: "center", paddingTop: "50px" }}>
+        <Video
+          id="localVideo"
+          videoStream={roomStore.localVideoStream}
+          roomStore={roomStore}
         />
+        <ThemeProvider theme={theme}>
+          <div>
+            <Button
+              id="videoToggle"
+              variant="contained"
+              color="primary"
+              style={{ margin: "8px" }}
+              onClick={() =>
+                roomStore.enabledLocalVideo
+                  ? roomStore.hideVideo()
+                  : roomStore.showVideo()
+              }
+            >
+              {roomStore.enabledLocalVideo ? "Hide Video" : "Show Video"}
+            </Button>
+            <Button
+              id="audioToggle"
+              variant="contained"
+              color="primary"
+              style={{ margin: "8px" }}
+              onClick={() =>
+                roomStore.enabledLocalAudio
+                  ? roomStore.muteMicrophone()
+                  : roomStore.unmuteMicrophone()
+              }
+            >
+              {roomStore.enabledLocalAudio ? "Mute Audio" : "Unmute Audio"}
+            </Button>
+            <Button
+              id="headphoneToggle"
+              variant="contained"
+              color="primary"
+              style={{ margin: "8px" }}
+              onClick={() =>
+                roomStore.enabledHeadset
+                  ? roomStore.muteHeadset()
+                  : roomStore.unmuteHeadset()
+              }
+            >
+              {roomStore.enabledHeadset ? "Mute Headset" : "Unmute Headset"}
+            </Button>
+          </div>
+        </ThemeProvider>
+        <div style={{ padding: "16px" }}>
+          {roomStore.failedToJoinMessage !== undefined ? (
+            <div>{roomStore.failedToJoinMessage}</div>
+          ) : undefined}
+          {roomStore.hasPassword ? (
+            <input
+              type="password"
+              placeholder="비밀번호 입력..."
+              value={roomStore.passwordInput}
+              onChange={(e) => roomStore.updatePasswordInput(e.target.value)}
+            />
+          ) : undefined}
+
+          {roomStore.userRole == "nurse" || roomStore.userRole == "doctor" ? (
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!roomStore.enableJoinButton}
+              onClick={() => roomStore.joinRoom()}
+            >
+              입장
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!roomStore.enableJoinButton}
+              onClick={() => roomStore.requestToJoinRoom()}
+            >
+              입장요청
+            </Button>
+          )}
+          {/*TODO: 임시로 두는 버튼입니다. 추후에 회원 기능이 구현되면 회원 타입이 환자인 경우만 보여야 합니다.*/}
+          {/*231024 : 실제 이지케어텍 api가 아닌 자체 db로 작업 완료. 이후 수정 요망.*/}
+        </div>
+        <div>{roomStore.waitingRoomMessage}</div>
+        {/* TODO: 회원 기능 구현되면 삭제하기. 임시용 회원 ID 입력 필드임. */}
+        <div>
+          <div>회원 ID:</div>
+          <input
+            value={roomStore.uid}
+            onChange={(e) => roomStore.updateUserId(e.target.value)}
+          />
+        </div>
       </div>
     </>
   );
@@ -155,6 +197,8 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     const isCurrentUserMaster = roomStore.isCurrentUserMaster;
     const router = useRouter();
     const [openSettingDialog, setOpenSettingDialog] = React.useState(false);
+
+    const viewMode = roomStore.viewMode;
 
     useEffect(() => {
       if (roomStore.userMessage != null) {
@@ -209,148 +253,199 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     };
 
     return (
-      <div>
+      <div className={styles.main}>
         <RoomSettingDialog
           open={openSettingDialog}
           onClose={() => setOpenSettingDialog(false)}
           onUnblockedUser={(user) => roomStore.unblockUser(user.id)}
           blacklist={roomStore.blacklist}
         />
-
-        <table className="mainTable">
-          <tbody>
-            <tr>
-              <td className="localColumn">
-                <Video
-                  id="localVideo"
-                  videoStream={roomStore.localVideoStream}
-                  roomStore={roomStore}
-                />
-                {!enabledHeadset ? "헤드셋 꺼짐!" : ""}
-                {!enabledAudio ? "마이크 꺼짐!" : ""}
-              </td>
-              <td className="remoteColumn">
-                <RemoteMediaGroup
-                  roomStore={roomStore}
-                  isCurrentUserMaster={isCurrentUserMaster}
-                  peerStates={roomStore.peerStates}
-                  remoteVideoStreamByPeerIdEntries={
-                    roomStore.remoteVideoStreamByPeerIdEntries
-                  }
-                  remoteAudioStreamByPeerIdEntries={
-                    roomStore.remoteAudioStreamByPeerIdEntries
-                  }
-                  remoteScreenVideoStreamByPeerIdEntries={
-                    roomStore.remoteScreenVideoStreamByPeerIdEntries
-                  }
-                  onKickClick={handleKickButtonClick}
-                  onKickToWaitingRoomClick={handleKickToWaitingRoomButtonClick}
-                  onBlockClick={handleBlockButtonClick}
-                />
-              </td>
-              <td className="chatMessageColumn">
-                <ChatMessage messages={roomStore.chatMessages} />
-                <input
-                  value={roomStore.chatInput}
-                  onChange={(e) => roomStore.updateChatInput(e.target.value)}
-                />
-                <button
-                  disabled={!roomStore.enabledChatSendButton}
-                  onClick={() => roomStore.sendChat()}
-                >
-                  전송
-                </button>
-              </td>
-              {/* TODO: 호스트인 경우에만 아래의 입장 대기목록 보이도록 수정 */}
-              {roomStore.isHost && (
-                <td className="awaitingList">
-                  <div>입장 대기자 목록</div>
-                  <br />
-                  {roomStore.awaitingPeerIds.map((userId) => {
-                    return (
-                      <>
-                        {userId}
-                        <button
-                          onClick={() => roomStore.approveJoiningRoom(userId)}
-                        >
-                          승인
-                        </button>
-                        <button
-                          onClick={() => roomStore.rejectJoiningRoom(userId)}
-                        >
-                          거부
-                        </button>
-                      </>
-                    );
-                  })}
-                </td>
-              )}
-            </tr>
-          </tbody>
-        </table>
-        <button
-          id="videoToggle"
-          onClick={() =>
-            enabledVideo ? roomStore.hideVideo() : roomStore.showVideo()
-          }
-        >
-          {enabledVideo ? "Hide Video" : "Show Video"}
-        </button>
-        <button
-          id="microphoneToggle"
-          onClick={() =>
-            enabledAudio
-              ? roomStore.muteMicrophone()
-              : roomStore.unmuteMicrophone()
-          }
-        >
-          {enabledAudio ? "Mute Mic" : "Unmute Mic"}
-        </button>
-        <button
-          id="headphoneToggle"
-          onClick={() =>
-            enabledHeadset ? roomStore.muteHeadset() : roomStore.unmuteHeadset()
-          }
-        >
-          {enabledHeadset ? "Mute Headset" : "Unmute Headset"}
-        </button>
-        {roomStore.isHost && (
-          <div style={{ display: "inline-block" }}>
-            <button onClick={() => roomStore.muteAllAudio()}>
-              mute-all(host)
-            </button>
-            <button onClick={() => roomStore.closeAllVideo()}>
-              close-all-Vids(host)
-            </button>
-          </div>
-        )}
-        <button
-          id="screenShareToggle"
-          onClick={() => {
-            enabledScreenVideo
-              ? roomStore.stopShareMyScreen()
-              : roomStore.shareMyScreen();
-          }}
-        >
-          {enabledScreenVideo ? "Stop Screen Share" : "Screen Share"}
-        </button>
-        <div>
-          <div>방 참여자 목록</div>
-          {roomStore.joiningPeerIds.map((joiner) => {
-            return (
-              <>
-                <div>{joiner}</div>
-              </>
-            );
-          })}
+        <div className={styles.cameraContainer}>
+          <RemoteMediaGroup
+            roomStore={roomStore}
+            isCurrentUserMaster={isCurrentUserMaster}
+            peerStates={roomStore.peerStates}
+            remoteVideoStreamByPeerIdEntries={
+              roomStore.remoteVideoStreamByPeerIdEntries
+            }
+            remoteAudioStreamByPeerIdEntries={
+              roomStore.remoteAudioStreamByPeerIdEntries
+            }
+            remoteScreenVideoStreamByPeerIdEntries={
+              roomStore.remoteScreenVideoStreamByPeerIdEntries
+            }
+            onKickClick={handleKickButtonClick}
+            onKickToWaitingRoomClick={handleKickToWaitingRoomButtonClick}
+            onBlockClick={handleBlockButtonClick}
+          />
         </div>
 
-        <DeviceSelector roomStore={roomStore}></DeviceSelector>
-        {isCurrentUserMaster && (
-          <div>
-            <Button onClick={() => setOpenSettingDialog(true)}>설정</Button>
+        <div className={styles.side}>
+          <div className={styles.chatElement}>
+            <div className={styles.chatMessage}>
+              <ChatMessage messages={roomStore.chatMessages} />
+            </div>
+            <div className={styles.chatButton}>
+              <input
+                value={roomStore.chatInput}
+                style={{ padding: "8px" }}
+                size={35}
+                onChange={(e) => roomStore.updateChatInput(e.target.value)}
+              />
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={!roomStore.enabledChatSendButton}
+                onClick={() => roomStore.sendChat()}
+              >
+                전송
+              </Button>
+            </div>
           </div>
-        )}
+
+          {/* TODO: 호스트인 경우에만 아래의 입장 대기목록 보이도록 수정 */}
+          {roomStore.isHost && (
+            <div className={styles.sideElement}>
+              <div>입장 대기자 목록</div>
+              <br />
+              {roomStore.awaitingPeerIds.map((userId) => {
+                return (
+                  <>
+                    {userId}
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => roomStore.approveJoiningRoom(userId)}
+                    >
+                      승인
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => roomStore.rejectJoiningRoom(userId)}
+                    >
+                      거부
+                    </Button>
+                  </>
+                );
+              })}
+            </div>
+          )}
+          <div className={styles.sideElement}>
+            <div>방 참여자 목록</div>
+            {roomStore.joiningPeerIds.map((joiner) => {
+              return (
+                <>
+                  <div>{joiner}</div>
+                </>
+              );
+            })}
+          </div>
+        </div>
+        <div className={styles.footer}>
+          <Button
+            id="videoToggle"
+            variant="contained"
+            color="primary"
+            onClick={() =>
+              enabledVideo ? roomStore.hideVideo() : roomStore.showVideo()
+            }
+          >
+            {enabledVideo ? "Hide Video" : "Show Video"}
+          </Button>
+          <Button
+            id="microphoneToggle"
+            variant="contained"
+            color="primary"
+            onClick={() =>
+              enabledAudio
+                ? roomStore.muteMicrophone()
+                : roomStore.unmuteMicrophone()
+            }
+          >
+            {enabledAudio ? "Mute Mic" : "Unmute Mic"}
+          </Button>
+          <Button
+            id="headphoneToggle"
+            variant="contained"
+            color="primary"
+            onClick={() =>
+              enabledHeadset
+                ? roomStore.muteHeadset()
+                : roomStore.unmuteHeadset()
+            }
+          >
+            {enabledHeadset ? "Mute Headset" : "Unmute Headset"}
+          </Button>
+          {roomStore.isHost && (
+            <div style={{ display: "inline-block" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => roomStore.muteAllAudio()}
+              >
+                mute-all(host)
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => roomStore.closeAllVideo()}
+              >
+                close-all-Vids(host)
+              </Button>
+            </div>
+          )}
+          <Button
+            id="screenShareToggle"
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              enabledScreenVideo
+                ? roomStore.stopShareMyScreen()
+                : roomStore.shareMyScreen();
+            }}
+          >
+            {enabledScreenVideo ? "Stop Screen Share" : "Screen Share"}
+          </Button>
+
+          {!viewMode ? (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                roomStore.changeViewMode();
+              }}
+            >
+              Tile view
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                roomStore.changeViewMode();
+              }}
+            >
+              List view
+            </Button>
+          )}
+          <DeviceSelector roomStore={roomStore}></DeviceSelector>
+
+          {!enabledHeadset ? "헤드셋 꺼짐!" : ""}
+          {!enabledAudio ? "마이크 꺼짐!" : ""}
+
+          {isCurrentUserMaster && (
+            <div>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpenSettingDialog(true)}
+              >
+                설정
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -378,7 +473,7 @@ const RemoteMediaGroup: NextPage<{
     onBlockClick,
   }) => {
     const masterPopupMenus = Object.values(MasterPopupMenus);
-
+    const viewMode = roomStore.viewMode;
     const handleMasterPopupMenuClick = (item: string, userId: string) => {
       const menuEnum = getEnumKeyByEnumValue(MasterPopupMenus, item);
       switch (menuEnum) {
@@ -388,88 +483,177 @@ const RemoteMediaGroup: NextPage<{
         case "Block":
           onBlockClick(userId);
           break;
+        case "Mute":
+          roomStore.muteOneAudio(userId);
+          break;
+        case "Close":
+          roomStore.closeOneVideo(userId);
+          break;
+        case "KickWait":
+          onKickToWaitingRoomClick(userId);
+          break;
       }
     };
-
-    return (
-      <>
-        <div>
-          {remoteVideoStreamByPeerIdEntries.map((entry) => {
-            const [peerId, mediaStream] = entry;
-            const peerState = peerStates.find((p) => p.uid === peerId);
-            if (peerState === undefined) {
-              throw Error("피어 상태가 존재하지 않습니다.");
-            }
-            return (
-              <div key={peerId}>
+    if (viewMode) {
+      return (
+        <>
+          <div>
+            <div>
+              <div className={styles.localCameraListElement}>
                 <Video
-                  id={peerId}
-                  videoStream={mediaStream}
+                  id="localVideo"
+                  videoStream={roomStore.localVideoStream}
                   roomStore={roomStore}
                 />
-                캠화면입니다!!!!!!!!!!!!!!
-                {peerState.enabledMicrophone ? "" : "마이크 끔!"}
-                {peerState.enabledHeadset ? "" : "헤드셋 끔!"}
-                {!isCurrentUserMaster && ( // 테스트 후 느낌표 지우기
-                  <PopupMenu
-                    label={"더보기"}
-                    menuItems={masterPopupMenus}
-                    onMenuItemClick={(item) =>
-                      handleMasterPopupMenuClick(item, peerId)
-                    }
-                  />
-                )}
-                {roomStore.isHost && (
-                  <div>
-                    <button onClick={() => roomStore.muteOneAudio(peerId)}>
-                      mute-one(host)
-                    </button>
-                    <button onClick={() => roomStore.closeOneVideo(peerId)}>
-                      close-video(host)
-                    </button>
-                    <button onClick={() => onKickToWaitingRoomClick(peerId)}>
-                      kick-to-waiting-room(host)
-                    </button>
+              </div>
+
+              <div className={styles.cameraListContainer}>
+                {remoteVideoStreamByPeerIdEntries.map((entry) => {
+                  const [peerId, mediaStream] = entry;
+                  const peerState = peerStates.find((p) => p.uid === peerId);
+                  if (peerState === undefined) {
+                    throw Error("피어 상태가 존재하지 않습니다.");
+                  }
+                  return (
+                    <div key={peerId} className={styles.cameraElement}>
+                      <Video
+                        id={peerId}
+                        videoStream={mediaStream}
+                        roomStore={roomStore}
+                      />
+                      {/* 캠화면입니다!!!!!!!!!!!!!! */}
+                      {peerState.enabledMicrophone ? "" : "마이크 끔!"}
+                      {peerState.enabledHeadset ? "" : "헤드셋 끔!"}
+                      {roomStore.isHost && (
+                        <div>
+                          <PopupMenu
+                            label={"더보기"}
+                            menuItems={masterPopupMenus}
+                            onMenuItemClick={(item) =>
+                              handleMasterPopupMenuClick(item, peerId)
+                            }
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
+                const [peerId, mediaStream] = entry;
+                const peerState = peerStates.find((p) => p.uid === peerId);
+                if (peerState === undefined) {
+                  throw Error("피어 상태가 존재하지 않습니다.");
+                }
+                return (
+                  <div key={`${peerId}-screen`}>
+                    <ScreenShareVideo
+                      id={`${peerId}-screen`}
+                      videoStream={mediaStream}
+                      roomStore={roomStore}
+                    ></ScreenShareVideo>
+                    {/* 공유화면입니다!!!!!!!!!!!!!! */}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <div>
-          {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
-            const [peerId, mediaStream] = entry;
-            const peerState = peerStates.find((p) => p.uid === peerId);
-            if (peerState === undefined) {
-              throw Error("피어 상태가 존재하지 않습니다.");
-            }
-            return (
-              <div key={`${peerId}-screen`}>
-                <ScreenShareVideo
-                  id={`${peerId}-screen`}
-                  videoStream={mediaStream}
+                );
+              })}
+            </div>
+            <div>
+              {remoteAudioStreamByPeerIdEntries.map((entry) => {
+                const [peerId, mediaStream] = entry;
+                return (
+                  <Audio
+                    key={peerId}
+                    id={peerId}
+                    audioStream={mediaStream}
+                    roomStore={roomStore}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <div>
+            <div>
+              <div className={styles.localCameraElement}>
+                <Video
+                  id="localVideo"
+                  videoStream={roomStore.localVideoStream}
                   roomStore={roomStore}
-                ></ScreenShareVideo>
-                공유화면입니다~!!!!!!!!
+                />
               </div>
-            );
-          })}
-        </div>
-        <div>
-          {remoteAudioStreamByPeerIdEntries.map((entry) => {
-            const [peerId, mediaStream] = entry;
-            return (
-              <Audio
-                key={peerId}
-                id={peerId}
-                audioStream={mediaStream}
-                roomStore={roomStore}
-              />
-            );
-          })}
-        </div>
-      </>
-    );
+              {remoteVideoStreamByPeerIdEntries.map((entry) => {
+                const [peerId, mediaStream] = entry;
+                const peerState = peerStates.find((p) => p.uid === peerId);
+                if (peerState === undefined) {
+                  throw Error("피어 상태가 존재하지 않습니다.");
+                }
+                return (
+                  <div key={peerId} className={styles.cameraElement}>
+                    <Video
+                      id={peerId}
+                      videoStream={mediaStream}
+                      roomStore={roomStore}
+                    />
+                    {/* 캠화면입니다!!!!!!!!!!!!!! */}
+                    {peerState.enabledMicrophone ? "" : "마이크 끔!"}
+                    {peerState.enabledHeadset ? "" : "헤드셋 끔!"}
+                    {roomStore.isHost && (
+                      <div>
+                        <PopupMenu
+                          label={"더보기"}
+                          menuItems={masterPopupMenus}
+                          onMenuItemClick={(item) =>
+                            handleMasterPopupMenuClick(item, peerId)
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div>
+              {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
+                const [peerId, mediaStream] = entry;
+                const peerState = peerStates.find((p) => p.uid === peerId);
+                if (peerState === undefined) {
+                  throw Error("피어 상태가 존재하지 않습니다.");
+                }
+                return (
+                  <div key={`${peerId}-screen`}>
+                    <ScreenShareVideo
+                      id={`${peerId}-screen`}
+                      videoStream={mediaStream}
+                      roomStore={roomStore}
+                    ></ScreenShareVideo>
+                    {/* 공유화면입니다!!!!!!!!!!!!!! */}
+                  </div>
+                );
+              })}
+            </div>
+            <div>
+              {remoteAudioStreamByPeerIdEntries.map((entry) => {
+                const [peerId, mediaStream] = entry;
+                return (
+                  <Audio
+                    key={peerId}
+                    id={peerId}
+                    audioStream={mediaStream}
+                    roomStore={roomStore}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </>
+      );
+    }
   }
 );
 

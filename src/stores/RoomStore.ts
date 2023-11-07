@@ -1093,4 +1093,13 @@ export class RoomStore implements RoomViewModel {
     );
     this._isHost = validResult;
   };
+
+  private _viewMode: boolean = false;
+  public get viewMode(): boolean | null {
+    return this._viewMode;
+  }
+  
+  public changeViewMode = () => {
+    this._viewMode = !this._viewMode;
+  };
 }

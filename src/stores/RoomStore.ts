@@ -414,6 +414,9 @@ export class RoomStore implements RoomViewModel {
   public onRequestToJoinRoom = (requesterId: string) => {
     console.log("onRequestToJoinRoom: ", requesterId);
     // TODO: 호스트가 맞는지 검증하기
+    if (!this._isHost) {
+      return;
+    }
     if (this._state !== RoomState.JOINED) {
       return;
     }
@@ -423,6 +426,9 @@ export class RoomStore implements RoomViewModel {
   public onCancelJoinRequest = (userId: string) => {
     console.log("onCancelJoinRequest: ", userId);
     // TODO: 호스트가 맞는지 검증하기
+    if (!this._isHost) {
+      return;
+    }
     if (this._state !== RoomState.JOINED) {
       return;
     }
@@ -471,6 +477,9 @@ export class RoomStore implements RoomViewModel {
 
   public approveJoiningRoom = async (userId: string) => {
     // TODO: 호스트인지 검증하기
+    if (!this._isHost) {
+      return;
+    }
     const result = await this._roomService.approveJoiningRoom(userId);
     if (result.isFailure) {
       this._userMessage = result.throwableOrNull()!.message;
@@ -480,6 +489,9 @@ export class RoomStore implements RoomViewModel {
 
   public rejectJoiningRoom = async (userId: string) => {
     // TODO: 호스트인지 검증하기
+    if (!this._isHost) {
+      return;
+    }
     const result = await this._roomService.rejectJoiningRoom(userId);
     if (result.isFailure) {
       this._userMessage = result.throwableOrNull()!.message;
@@ -875,6 +887,10 @@ export class RoomStore implements RoomViewModel {
   };
 
   public muteAllAudio = () => {
+    // TODO: 호스트가 맞는지 검증하기
+    if (!this._isHost) {
+      return;
+    }
     const peerStatesExceptMe = this._peerStates.filter(
       (ps) => ps.uid !== this.uid
     );
@@ -883,11 +899,19 @@ export class RoomStore implements RoomViewModel {
   };
 
   public muteOneAudio = (peerId: string) => {
+    // TODO: 호스트가 맞는지 검증하기
+    if (!this._isHost) {
+      return;
+    }
     const userIds: string[] = [peerId];
     return this._roomService.closeAudioByHost(userIds);
   };
 
   public closeAllVideo = () => {
+    // TODO: 호스트가 맞는지 검증하기
+    if (!this._isHost) {
+      return;
+    }
     const peerStatesExceptMe = this._peerStates.filter(
       (ps) => ps.uid !== this.uid
     );
@@ -896,6 +920,10 @@ export class RoomStore implements RoomViewModel {
   };
 
   public closeOneVideo = (peerId: string) => {
+    // TODO: 호스트가 맞는지 검증하기
+    if (!this._isHost) {
+      return;
+    }
     const userIds: string[] = [peerId];
     return this._roomService.closeVideoByHost(userIds);
   };

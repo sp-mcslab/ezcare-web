@@ -3,8 +3,8 @@ import {
   createRoom,
   deleteRoomReq,
   updateAllCallRecordOfRoom,
-  findUserHostByRoomId,
 } from "@/repository/room.repository";
+import { createHost, findUserHostByRoomId } from "@/repository/host.repository";
 import { getIdFromToken } from "@/utils/JwtUtil";
 import { findRooms } from "@/repository/room.repository";
 import { findUserById } from "@/repository/user.repository";
@@ -53,6 +53,8 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
       hostUserIds,
       flag
     );
+
+    await createHost(room.id, creatorId);
 
     res.status(201);
     res.json({

@@ -171,23 +171,9 @@ export const updateAllCallRecordOfRoom = async (
   return updatedRecords != undefined;
 };
 
-export const findUserHostByRoomId = async (
-  roomid: string
-): Promise<Host[] | null> => {
-  try {
-    return await client.host.findMany({
-      where: {
-        roomid: roomid,
-      },
-    });
-  } catch (e) {
-    console.log(e);
-    return null;
-  }
-};
-
 export const checkRoomOpened = async (): Promise<boolean | null> => {
   const presentTime = new Date(); // 비교할 현재 시간
+  console.log("check Room Opened :: " + presentTime.toISOString());
   const result = await client.room.updateMany({
     where: {
       AND: [
@@ -206,6 +192,8 @@ export const checkRoomOpened = async (): Promise<boolean | null> => {
 
 export const checkRoomClosed = async (): Promise<boolean | null> => {
   const presentTime = new Date(); // 비교할 현재 시간
+  console.log("check room closed :: " + presentTime.toISOString());
+
   const result = await client.room.updateMany({
     where: {
       AND: [

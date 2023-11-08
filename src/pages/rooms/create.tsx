@@ -25,7 +25,7 @@ const ListPage: NextPage = observer(() => {
     {
       id: "1",
       name: "user01",
-      role: "의사",
+      role: "doctor",
     },
     {
       id: "2",

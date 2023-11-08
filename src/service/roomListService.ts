@@ -29,7 +29,7 @@ export class RoomListService {
   public async postRoomList(
     token: string,
     name: string,
-    openAt: number,
+    openAt: string,
     invitedUserIds: string[], // 초대된 회원의 ID 목록
     hostUserIds: string[]
   ): Promise<Result<RoomDto[]>> {

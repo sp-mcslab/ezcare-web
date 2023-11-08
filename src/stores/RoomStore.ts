@@ -967,7 +967,7 @@ export class RoomStore implements RoomViewModel {
 
   // 방 생성
   private _createdRoomName: string = "";
-  private _createdAt: number = 0;
+  private _createdAt: string = "";
   private _inviteUserId: string = "";
   private _inviteUserList: string[] = [];
   private _hostUserList: string[] = [];
@@ -980,12 +980,33 @@ export class RoomStore implements RoomViewModel {
     this._createdRoomName = data;
   };
 
-  public get createdAt(): number {
+  public get createdAt(): string {
     return this._createdAt;
   }
 
   public updateCreatedAt = (data: any) => {
-    this._createdAt = new Date(data).getTime() - new Date().getTime();
+    const openTime = new Date(data);
+    openTime.setSeconds(0, 0);
+    const presentTime = new Date();
+
+    let dateDiff = openTime.getDate() - presentTime.getDate();
+    let hourDiff = openTime.getHours() - presentTime.getHours();
+    let minuteDiff = openTime.getMinutes() - presentTime.getMinutes();
+    let secondDiff = openTime.getSeconds() - presentTime.getSeconds();
+
+    console.log(
+      "create time :: " +
+        dateDiff +
+        " 일 / " +
+        hourDiff +
+        " 시간 / " +
+        minuteDiff +
+        "분 / " +
+        secondDiff +
+        "초 차이 납니다."
+    );
+    this._createdAt =
+      dateDiff + "/" + hourDiff + "/" + minuteDiff + "/" + secondDiff;
   };
   public get inviteUserId(): string {
     return this._inviteUserId;

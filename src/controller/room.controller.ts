@@ -24,10 +24,36 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   ); // 방 생성자의 id get.
 
   let flag = false;
-  if (openAt == 0) flag = true;
+  let dateDiff = Number(openAt.split("/")[0]);
+  let hourDiff = Number(openAt.split("/")[1]);
+  let minuteDiff = Number(openAt.split("/")[2]);
+  let secondDiff = Number(openAt.split("/")[3]);
+
+  if (isNaN(dateDiff)) dateDiff = 0;
+  if (isNaN(hourDiff)) hourDiff = 0;
+  if (isNaN(minuteDiff)) minuteDiff = 0;
+  if (isNaN(secondDiff)) secondDiff = 0;
+
+  console.log(
+    "현재로부터 방 생성 예약 시간 까지 : " +
+      dateDiff +
+      "일 " +
+      hourDiff +
+      "시간" +
+      minuteDiff +
+      "분 남았습니다."
+  );
+
+  if (dateDiff == 0 && minuteDiff == 0 && minuteDiff == 0) flag = true;
 
   const currentTime = new Date();
-  const openTime = new Date((currentTime.getTime() + openAt) as number);
+  const openTime = new Date();
+  openTime.setDate(currentTime.getDate() + dateDiff);
+  openTime.setHours(currentTime.getHours() + hourDiff);
+  openTime.setMinutes(currentTime.getMinutes() + minuteDiff);
+  openTime.setSeconds(0, 0);
+
+  console.log("진료실 open 예정 시간은 : " + openTime + " 입니다. ");
 
   console.log("current Time : " + currentTime + "/ open Time : " + openTime);
   //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
@@ -37,7 +63,7 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 
   //openAt이 createdAt보다 과거인 경우
-  if (openAt < 0) {
+  if (openTime < new Date(currentTime.setSeconds(0, 0))) {
     res.status(404);
     res.json({ message: "openAt이 현재보다 과거일 수 없습니다." });
     return;

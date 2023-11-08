@@ -810,7 +810,6 @@ export class RoomStore implements RoomViewModel {
       const kickedPeerState = this._peerStates.find(
         (peer) => peer.uid === userId
       );
-      this.onDisposedPeer(userId);
       if (kickedPeerState == null) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
@@ -948,10 +947,6 @@ export class RoomStore implements RoomViewModel {
     if (this._localVideoStream !== undefined) {
       this.hideVideo();
     }
-  };
-
-  public doConnectWaitingRoom = (roomId: string) => {
-    this._roomService.doConnectWaitingRoom(roomId);
   };
 
   private _roomList: RoomDto[] = [];

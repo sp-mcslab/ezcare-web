@@ -838,10 +838,6 @@ export class RoomSocketService {
     socket.emit(CLOSE_VIDEO_BY_HOST, userIds);
   };
 
-  public doConnectWaitingRoom = (roomId: string) => {
-    this._connectWaitingRoom(roomId);
-  };
-
   public disConnectOtherScreenShare = async (userId: string) => {
     const socket = this._requireSocket();
     socket.emit(DISCONNECT_OTHER_SCREEN_SHARE, userId);

@@ -11,6 +11,7 @@ import { getEnumKeyByEnumValue } from "@/utils/EnumUtil";
 import { RoomSettingDialog } from "@/components/RoomSettingDialog";
 import { Button, createTheme, ThemeProvider } from "@mui/material";
 import styles from "../../styles/room.module.scss";
+import roomService from "@/service/room.service";
 
 enum MasterPopupMenus {
   Kick = "강퇴",
@@ -217,14 +218,10 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     useEffect(() => {
       if (roomStore.kickedToWaitingRoom) {
         const roomId = router.query.roomId;
-        if (typeof roomId === "string") {
-          alert("방장에 의해 로비로 강퇴되었습니다.");
-          roomStore.doConnectWaitingRoom(roomId);
-        } else {
-          throw Error("roomId is not string");
-        }
+        alert("방장에 의해 로비로 강퇴되었습니다.");
+        router.replace("/rooms").then(() => router.replace("/rooms/" + roomId));
       }
-    }, [roomStore.kickedToWaitingRoom]);
+    }, [roomStore.kickedToWaitingRoom, router]);
 
     const handleKickButtonClick = (userId: string) => {
       const targetUserName = roomStore.requireUserNameBy(userId);

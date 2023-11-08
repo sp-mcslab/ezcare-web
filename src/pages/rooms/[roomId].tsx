@@ -303,7 +303,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
           {/* TODO: 호스트인 경우에만 아래의 입장 대기목록 보이도록 수정 */}
           {roomStore.isHost && (
             <div className={styles.sideElement}>
-              <div>입장 대기자 목록</div>
+              <div className={styles.sideTitle}>입장 대기자 목록</div>
               <br />
               {roomStore.awaitingPeerIds.map((userId) => {
                 return (
@@ -329,7 +329,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             </div>
           )}
           <div className={styles.sideElement}>
-            <div>방 참여자 목록</div>
+            <div className={styles.sideTitle}>방 참여자 목록</div>
             {roomStore.joiningPeerIds.map((joiner) => {
               return (
                 <>
@@ -535,26 +535,25 @@ const RemoteMediaGroup: NextPage<{
                     </div>
                   );
                 })}
+
+                {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
+                  const [peerId, mediaStream] = entry;
+                  const peerState = peerStates.find((p) => p.uid === peerId);
+                  if (peerState === undefined) {
+                    return;
+                  }
+                  return (
+                    <div key={`${peerId}-screen`}>
+                      <ScreenShareVideo
+                        id={`${peerId}-screen`}
+                        videoStream={mediaStream}
+                        roomStore={roomStore}
+                      ></ScreenShareVideo>
+                      {/* 공유화면입니다!!!!!!!!!!!!!! */}
+                    </div>
+                  );
+                })}
               </div>
-            </div>
-            <div>
-              {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
-                const [peerId, mediaStream] = entry;
-                const peerState = peerStates.find((p) => p.uid === peerId);
-                if (peerState === undefined) {
-                  return;
-                }
-                return (
-                  <div key={`${peerId}-screen`}>
-                    <ScreenShareVideo
-                      id={`${peerId}-screen`}
-                      videoStream={mediaStream}
-                      roomStore={roomStore}
-                    ></ScreenShareVideo>
-                    {/* 공유화면입니다!!!!!!!!!!!!!! */}
-                  </div>
-                );
-              })}
             </div>
             <div>
               {remoteAudioStreamByPeerIdEntries.map((entry) => {
@@ -614,8 +613,7 @@ const RemoteMediaGroup: NextPage<{
                   </div>
                 );
               })}
-            </div>
-            <div>
+
               {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
                 const [peerId, mediaStream] = entry;
                 const peerState = peerStates.find((p) => p.uid === peerId);

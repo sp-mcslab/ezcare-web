@@ -41,21 +41,34 @@
 .chatElement {
   height: 50%;
   overflow: auto;
+  background: rgba(0,0,0,0.1);
 }
 
 .chatMessage {
-  height: 90%;
+  height: 85%;
   overflow: auto;
+  padding: 10px;
 }
 
 .chatButton {
   height: 10%;
+  text-align: center;
 }
 
 .sideElement {
   padding-top: 20px;
   height: 20%;
   overflow: auto;
+  background: rgba(0,0,0,0.2);
+  padding: 10px;
+  border-width: 2px 0px 2px 0px;
+  border-color: white;
+  border-style: solid;
+}
+
+.sideTitle {
+  font-size: 20px;
+  padding-bottom: 5px;
 }
 
 .footer {

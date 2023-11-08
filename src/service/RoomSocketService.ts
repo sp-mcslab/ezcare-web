@@ -35,6 +35,8 @@ import {
   CLOSE_VIDEO_BY_HOST,
   KICK_USER_TO_WAITINGR_ROOM,
   UPDATE_ROOM_JOINERS,
+  DISCONNECT,
+  DISCONNECT_OTHER_SCREEN_SHARE,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -344,6 +346,9 @@ export class RoomSocketService {
       console.log("update room joiners - other peer joined room : " + joinerId);
       this._roomViewModel.onChangeJoinerList(joinerId);
     });
+    socket.on(DISCONNECT_OTHER_SCREEN_SHARE, () =>
+      this._roomViewModel.onDisConnectScreenShare()
+    );
   };
 
   private _createSendTransport = (
@@ -835,5 +840,10 @@ export class RoomSocketService {
 
   public doConnectWaitingRoom = (roomId: string) => {
     this._connectWaitingRoom(roomId);
+  };
+
+  public disConnectOtherScreenShare = async (userId: string) => {
+    const socket = this._requireSocket();
+    socket.emit(DISCONNECT_OTHER_SCREEN_SHARE, userId);
   };
 }

@@ -60,6 +60,7 @@ export interface RoomViewModel {
   onChangeJoinerList: (userId: string) => void;
   onRemoveJoinerList: (disposedPeerId: string) => void;
   onGetUsersInfo: (roomId: string) => void;
+  onDisConnectScreenShare: () => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -74,6 +75,7 @@ export class RoomStore implements RoomViewModel {
   private _localAudioStream?: MediaStream = undefined;
   private _localScreenVideoStream?: MediaStream = undefined;
   private _enabledHeadset: boolean = true;
+  private _enabledMultipleScreenShare: boolean = false;
 
   // ======================= 대기실 관련 =======================
   private _awaitConfirmToJoin: boolean = false;
@@ -181,6 +183,10 @@ export class RoomStore implements RoomViewModel {
 
   public get enabledLocalScreenVideo(): boolean {
     return this._localScreenVideoStream !== undefined;
+  }
+
+  public get enabledMultipleScreenShare(): boolean {
+    return this._enabledMultipleScreenShare;
   }
 
   public get enabledHeadset(): boolean {
@@ -704,6 +710,10 @@ export class RoomStore implements RoomViewModel {
     beep();
   };
 
+  public onDisConnectScreenShare = () => {
+    this.stopShareMyScreen();
+  };
+
   public onAddedConsumer = (
     peerId: string,
     track: MediaStreamTrack,
@@ -1046,12 +1056,48 @@ export class RoomStore implements RoomViewModel {
     return;
   };
 
-  public shareMyScreen = async () => {
-    const modifiedMediaTrack = this._mediaUtil
-      .fetchScreenCaptureVideo()
-      .then(async (stream) => {
-        // 공유화면 video 추출 후 producer 생성
-        const displayMediaTrack = stream.getVideoTracks()[0];
+  public toggleEnabledMultipleScreenShare() {
+    return !this._enabledMultipleScreenShare;
+  }
+
+  private isEnableMultiAndAnyRemoteScreenVideo() {
+    return this._enabledMultipleScreenShare;
+  }
+
+  private isNotEnableMultiAndNoRemoteScreenVideo() {
+    return (
+      !this._enabledMultipleScreenShare &&
+      this._remoteScreenVideoStreamsByPeerId.size === 0
+    );
+  }
+
+  private isNotEnableMultiAndThereIsRemoteScreenVideo() {
+    return (
+      !this._enabledMultipleScreenShare &&
+      this._remoteScreenVideoStreamsByPeerId.size > 0
+    );
+  }
+
+  public shareMyScreen() {
+    if (this.isEnableMultiAndAnyRemoteScreenVideo()) {
+      this.produceScreenShare();
+    }
+    if (this.isNotEnableMultiAndNoRemoteScreenVideo()) {
+      this.produceScreenShare();
+    }
+    if (this.isNotEnableMultiAndThereIsRemoteScreenVideo()) {
+      this.produceScreenShareAndDisConnectOtherScreen();
+    }
+    console.log(`화면공유 오류발생: shareMyScreen()`);
+  }
+
+  private produceScreenShare = async () => {
+    try {
+      const modifiedMediaTrack =
+        await this._mediaUtil.fetchScreenCaptureVideo();
+      // 공유화면 video 추출 후 producer 생성
+      const displayMediaTrack = modifiedMediaTrack.getVideoTracks()[0];
+      try {
         await displayMediaTrack
           .applyConstraints(this._mediaUtil.SCREEN_CAPTURE_MEDIA_CONSTRAINTS)
           .then(async () => {
@@ -1063,10 +1109,47 @@ export class RoomStore implements RoomViewModel {
                 displayMediaTrack
               );
             });
-          })
-          .catch((error) => console.error(`공유화면 크기 조절 실패: ${error}`));
-      })
-      .catch((error) => console.error(`공유화면 불러오기 실패: ${error}`));
+          });
+      } catch (error) {
+        console.error(`공유화면 크기 조절 실패: ${error}`);
+      }
+    } catch (error) {
+      console.log(`공유화면 불러오기 취소/실패: ${error}`);
+    }
+  };
+
+  private produceScreenShareAndDisConnectOtherScreen = async () => {
+    const userIdNowSharing = this.remoteScreenVideoStreamByPeerIdEntries[0][0];
+    try {
+      const modifiedMediaTrack =
+        await this._mediaUtil.fetchScreenCaptureVideo();
+      try {
+        // 다른 유저 공유화면 종료
+        await this._roomService.disConnectOtherScreenShare(userIdNowSharing);
+        // 공유화면 video 추출 후 producer 생성
+        const displayMediaTrack = modifiedMediaTrack.getVideoTracks()[0];
+        try {
+          await displayMediaTrack
+            .applyConstraints(this._mediaUtil.SCREEN_CAPTURE_MEDIA_CONSTRAINTS)
+            .then(async () => {
+              await runInAction(async () => {
+                this._localScreenVideoStream = new MediaStream([
+                  displayMediaTrack,
+                ]);
+                await this._roomService.produceScreenVideoTrack(
+                  displayMediaTrack
+                );
+              });
+            });
+        } catch (error) {
+          console.error(`공유화면 크기 조절 실패: ${error}`);
+        }
+      } catch (error) {
+        console.error(`다른 참여자 공유화면 종료 실패: ${error}`);
+      }
+    } catch (error) {
+      console.log(`공유화면 불러오기 취소/실패: ${error}`);
+    }
   };
 
   public stopShareMyScreen = () => {
@@ -1126,7 +1209,7 @@ export class RoomStore implements RoomViewModel {
   public get viewMode(): boolean | null {
     return this._viewMode;
   }
-  
+
   public changeViewMode = () => {
     this._viewMode = !this._viewMode;
   };

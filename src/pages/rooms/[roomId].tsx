@@ -542,7 +542,7 @@ const RemoteMediaGroup: NextPage<{
                 const [peerId, mediaStream] = entry;
                 const peerState = peerStates.find((p) => p.uid === peerId);
                 if (peerState === undefined) {
-                  throw Error("피어 상태가 존재하지 않습니다.");
+                  return;
                 }
                 return (
                   <div key={`${peerId}-screen`}>
@@ -620,7 +620,7 @@ const RemoteMediaGroup: NextPage<{
                 const [peerId, mediaStream] = entry;
                 const peerState = peerStates.find((p) => p.uid === peerId);
                 if (peerState === undefined) {
-                  throw Error("피어 상태가 존재하지 않습니다.");
+                  return;
                 }
                 return (
                   <div key={`${peerId}-screen`}>

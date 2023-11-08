@@ -838,8 +838,7 @@ export class RoomStore implements RoomViewModel {
   public onDisposedPeer = (peerId: string): void => {
     this._remoteVideoStreamsByPeerId.delete(peerId);
     this._remoteAudioStreamsByPeerId.delete(peerId);
-    // TODO: 화면공유 dispose 테스트 후 사용 결정
-    // this._remoteScreenVideoStreamsByPeerId.delete(peerId);
+    this._remoteScreenVideoStreamsByPeerId.delete(peerId);
     this._peerStates = this._peerStates.filter((peer) => peer.uid !== peerId);
   };
 
@@ -1169,8 +1168,7 @@ export class RoomStore implements RoomViewModel {
         alert("방을 삭제하는 데에 실패했습니다.");
         console.log(roomResult);
       });
-    }
-    else {
+    } else {
       runInAction(() => {
         alert("방을 삭제했습니다.");
         console.log(roomResult);

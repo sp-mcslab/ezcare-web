@@ -27,6 +27,24 @@ export class UserService {
     }
   }
 
+  public async findUserId(token: string): Promise<string | null> {
+    try {
+      const response = await fetchAbsolute(`api/auth/user`, {
+        method: "POST",
+        headers: {
+          "x-ezcare-session-token": token,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json(); // Read the response body as JSON
+      const id = data.data.id; // Access the "id" property from the data object
+      return id;
+    } catch (e) {
+      console.log("find User from session error " + e);
+      return null;
+    }
+  }
+
   public async findUserIsHost(token: string, roomId: string): Promise<boolean> {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}/host`, {

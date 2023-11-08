@@ -23,10 +23,11 @@ export const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
 
     res.status(200);
     res.json({
-      message: "사용자 권한이 조회되었습니다.",
+      message: "사용자 정보가 조회되었습니다.",
       data: {
+        id: userId as string,
         role: user.role,
-      }
+      },
     });
   } catch (e) {
     console.log(e);

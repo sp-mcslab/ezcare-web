@@ -195,6 +195,7 @@ export class RoomSocketService {
       socket.emit(REQUEST_TO_JOIN_ROOM, args, (existsRoom: boolean) => {
         if (existsRoom) {
           resolve(Result.success(true));
+          // 입장 대기자 목록 바꾸기
         } else {
           resolve(Result.success(false));
         }

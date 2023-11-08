@@ -39,6 +39,7 @@ const RoomScaffold: NextPage = observer(() => {
   useEffect(() => {
     (async () => {
       await roomStore.getRoleWithSessionToken();
+      await roomStore.getUserIdWithSessionToken();
       if (typeof roomId === "string") {
         await roomStore.getIsHostWithSessionToken(roomId);
       }

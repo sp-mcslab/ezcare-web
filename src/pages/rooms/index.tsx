@@ -75,7 +75,7 @@ const ListPage: NextPage = observer(() => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {roomStore.RoomList.map((room, i) => (
+              {roomStore.RoomList.filter(it => it.flag).map((room, i) => (
                 <TableRow key={room.id}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell

@@ -24,18 +24,23 @@ const ListPage: NextPage = observer(() => {
   const rows = [
     {
       id: "1",
-      name: "홍길동",
+      name: "user01",
       role: "의사",
     },
     {
       id: "2",
-      name: "김철수",
-      role: "간호사",
+      name: "admin",
+      role: "nurse",
     },
     {
       id: "3",
-      name: "황영희",
-      role: "환자",
+      name: "user02",
+      role: "patient",
+    },
+    {
+      id: "4",
+      name: "admin2",
+      role: "patient",
     },
   ];
 
@@ -52,6 +57,7 @@ const ListPage: NextPage = observer(() => {
   return (
     <div className="App">
       <div style={{ fontSize: "30px", paddingTop: "50px" }}>방 생성</div>
+      
       <div
         style={{ display: "inline-block", paddingRight: "30px", float: "left" }}
       >
@@ -93,7 +99,7 @@ const ListPage: NextPage = observer(() => {
                     <Button
                       variant="contained"
                       color="primary"
-                      disabled={row.role == "환자"}
+                      disabled={row.role == "patient"}
                       onClick={() => roomStore.pushHostUserList(row.id)}
                     >
                       등록
@@ -101,7 +107,7 @@ const ListPage: NextPage = observer(() => {
                     <Button
                       variant="contained"
                       color="primary"
-                      disabled={row.role == "환자"}
+                      disabled={row.role == "patient"}
                       onClick={() => roomStore.popHostUserList(row.id)}
                     >
                       해제
@@ -135,6 +141,14 @@ const ListPage: NextPage = observer(() => {
           onClick={() => roomStore.postRoom()}
         >
           방 생성
+        </Button>
+      </div>
+      
+      <div style={{ paddingTop: "25px" }}>
+        <Button
+          onClick={() => router.replace("/auth/logout")}
+        >
+          뒤로가기
         </Button>
       </div>
     </div>

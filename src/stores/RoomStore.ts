@@ -1006,6 +1006,9 @@ export class RoomStore implements RoomViewModel {
     );
     this._inviteUserList.push(this._inviteUserId);
     this._inviteUserId = "";
+    runInAction(() => {
+      alert("초대가 완료되었습니다.");
+    });
   };
 
   public get hostUserList(): string[] {
@@ -1162,6 +1165,16 @@ export class RoomStore implements RoomViewModel {
     const roomResult = await this._roomListService.deleteRoomList(roomId);
     if (!roomResult.isSuccess) {
       console.log(roomResult.throwableOrNull()!!.message);
+      runInAction(() => {
+        alert("방을 삭제하는 데에 실패했습니다.");
+        console.log(roomResult);
+      });
+    }
+    else {
+      runInAction(() => {
+        alert("방을 삭제했습니다.");
+        console.log(roomResult);
+      });
     }
     return;
   };

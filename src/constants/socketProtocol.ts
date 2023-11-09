@@ -219,6 +219,11 @@ const UPDATE_ROOM_JOINERS = "update-room-joiners";
  */
 const DISCONNECT_OTHER_SCREEN_SHARE = "disconnect-other-screen-share";
 
+/**
+ * 화면 공유자가 다른 참여자에게 화면 공유 종료를 알리는 프로토콜이다.
+ */
+const BROADCAST_STOP_SHARE_SCREEN = "broadcast-stop-share-screen";
+
 export {
   IP_ADDRESS,
   NAME_SPACE,
@@ -259,4 +264,5 @@ export {
   KICK_USER_TO_WAITINGR_ROOM,
   UPDATE_ROOM_JOINERS,
   DISCONNECT_OTHER_SCREEN_SHARE,
+  BROADCAST_STOP_SHARE_SCREEN,
 };

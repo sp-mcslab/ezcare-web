@@ -37,6 +37,7 @@ import {
   UPDATE_ROOM_JOINERS,
   DISCONNECT,
   DISCONNECT_OTHER_SCREEN_SHARE,
+  BROADCAST_STOP_SHARE_SCREEN,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -349,6 +350,9 @@ export class RoomSocketService {
     });
     socket.on(DISCONNECT_OTHER_SCREEN_SHARE, () =>
       this._roomViewModel.onDisConnectScreenShare()
+    );
+    socket.on(BROADCAST_STOP_SHARE_SCREEN, (userId: string) =>
+      this._roomViewModel.onBroadcastStopShareScreen(userId)
     );
   };
 
@@ -843,4 +847,9 @@ export class RoomSocketService {
     const socket = this._requireSocket();
     socket.emit(DISCONNECT_OTHER_SCREEN_SHARE, userId);
   };
+
+  public broadcastStopShareScreen() {
+    const socket = this._requireSocket();
+    socket.emit(BROADCAST_STOP_SHARE_SCREEN);
+  }
 }

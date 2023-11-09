@@ -61,6 +61,7 @@ export interface RoomViewModel {
   onRemoveJoinerList: (disposedPeerId: string) => void;
   onGetUsersInfo: (roomId: string) => void;
   onDisConnectScreenShare: () => void;
+  onBroadcastStopShareScreen: (userId: string) => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -712,6 +713,12 @@ export class RoomStore implements RoomViewModel {
 
   public onDisConnectScreenShare = () => {
     this.stopShareMyScreen();
+    alert("다른 사용자가 화면공유를 시작하여 내 화면공유를 종료합니다.");
+  };
+
+  public onBroadcastStopShareScreen = (userId: string) => {
+    // TODO: 화면공유 종료 알림 받고 remoteScreenVideoStreamByPeerId 에서 해당 미디어 삭제
+    this._remoteScreenVideoStreamsByPeerId.delete(userId);
   };
 
   public onAddedConsumer = (
@@ -1179,6 +1186,8 @@ export class RoomStore implements RoomViewModel {
     this._roomService.closeScreenVideoProducer();
     this._localScreenVideoStream.getTracks().forEach((track) => track.stop());
     this._localScreenVideoStream = undefined;
+    // 화면종료 broadcast
+    this._roomService.broadcastStopShareScreen();
   };
 
   public deleteRoom = async (roomId: string): Promise<void> => {

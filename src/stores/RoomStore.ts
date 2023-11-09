@@ -1116,12 +1116,20 @@ export class RoomStore implements RoomViewModel {
     console.log(`화면공유 오류발생: shareMyScreen()`);
   }
 
+  public addMediaStreamTrackEndedEvent(track: MediaStreamTrack) {
+    track.onended = () => {
+      console.log("브라우저 UI에 의해 화면 공유가 중지되었습니다.");
+      this.stopShareMyScreen();
+    };
+  }
+
   private produceScreenShare = async () => {
     try {
-      const modifiedMediaTrack =
+      const modifiedMediaStream =
         await this._mediaUtil.fetchScreenCaptureVideo();
       // 공유화면 video 추출 후 producer 생성
-      const displayMediaTrack = modifiedMediaTrack.getVideoTracks()[0];
+      const displayMediaTrack = modifiedMediaStream.getVideoTracks()[0];
+      this.addMediaStreamTrackEndedEvent(displayMediaTrack);
       try {
         await displayMediaTrack
           .applyConstraints(this._mediaUtil.SCREEN_CAPTURE_MEDIA_CONSTRAINTS)
@@ -1146,13 +1154,14 @@ export class RoomStore implements RoomViewModel {
   private produceScreenShareAndDisConnectOtherScreen = async () => {
     const userIdNowSharing = this.remoteScreenVideoStreamByPeerIdEntries[0][0];
     try {
-      const modifiedMediaTrack =
+      const modifiedMediaStream =
         await this._mediaUtil.fetchScreenCaptureVideo();
       try {
         // 다른 유저 공유화면 종료
         await this._roomService.disConnectOtherScreenShare(userIdNowSharing);
         // 공유화면 video 추출 후 producer 생성
-        const displayMediaTrack = modifiedMediaTrack.getVideoTracks()[0];
+        const displayMediaTrack = modifiedMediaStream.getVideoTracks()[0];
+        this.addMediaStreamTrackEndedEvent(displayMediaTrack);
         try {
           await displayMediaTrack
             .applyConstraints(this._mediaUtil.SCREEN_CAPTURE_MEDIA_CONSTRAINTS)
@@ -1179,15 +1188,17 @@ export class RoomStore implements RoomViewModel {
 
   public stopShareMyScreen = () => {
     if (this._localScreenVideoStream === undefined) {
-      throw new InvalidStateError(
-        "로컬 공유화면이 없는 상태에서 화면공유를 끄려 했습니다."
-      );
+      // throw new InvalidStateError("로컬 공유화면이 없는 상태에서 화면공유를 끄려 했습니다.");
+      console.log("로컬 공유화면이 없는 상태에서 화면 공유 중지");
+      this._roomService.closeScreenVideoProducer();
+      this._roomService.broadcastStopShareScreen();
     }
-    this._roomService.closeScreenVideoProducer();
-    this._localScreenVideoStream.getTracks().forEach((track) => track.stop());
-    this._localScreenVideoStream = undefined;
-    // 화면종료 broadcast
-    this._roomService.broadcastStopShareScreen();
+    if (this._localScreenVideoStream !== undefined) {
+      this._roomService.closeScreenVideoProducer();
+      this._localScreenVideoStream.getTracks().forEach((track) => track.stop());
+      this._localScreenVideoStream = undefined;
+      this._roomService.broadcastStopShareScreen();
+    }
   };
 
   public deleteRoom = async (roomId: string): Promise<void> => {

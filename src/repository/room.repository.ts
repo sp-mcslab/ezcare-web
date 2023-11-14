@@ -76,7 +76,12 @@ export const deleteRoomReq = async (roomId: string) => {
   try {
     await client.room.updateMany({
       where: {
-        AND: [{ id: roomId }, { deletedat: null }],
+        OR: [
+          { AND: [{ id: roomId }, { deletedat: null }] },
+          {
+            AND: [{ id: roomId }, { NOT: { deletedat: null } }, { flag: true }],
+          },
+        ],
       },
       data: { deletedat: new Date(), flag: false },
     });

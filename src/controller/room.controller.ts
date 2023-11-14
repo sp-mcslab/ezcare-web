@@ -200,7 +200,7 @@ export const getHostById = async (
     for (const host of hosts) {
       if (host.userid == userId) {
         res.status(200);
-        res.json({ message: "호스트 목록이 조회되었습니다." });
+        res.json({ message: "호스트 권한이 조회되었습니다." });
         return;
       }
     }

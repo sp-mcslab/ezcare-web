@@ -14,7 +14,7 @@ export class AdminStore {
     return this._errorMessage;
   }
 
-  public get RoomRecord(): CallLogDto[] {
+  public get roomRecord(): CallLogDto[] {
     return this._roomRecord;
   }
 

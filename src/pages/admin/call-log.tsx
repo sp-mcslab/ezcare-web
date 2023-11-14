@@ -49,7 +49,7 @@ const LogPage: NextPage = observer(() => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {adminStore.RoomRecord.map((record, i) => (
+              {adminStore.roomRecord.map((record, i) => (
                 <TableRow key={record.roomId}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell>{record.roomId}</TableCell>

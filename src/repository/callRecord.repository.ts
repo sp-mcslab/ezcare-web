@@ -5,7 +5,7 @@ import { CallLogItemDto } from "@/dto/CallLogItemDto";
 
 const HOSPITAL_CODE = "A0013";
 const TENANT_CODE = "A001";
-export const findRecordByRoomId = async (
+export const findRecordAllRoom = async (
   roomId: string
 ): Promise<CallLogItemDto[] | null> => {
   return client.callRecord

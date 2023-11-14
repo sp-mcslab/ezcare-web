@@ -4,7 +4,7 @@ import { findAllRooms } from "@/repository/room.repository";
 import { CallLogDto } from "@/dto/CallLogDto";
 import {
   createRecord,
-  findRecordByRoomId,
+  findRecordAllRoom,
 } from "@/repository/callRecord.repository";
 
 export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -17,7 +17,7 @@ export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const callLogPromises = rooms.map(async (room) => {
-      const callRecords = await findRecordByRoomId(room.id);
+      const callRecords = await findRecordAllRoom(room.id);
       return CallLogDto.fromRoomEntity(room, callRecords);
     });
 

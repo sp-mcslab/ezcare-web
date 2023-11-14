@@ -18,8 +18,8 @@ const LogPage: NextPage = observer(() => {
   const router = useRouter();
 
   useEffect(() => {
-    adminStore.findRecordByRoomId();
-  }, [adminStore.findRecordByRoomId]);
+    adminStore.findRecordAllRoom();
+  }, [adminStore.findRecordAllRoom]);
 
   return (
     <div className="App">

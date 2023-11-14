@@ -7,7 +7,7 @@ const HEADER = {
 };
 
 export class AdminService {
-  public async findRecordByRoomId(): Promise<Result<CallLogDto[]>> {
+  public async findRecordAllRoom(): Promise<Result<CallLogDto[]>> {
     try {
       const response = await fetchAbsolute(`api/admin/call-log`, {
         method: "GET",

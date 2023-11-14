@@ -22,8 +22,8 @@ export class AdminStore {
     this._errorMessage = "";
   }
 
-  public findRecordByRoomId = async (): Promise<void> => {
-    const getRecordResult = await this._adminService.findRecordByRoomId();
+  public findRecordAllRoom = async (): Promise<void> => {
+    const getRecordResult = await this._adminService.findRecordAllRoom();
     if (getRecordResult.isSuccess) {
       runInAction(() => {
         this._initErrorMessage();

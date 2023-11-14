@@ -54,6 +54,11 @@ const ListPage: NextPage = observer(() => {
     })();
   }, [roomStore]);
 
+  const postRoom = async () => {
+    await roomStore.postRoom();
+    router.replace("/rooms");
+  };
+
   return (
     <div className="App">
       <div style={{ fontSize: "30px", paddingTop: "50px" }}>방 생성</div>
@@ -138,7 +143,7 @@ const ListPage: NextPage = observer(() => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => roomStore.postRoom()}
+          onClick={() => postRoom()}
         >
           방 생성
         </Button>

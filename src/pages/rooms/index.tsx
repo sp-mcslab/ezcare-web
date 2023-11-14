@@ -32,6 +32,11 @@ const ListPage: NextPage = observer(() => {
     return <></>;
   }
 
+  const deleteRoom = async (roomId: string) => {
+    await roomStore.deleteRoom(roomId);
+    router.replace("/");
+  };
+
   return (
     <div className="App">
       <div
@@ -89,7 +94,7 @@ const ListPage: NextPage = observer(() => {
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => roomStore.deleteRoom(room.id)}
+                        onClick={() => deleteRoom(room.id)}
                       >
                         삭제
                       </Button>

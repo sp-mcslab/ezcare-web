@@ -14,11 +14,11 @@ import styles from "../../styles/room.module.scss";
 import roomService from "@/service/room.service";
 
 enum MasterPopupMenus {
-  Kick = "강퇴",
-  Block = "차단",
+  //Block = "차단",
   Mute = "마이크 뮤트",
   Close = "비디오 끄기",
   KickWait = "대기실로 강퇴",
+  Kick = "강퇴",
 }
 
 const RoomScaffold: NextPage = observer(() => {
@@ -478,8 +478,8 @@ const RemoteMediaGroup: NextPage<{
         case "Kick":
           onKickClick(userId);
           break;
-        case "Block":
-          onBlockClick(userId);
+        /* case "Block":
+          onBlockClick(userId); */
           break;
         case "Mute":
           roomStore.muteOneAudio(userId);

@@ -28,6 +28,7 @@ export class RoomListService {
 
   public async postRoomList(
     token: string,
+    baseUrl: string,
     name: string,
     openAt: string,
     invitedUserIds: string[], // 초대된 회원의 ID 목록
@@ -36,7 +37,13 @@ export class RoomListService {
     try {
       const response = await fetchAbsolute(`api/rooms`, {
         method: "POST",
-        body: JSON.stringify({ name, openAt, invitedUserIds, hostUserIds }),
+        body: JSON.stringify({
+          name,
+          openAt,
+          invitedUserIds,
+          hostUserIds,
+          baseUrl,
+        }),
         headers: {
           "Content-Type": "application/json",
           "x-ezcare-session-token": token,

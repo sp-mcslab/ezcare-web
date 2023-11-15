@@ -28,6 +28,7 @@ import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { RoomDto } from "@/dto/RoomDto";
 import userService, { UserService } from "@/service/userService";
 import { RefObject } from "react";
+import { getBaseURL } from "@/utils/getBaseURL";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -1062,6 +1063,7 @@ export class RoomStore implements RoomViewModel {
     }
     const roomResult = await this._roomListService.postRoomList(
       sessionToken,
+      getBaseURL(),
       this._createdRoomName,
       this._createdAt,
       this._inviteUserList,

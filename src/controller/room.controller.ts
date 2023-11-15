@@ -15,8 +15,7 @@ const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
 export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   // 진료실 생성
-  // TODO - openAt을 현재로부터 몇 초 뒤 로 계산하여 저장하기.
-  const { name, openAt, invitedUserIds, hostUserIds } = req.body;
+  const { name, openAt, invitedUserIds, hostUserIds, baseUrl } = req.body;
 
   const creatorId = getIdFromToken(
     req.headers["x-ezcare-session-token"] as string,
@@ -62,6 +61,11 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   }
 
+  if (baseUrl == undefined) {
+    res.status(404).end();
+    return;
+  }
+
   //openAt이 createdAt보다 과거인 경우
   if (openTime < new Date(currentTime.setSeconds(0, 0))) {
     res.status(404);
@@ -82,10 +86,15 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
 
     await createHost(room.id, creatorId);
 
+    const roomUrl = (baseUrl as string) + room.id;
+
     res.status(201);
     res.json({
       message: "진료실 개설을 성공했습니다.",
-      data: room,
+      data: {
+        room,
+        roomUrl,
+      },
     });
   } catch (e) {
     if (typeof e === "string") {

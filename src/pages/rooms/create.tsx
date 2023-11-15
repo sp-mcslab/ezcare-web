@@ -151,7 +151,7 @@ const ListPage: NextPage = observer(() => {
       
       <div style={{ paddingTop: "25px" }}>
         <Button
-          onClick={() => router.replace("/auth/logout")}
+          onClick={() => router.replace("/rooms")}
         >
           뒤로가기
         </Button>

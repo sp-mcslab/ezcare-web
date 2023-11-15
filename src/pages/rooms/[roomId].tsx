@@ -12,6 +12,8 @@ import { RoomSettingDialog } from "@/components/RoomSettingDialog";
 import { Button, createTheme, ThemeProvider } from "@mui/material";
 import styles from "../../styles/room.module.scss";
 import roomService from "@/service/room.service";
+import { BsMicMuteFill, BsCameraVideoOffFill } from "react-icons/bs";
+import { MdHeadsetOff } from "react-icons/md";
 
 enum MasterPopupMenus {
   //Block = "차단",
@@ -96,6 +98,8 @@ const WaitingRoom: NextPage<{
           id="localVideo"
           videoStream={roomStore.localVideoStream}
           roomStore={roomStore}
+          width="640"
+          height="480"
         />
         <ThemeProvider theme={theme}>
           <div>
@@ -312,14 +316,14 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                     {userId}
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={() => roomStore.approveJoiningRoom(userId)}
                     >
                       승인
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={() => roomStore.rejectJoiningRoom(userId)}
                     >
                       거부
@@ -375,24 +379,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
           >
             {enabledHeadset ? "Mute Headset" : "Unmute Headset"}
           </Button>
-          {roomStore.isHost && (
-            <div style={{ display: "inline-block" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => roomStore.muteAllAudio()}
-              >
-                mute-all(host)
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => roomStore.closeAllVideo()}
-              >
-                close-all-Vids(host)
-              </Button>
-            </div>
-          )}
           <Button
             id="screenShareToggle"
             variant="contained"
@@ -414,7 +400,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 roomStore.changeViewMode();
               }}
             >
-              Tile view
+              List view로 전환
             </Button>
           ) : (
             <Button
@@ -424,13 +410,28 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 roomStore.changeViewMode();
               }}
             >
-              List view
+              Tile view로 전환
             </Button>
           )}
+          {roomStore.isHost && (
+            <div style={{ display: "inline-block" }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => roomStore.muteAllAudio()}
+              >
+                mute-all(host)
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => roomStore.closeAllVideo()}
+              >
+                close-all-Vids(host)
+              </Button>
+            </div>
+          )}
           <DeviceSelector roomStore={roomStore}></DeviceSelector>
-
-          {!enabledHeadset ? "헤드셋 꺼짐!" : ""}
-          {!enabledAudio ? "마이크 꺼짐!" : ""}
 
           {isCurrentUserMaster && (
             <div>
@@ -478,7 +479,7 @@ const RemoteMediaGroup: NextPage<{
         case "Kick":
           onKickClick(userId);
           break;
-        /* case "Block":
+          /* case "Block":
           onBlockClick(userId); */
           break;
         case "Mute":
@@ -497,12 +498,26 @@ const RemoteMediaGroup: NextPage<{
         <>
           <div>
             <div>
-              <div className={styles.localCameraListElement}>
-                <Video
-                  id="localVideo"
-                  videoStream={roomStore.localVideoStream}
-                  roomStore={roomStore}
-                />
+              <div className={styles.localCameraListContainer}>
+                <div className={styles.stateContainer}>
+                  {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
+                  {!roomStore.enabledLocalAudio ? <BsMicMuteFill /> : ""}
+                </div>
+                {roomStore.localVideoStream ? (
+                  <div>
+                    <Video
+                      id="localVideo"
+                      videoStream={roomStore.localVideoStream}
+                      roomStore={roomStore}
+                      width="100%"
+                      height="80%"
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.localCameraNull}>
+                    <BsCameraVideoOffFill />
+                  </div>
+                )}
               </div>
 
               <div className={styles.cameraListContainer}>
@@ -514,23 +529,48 @@ const RemoteMediaGroup: NextPage<{
                   }
                   return (
                     <div key={peerId} className={styles.cameraElement}>
+                      <div className={styles.stateContainer}>
+                        {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
+                        {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
+                      </div>
                       <Video
                         id={peerId}
                         videoStream={mediaStream}
                         roomStore={roomStore}
+                        width="100%"
+                        height="100%"
                       />
                       {/* 캠화면입니다!!!!!!!!!!!!!! */}
-                      {peerState.enabledMicrophone ? "" : "마이크 끔!"}
-                      {peerState.enabledHeadset ? "" : "헤드셋 끔!"}
                       {roomStore.isHost && (
                         <div>
-                          <PopupMenu
-                            label={"더보기"}
-                            menuItems={masterPopupMenus}
-                            onMenuItemClick={(item) =>
-                              handleMasterPopupMenuClick(item, peerId)
-                            }
-                          />
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => roomStore.muteOneAudio(peerId)}
+                          >
+                            마이크 뮤트
+                          </Button>
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => roomStore.closeOneVideo(peerId)}
+                          >
+                            비디오 뮤트
+                          </Button>
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => onKickToWaitingRoomClick(peerId)}
+                          >
+                            대기실로 강퇴
+                          </Button>
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            onClick={() => onKickClick(peerId)}
+                          >
+                            강퇴
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -578,11 +618,25 @@ const RemoteMediaGroup: NextPage<{
           <div>
             <div>
               <div className={styles.localCameraElement}>
-                <Video
-                  id="localVideo"
-                  videoStream={roomStore.localVideoStream}
-                  roomStore={roomStore}
-                />
+                <div className={styles.stateContainer}>
+                  {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
+                  {!roomStore.enabledLocalAudio ? <BsMicMuteFill /> : ""}
+                </div>
+                {roomStore.localVideoStream ? (
+                  <div>
+                    <Video
+                      id="localVideo"
+                      videoStream={roomStore.localVideoStream}
+                      roomStore={roomStore}
+                      width="100%"
+                      height="100%"
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.localCameraNullTile}>
+                    <BsCameraVideoOffFill />
+                  </div>
+                )}
               </div>
               {remoteVideoStreamByPeerIdEntries.map((entry) => {
                 const [peerId, mediaStream] = entry;
@@ -592,23 +646,48 @@ const RemoteMediaGroup: NextPage<{
                 }
                 return (
                   <div key={peerId} className={styles.cameraElement}>
+                    <div className={styles.stateContainer}>
+                      {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
+                      {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
+                    </div>
                     <Video
                       id={peerId}
                       videoStream={mediaStream}
                       roomStore={roomStore}
+                      width="100%"
+                      height="100%"
                     />
                     {/* 캠화면입니다!!!!!!!!!!!!!! */}
-                    {peerState.enabledMicrophone ? "" : "마이크 끔!"}
-                    {peerState.enabledHeadset ? "" : "헤드셋 끔!"}
                     {roomStore.isHost && (
                       <div>
-                        <PopupMenu
-                          label={"더보기"}
-                          menuItems={masterPopupMenus}
-                          onMenuItemClick={(item) =>
-                            handleMasterPopupMenuClick(item, peerId)
-                          }
-                        />
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => roomStore.muteOneAudio(peerId)}
+                        >
+                          마이크 뮤트
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => roomStore.closeOneVideo(peerId)}
+                        >
+                          비디오 뮤트
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => onKickToWaitingRoomClick(peerId)}
+                        >
+                          대기실로 강퇴
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => onKickClick(peerId)}
+                        >
+                          강퇴
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -800,7 +879,9 @@ const Video: NextPage<{
   id: string;
   videoStream: MediaStream | undefined;
   roomStore: RoomStore;
-}> = ({ id, videoStream, roomStore }) => {
+  width: string;
+  height: string;
+}> = ({ id, videoStream, roomStore, width, height }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -827,6 +908,8 @@ const Video: NextPage<{
       className="video"
       muted
       onClick={() => handleVideoControl({ userId: id })}
+      width={width}
+      height={height}
     ></video>
   );
 };

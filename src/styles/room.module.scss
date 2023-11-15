@@ -12,26 +12,59 @@
 
 .cameraElement {
   display: inline-block;
+  position: relative;
   padding: 20px;
 }
 
 .localCameraElement {
   display: inline-block;
+  position: relative;
   padding: 20px;
 }
 
-.localCameraListElement {
+.localCameraListContainer {
   position: fixed;
   width: 50%;
-    height: 100%;
-    top: 20%;
+  height: 100%;
 }
+
+.stateContainer{
+  position: absolute; 
+  padding: 20px;
+  z-index: 999;
+  font-size: 50px;
+  color: rgba(255,255,255,0.75);
+}
+
 .cameraListContainer {
   float: right;
-  width: 50%;
+  width: 30%;
   height: 100%;
   overflow: auto;
 }
+
+.localCameraNull {
+  width: 100%;
+  height: 75%;
+  display: flex;
+  background:black;
+  font-size: 150px;
+  color: rgba(255,255,255,0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.localCameraNullTile {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  background:black;
+  font-size: 150px;
+  color: rgba(255,255,255,0.5);
+  align-items: center;
+  justify-content: center;
+}
+
 .side {
   width: 20%;
   height: 100%;

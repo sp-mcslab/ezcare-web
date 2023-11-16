@@ -6,12 +6,10 @@ import { useRouter } from "next/router";
 import { ChatMessage } from "@/models/room/ChatMessage";
 import { RoomState } from "@/models/room/RoomState";
 import { PeerState } from "@/models/room/PeerState";
-import PopupMenu from "@/components/PopupMenu";
 import { getEnumKeyByEnumValue } from "@/utils/EnumUtil";
 import { RoomSettingDialog } from "@/components/RoomSettingDialog";
 import { Button, createTheme, ThemeProvider } from "@mui/material";
 import styles from "../../styles/room.module.scss";
-import roomService from "@/service/room.service";
 import { BsMicMuteFill, BsCameraVideoOffFill } from "react-icons/bs";
 import { MdHeadsetOff } from "react-icons/md";
 
@@ -44,6 +42,7 @@ const RoomScaffold: NextPage = observer(() => {
       await roomStore.getUserIdWithSessionToken();
       if (typeof roomId === "string") {
         await roomStore.getIsHostWithSessionToken(roomId);
+        await roomStore.setInvitation(roomId, roomStore.uid);
       }
     })();
   }, [roomStore, roomId]);

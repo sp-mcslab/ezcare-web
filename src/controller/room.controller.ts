@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import {
+  checkRoomClosed,
+  checkRoomOpened,
   createRoom,
   deleteRoomReq,
   updateAllCallRecordOfRoom,
@@ -8,8 +10,13 @@ import { createHost, findUserHostByRoomId } from "@/repository/host.repository";
 import { getIdFromToken } from "@/utils/JwtUtil";
 import { findRooms } from "@/repository/room.repository";
 import { findUserById } from "@/repository/user.repository";
-import roomService from "@/service/room.service";
+import roomService from "@/service/roomService";
 import schedule from "node-schedule";
+import {
+  createInvitation,
+  findInvitedUsersByRoomId,
+} from "@/repository/invite.repository";
+import roomListService from "@/service/roomListService";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
@@ -147,7 +154,7 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const schedule = require("node-schedule");
     const job = schedule.scheduleJob("1 * * * * *", function () {
-      roomService.checkAndUpdateFlag();
+      roomListService.checkAndUpdateFlag();
     });
 
     const userId = getIdFromToken(
@@ -183,6 +190,24 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
+export const checkRoomFlag = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    checkRoomOpened();
+    checkRoomClosed();
+
+    res.status(200);
+    res.json({ message: "flag 검사를 완료하였습니다.", data: false });
+    return;
+  } catch (e) {
+    res.status(404);
+    res.json({ message: "flag 검사 중 오류가 발생했습니다." });
+    return;
+  }
+};
+
 export const getHostById = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -209,17 +234,96 @@ export const getHostById = async (
     for (const host of hosts) {
       if (host.userid == userId) {
         res.status(200);
-        res.json({ message: "호스트 권한이 조회되었습니다." });
+        res.json({ message: "호스트 권한을 가지고 있습니다.", data: true });
         return;
       }
     }
 
-    res.status(404);
-    res.json({ message: "호스트 권한이 조회되지 않았습니다." });
+    res.status(200);
+    res.json({ message: "호스트 권한을 가지고 있지 않습니다.", data: false });
     return;
   } catch (e) {
     res.status(404);
     res.json({ message: "호스트 권한이 조회되지 않았습니다." });
+    return;
+  }
+};
+
+export const getInvitedUsersByRoomId = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const userId = getIdFromToken(
+      req.headers["x-ezcare-session-token"] as string,
+      secretKey
+    ); // 사용자의 id get.
+
+    const roomId = req.query.roomId;
+
+    if (roomId == null) {
+      res.status(401).end();
+      return;
+    }
+
+    const invitedUsers = await findInvitedUsersByRoomId(roomId as string);
+    if (invitedUsers == null) {
+      res.status(401).end();
+      return;
+    }
+
+    res.status(200);
+    res.json({
+      message: "초대 목록이 조회되었습니다.",
+      data: { invitedUsers: invitedUsers },
+    });
+    return;
+  } catch (e) {
+    res.status(404);
+    res.json({ message: "초대 목록이 조회되지 않았습니다." });
+    return;
+  }
+};
+
+export const postInvitation = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const roomId = req.query.roomId;
+    if (roomId == null) {
+      res.status(400).end();
+      return;
+    }
+
+    const { userId } = req.body;
+    if (userId == null) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log(
+      roomId + " 번 방에 회원번호 " + userId + " 님이 초대되었습니다."
+    );
+
+    const invitedUsers = await createInvitation(
+      roomId as string,
+      userId as string
+    );
+    if (invitedUsers == null) {
+      res.status(400).end();
+      return;
+    }
+
+    res.status(200);
+    res.json({
+      message: "초대 목록에 추가되었습니다..",
+      // data: { invitedUsers: invitedUsers },
+    });
+    return;
+  } catch (e) {
+    res.status(404);
+    res.json({ message: "초대 목록애 추가되지 않았습니다." });
     return;
   }
 };

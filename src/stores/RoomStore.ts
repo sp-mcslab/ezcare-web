@@ -27,6 +27,7 @@ import { uuidv4 } from "@firebase/util";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { RoomDto } from "@/dto/RoomDto";
 import userService, { UserService } from "@/service/userService";
+import roomService, { RoomService } from "@/service/roomService";
 import { RefObject } from "react";
 import { getBaseURL } from "@/utils/getBaseURL";
 
@@ -66,9 +67,10 @@ export interface RoomViewModel {
 }
 
 export class RoomStore implements RoomViewModel {
-  private readonly _roomService;
+  private readonly _roomSocketService;
   private readonly _roomListService;
-  private readonly _userService: UserService = userService;
+  private readonly _roomService;
+  private readonly _userService;
   private _failedToSignIn: boolean = false;
 
   private _state: RoomState = RoomState.CREATED;
@@ -123,12 +125,16 @@ export class RoomStore implements RoomViewModel {
 
   constructor(
     private _mediaUtil: MediaUtil = new MediaUtil(),
-    roomService?: RoomSocketService,
-    roomListService?: RoomListService
+    roomSocketService?: RoomSocketService,
+    roomListService?: RoomListService,
+    roomService?: RoomService,
+    userServie?: UserService
   ) {
     makeAutoObservable(this);
-    this._roomService = roomService ?? new RoomSocketService(this);
+    this._roomSocketService = roomSocketService ?? new RoomSocketService(this);
     this._roomListService = roomListService ?? new RoomListService();
+    this._roomService = roomService ?? new RoomService();
+    this._userService = userServie ?? new UserService();
   }
 
   public get videoDeviceList() {
@@ -356,7 +362,7 @@ export class RoomStore implements RoomViewModel {
   }
 
   public connectSocket = (roomId: string) => {
-    this._roomService.connect(roomId);
+    this._roomSocketService.connect(roomId);
   };
 
   public onConnectedWaitingRoom = async (waitingRoomData: WaitingRoomData) => {
@@ -469,7 +475,7 @@ export class RoomStore implements RoomViewModel {
 
   public requestToJoinRoom = async () => {
     this._awaitConfirmToJoin = true;
-    const result = await this._roomService.requestToJoin(this._uid);
+    const result = await this._roomSocketService.requestToJoin(this._uid);
     if (result.isFailure) {
       this._failedToJoinMessage = "입장 요청 전송을 실패했습니다.";
       this._awaitConfirmToJoin = false;
@@ -488,7 +494,7 @@ export class RoomStore implements RoomViewModel {
     if (!this._isHost) {
       return;
     }
-    const result = await this._roomService.approveJoiningRoom(userId);
+    const result = await this._roomSocketService.approveJoiningRoom(userId);
     if (result.isFailure) {
       this._userMessage = result.throwableOrNull()!.message;
     }
@@ -500,7 +506,7 @@ export class RoomStore implements RoomViewModel {
     if (!this._isHost) {
       return;
     }
-    const result = await this._roomService.rejectJoiningRoom(userId);
+    const result = await this._roomSocketService.rejectJoiningRoom(userId);
     if (result.isFailure) {
       this._userMessage = result.throwableOrNull()!.message;
     }
@@ -518,7 +524,7 @@ export class RoomStore implements RoomViewModel {
     if (this.kickedToWaitingRoom) {
       this._kickedToWaitingRoom = false;
     }
-    this._roomService.join(mediaStream, this._passwordInput, this._uid);
+    this._roomSocketService.join(mediaStream, this._passwordInput, this._uid);
   };
 
   public onFailedToJoin = (message: string) => {
@@ -562,7 +568,7 @@ export class RoomStore implements RoomViewModel {
     const media = await this._mediaUtil.fetchLocalVideo(deviceId);
     await runInAction(async () => {
       this._localVideoStream = media;
-      await this._roomService.replaceVideoProducer({
+      await this._roomSocketService.replaceVideoProducer({
         track: this._localVideoStream.getTracks()[0],
       });
     });
@@ -572,7 +578,7 @@ export class RoomStore implements RoomViewModel {
     const media = await this._mediaUtil.fetchLocalAudioInput(deviceId);
     await runInAction(async () => {
       this._localAudioStream = media;
-      await this._roomService.replaceAudioProducer({
+      await this._roomSocketService.replaceAudioProducer({
         track: this._localAudioStream.getTracks()[0],
       });
     });
@@ -612,7 +618,7 @@ export class RoomStore implements RoomViewModel {
     await runInAction(async () => {
       const track = media.getVideoTracks()[0];
       this._localVideoStream = new MediaStream([track]);
-      await this._roomService.produceVideoTrack(track);
+      await this._roomSocketService.produceVideoTrack(track);
     });
   };
 
@@ -622,7 +628,7 @@ export class RoomStore implements RoomViewModel {
         "로컬 비디오가 없는 상태에서 비디오를 끄려 했습니다."
       );
     }
-    this._roomService.closeVideoProducer();
+    this._roomSocketService.closeVideoProducer();
     this._localVideoStream.getTracks().forEach((track) => track.stop());
     this._localVideoStream = undefined;
   };
@@ -647,7 +653,7 @@ export class RoomStore implements RoomViewModel {
     await runInAction(async () => {
       const track = media.getAudioTracks()[0];
       this._localAudioStream = new MediaStream([track]);
-      await this._roomService.produceAudioTrack(track);
+      await this._roomSocketService.produceAudioTrack(track);
     });
   };
 
@@ -657,13 +663,13 @@ export class RoomStore implements RoomViewModel {
         "로컬 오디오가 없는 상태에서 오디오를 끄려 했습니다."
       );
     }
-    this._roomService.closeAudioProducer();
+    this._roomSocketService.closeAudioProducer();
     this._localAudioStream.getTracks().forEach((track) => track.stop());
     this._localAudioStream = undefined;
   };
 
   public unmuteHeadset = () => {
-    this._roomService.unmuteHeadset();
+    this._roomSocketService.unmuteHeadset();
     this._enabledHeadset = true;
   };
 
@@ -675,7 +681,7 @@ export class RoomStore implements RoomViewModel {
       remoteAudioStream.getAudioTracks().forEach((audio) => audio.stop());
     }
     // TODO(민성): 헤드셋 뮤트하고 _remoteAudioStreamsByPeerId 클리어 해야하는지 확인하기
-    this._roomService.muteHeadset();
+    this._roomSocketService.muteHeadset();
     this._enabledHeadset = false;
   };
 
@@ -684,12 +690,12 @@ export class RoomStore implements RoomViewModel {
     if (remoteVideoStream != null) {
       remoteVideoStream.getVideoTracks().forEach((video) => video.stop());
     }
-    this._roomService.hideRemoteVideo(userId);
+    this._roomSocketService.hideRemoteVideo(userId);
     this._remoteVideoSwitchByPeerId.set(userId, false);
   };
 
   public showRemoteVideo = (userId: string) => {
-    this._roomService.showRemoteVideo(userId);
+    this._roomSocketService.showRemoteVideo(userId);
     this._remoteVideoSwitchByPeerId.set(userId, true);
   };
 
@@ -703,7 +709,7 @@ export class RoomStore implements RoomViewModel {
   };
 
   public sendChat = () => {
-    this._roomService.sendChat(this._chatInput);
+    this._roomSocketService.sendChat(this._chatInput);
     this._chatInput = "";
   };
 
@@ -768,20 +774,20 @@ export class RoomStore implements RoomViewModel {
   };
 
   public kickUser = (userId: string) => {
-    this._roomService.kickUser(userId);
+    this._roomSocketService.kickUser(userId);
   };
 
   public kickUserToWaitingRoom = (userId: string) => {
-    this._roomService.kickUserToWaitingRoom(userId);
+    this._roomSocketService.kickUserToWaitingRoom(userId);
   };
 
   public blockUser = (userId: string) => {
-    this._roomService.blockUser(userId);
+    this._roomSocketService.blockUser(userId);
   };
 
   public unblockUser = async (userId: string) => {
     try {
-      await this._roomService.unblockUser(userId);
+      await this._roomSocketService.unblockUser(userId);
       this._blacklist = this._blacklist.filter((user) => user.id !== userId);
     } catch (e) {
       this._userMessage =
@@ -911,7 +917,7 @@ export class RoomStore implements RoomViewModel {
       (ps) => ps.uid !== this.uid
     );
     const userIds = peerStatesExceptMe.map((ps) => ps.uid);
-    return this._roomService.closeAudioByHost(userIds);
+    return this._roomSocketService.closeAudioByHost(userIds);
   };
 
   public muteOneAudio = (peerId: string) => {
@@ -920,7 +926,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     const userIds: string[] = [peerId];
-    return this._roomService.closeAudioByHost(userIds);
+    return this._roomSocketService.closeAudioByHost(userIds);
   };
 
   public closeAllVideo = () => {
@@ -932,7 +938,7 @@ export class RoomStore implements RoomViewModel {
       (ps) => ps.uid !== this.uid
     );
     const userIds = peerStatesExceptMe.map((ps) => ps.uid);
-    return this._roomService.closeVideoByHost(userIds);
+    return this._roomSocketService.closeVideoByHost(userIds);
   };
 
   public closeOneVideo = (peerId: string) => {
@@ -941,7 +947,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     const userIds: string[] = [peerId];
-    return this._roomService.closeVideoByHost(userIds);
+    return this._roomSocketService.closeVideoByHost(userIds);
   };
 
   public onMuteMicrophone = () => {
@@ -1140,7 +1146,7 @@ export class RoomStore implements RoomViewModel {
               this._localScreenVideoStream = new MediaStream([
                 displayMediaTrack,
               ]);
-              await this._roomService.produceScreenVideoTrack(
+              await this._roomSocketService.produceScreenVideoTrack(
                 displayMediaTrack
               );
             });
@@ -1160,7 +1166,9 @@ export class RoomStore implements RoomViewModel {
         await this._mediaUtil.fetchScreenCaptureVideo();
       try {
         // 다른 유저 공유화면 종료
-        await this._roomService.disConnectOtherScreenShare(userIdNowSharing);
+        await this._roomSocketService.disConnectOtherScreenShare(
+          userIdNowSharing
+        );
         // 공유화면 video 추출 후 producer 생성
         const displayMediaTrack = modifiedMediaStream.getVideoTracks()[0];
         this.addMediaStreamTrackEndedEvent(displayMediaTrack);
@@ -1172,7 +1180,7 @@ export class RoomStore implements RoomViewModel {
                 this._localScreenVideoStream = new MediaStream([
                   displayMediaTrack,
                 ]);
-                await this._roomService.produceScreenVideoTrack(
+                await this._roomSocketService.produceScreenVideoTrack(
                   displayMediaTrack
                 );
               });
@@ -1192,14 +1200,14 @@ export class RoomStore implements RoomViewModel {
     if (this._localScreenVideoStream === undefined) {
       // throw new InvalidStateError("로컬 공유화면이 없는 상태에서 화면공유를 끄려 했습니다.");
       console.log("로컬 공유화면이 없는 상태에서 화면 공유 중지");
-      this._roomService.closeScreenVideoProducer();
-      this._roomService.broadcastStopShareScreen();
+      this._roomSocketService.closeScreenVideoProducer();
+      this._roomSocketService.broadcastStopShareScreen();
     }
     if (this._localScreenVideoStream !== undefined) {
-      this._roomService.closeScreenVideoProducer();
+      this._roomSocketService.closeScreenVideoProducer();
       this._localScreenVideoStream.getTracks().forEach((track) => track.stop());
       this._localScreenVideoStream = undefined;
-      this._roomService.broadcastStopShareScreen();
+      this._roomSocketService.broadcastStopShareScreen();
     }
   };
 
@@ -1220,15 +1228,20 @@ export class RoomStore implements RoomViewModel {
     return;
   };
 
-  //유저 권한, 호스트 여부 조회
+  //유저 권한, 호스트 여부 조회, 초대 인원 조회
   private _userRole: string = "";
   private _isHost: boolean = false;
+  private _isInvited: boolean = false;
 
   public get userRole(): string | null {
     return this._userRole;
   }
   public get isHost(): boolean | null {
     return this._isHost;
+  }
+
+  public get isInvited(): boolean | null {
+    return this._isInvited;
   }
 
   public getUserIdWithSessionToken = async (): Promise<void> => {
@@ -1244,6 +1257,46 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
+  // 초대
+  public setInvitation = async (
+    roomId: string,
+    userId: string
+  ): Promise<void> => {
+    await this.getIsInvitedUser(roomId, userId);
+
+    if (!this.isHost && !this.isInvited) {
+      await this._roomService.postInvitation(roomId, userId);
+    }
+  };
+
+  public getIsInvitedUser = async (
+    roomId: string,
+    userId: string
+  ): Promise<void> => {
+    const invitedUsers = await this.getInvitedUsersByRoomId(roomId);
+
+    if (invitedUsers == null) return;
+
+    this._isInvited = invitedUsers.some((user) => user === userId);
+  };
+
+  public getInvitedUsersByRoomId = async (
+    roomId: string
+  ): Promise<string[] | undefined> => {
+    const sessionToken = getSessionTokenFromLocalStorage();
+    if (sessionToken == null) {
+      return;
+    }
+    const invitedUsers = await this._roomService.getInvitedUsers(roomId);
+    if (invitedUsers == null) {
+      return;
+    }
+
+    this._inviteUserList = invitedUsers;
+    return invitedUsers;
+  };
+
+  // 호스트
   public getRoleWithSessionToken = async (): Promise<void> => {
     const sessionToken = getSessionTokenFromLocalStorage();
     if (sessionToken == null) {

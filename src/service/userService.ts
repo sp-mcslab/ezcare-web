@@ -36,8 +36,8 @@ export class UserService {
           "Content-Type": "application/json",
         },
       });
-      const data = await response.json(); // Read the response body as JSON
-      const id = data.data.id; // Access the "id" property from the data object
+      const data = await response.json();
+      const id = data.data.id;
       return id;
     } catch (e) {
       console.log("find User from session error " + e);
@@ -54,7 +54,8 @@ export class UserService {
           "Content-Type": "application/json",
         },
       });
-      return response.ok;
+      const data = await response.json();
+      return data.data as boolean;
     } catch (e) {
       return false;
     }

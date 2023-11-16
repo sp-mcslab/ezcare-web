@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { RootStore } from "@/stores/RootStore";
-import roomService, { RoomService } from "@/service/room.service";
+import roomService, { RoomService } from "@/service/roomService";
 import { RoomOverview } from "@/models/room/RoomOverview";
 import React from "react";
 import expect from "expect";

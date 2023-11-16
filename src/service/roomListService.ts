@@ -75,6 +75,22 @@ export class RoomListService {
       return Result.createErrorUsingException(e);
     }
   }
+
+  public async checkAndUpdateFlag() {
+    try {
+      const response = await fetchAbsolute(`api/rooms/flag`, {
+        method: "GET",
+        headers: HEADER,
+      });
+      if (response.ok) {
+        return Result.createSuccessUsingResponseData(response);
+      } else {
+        return Result.createErrorUsingResponseMessage(response);
+      }
+    } catch (e) {
+      return Result.createErrorUsingException(e);
+    }
+  }
 }
 
 const roomListService = new RoomListService();

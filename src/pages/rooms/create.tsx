@@ -86,7 +86,6 @@ const ListPage: NextPage = observer(() => {
           >
             방 생성
           </Button>
-          {roomStore.inviteUserIdList}
         </div>
       </div>
       <div style={{ display: "inline-block" }}>

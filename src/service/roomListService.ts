@@ -30,7 +30,7 @@ export class RoomListService {
     token: string,
     baseUrl: string,
     name: string,
-    openAt: string,
+    openAt: Date,
     invitedUserIds: string[], // 초대된 회원의 ID 목록
     hostUserIds: string[]
   ): Promise<Result<RoomDto[]>> {

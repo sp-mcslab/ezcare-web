@@ -178,6 +178,7 @@ export const updateAllCallRecordOfRoom = async (
 
 export const checkRoomOpened = async (): Promise<boolean | null> => {
   const presentTime = new Date(); // 비교할 현재 시간
+  presentTime.setMinutes(presentTime.getMinutes() + 10);
   console.log("check Room Opened :: " + presentTime.toISOString());
   const result = await client.room.updateMany({
     where: {

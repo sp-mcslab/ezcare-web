@@ -981,11 +981,16 @@ export class RoomStore implements RoomViewModel {
 
   // 방 생성
   private _createdRoomName: string = "";
-  private _createdAt: string = "";
+  private _createdAt: Date = new Date();
   private _inviteUserId: string = "";
   private _inviteUserIdList: string[] = [];
   private _hostUserList: string[] = [];
-  private _inviteUserList: { id: string; name: string; role: string, host: boolean }[] = [];
+  private _inviteUserList: {
+    id: string;
+    name: string;
+    role: string;
+    host: boolean;
+  }[] = [];
 
   public get createdRoomName(): string {
     return this._createdRoomName;
@@ -995,33 +1000,13 @@ export class RoomStore implements RoomViewModel {
     this._createdRoomName = data;
   };
 
-  public get createdAt(): string {
+  public get createdAt(): Date {
     return this._createdAt;
   }
 
   public updateCreatedAt = (data: any) => {
-    const openTime = new Date(data);
-    openTime.setSeconds(0, 0);
-    const presentTime = new Date();
-
-    let dateDiff = openTime.getDate() - presentTime.getDate();
-    let hourDiff = openTime.getHours() - presentTime.getHours();
-    let minuteDiff = openTime.getMinutes() - presentTime.getMinutes();
-    let secondDiff = openTime.getSeconds() - presentTime.getSeconds();
-
-    console.log(
-      "create time :: " +
-        dateDiff +
-        " 일 / " +
-        hourDiff +
-        " 시간 / " +
-        minuteDiff +
-        "분 / " +
-        secondDiff +
-        "초 차이 납니다."
-    );
-    this._createdAt =
-      dateDiff + "/" + hourDiff + "/" + minuteDiff + "/" + secondDiff;
+    this._createdAt = new Date(data);
+    console.log(this._createdAt);
   };
   public get inviteUserId(): string {
     return this._inviteUserId;
@@ -1035,7 +1020,12 @@ export class RoomStore implements RoomViewModel {
     return this._inviteUserIdList;
   }
 
-  public get inviteUserList(): { id: string; name: string; role: string, host: boolean }[] {
+  public get inviteUserList(): {
+    id: string;
+    name: string;
+    role: string;
+    host: boolean;
+  }[] {
     return this._inviteUserList;
   }
 
@@ -1043,7 +1033,7 @@ export class RoomStore implements RoomViewModel {
     this._inviteUserIdList = this._inviteUserIdList.filter(
       (element) => element !== inviteid
     );
-    
+
     this._inviteUserList = this._inviteUserList.filter(
       (element) => element.id !== inviteid
     );
@@ -1058,11 +1048,18 @@ export class RoomStore implements RoomViewModel {
       (element) => element.id !== this._inviteUserId
     );
 
-    const validResult = await this._userService.findUserById(this._inviteUserId);
+    const validResult = await this._userService.findUserById(
+      this._inviteUserId
+    );
     if (validResult.isSuccess) {
       const inviteUser = validResult.getOrNull()!!;
       this._inviteUserIdList.push(inviteUser.id);
-      this._inviteUserList.push({id: inviteUser.id, name: inviteUser.name, role: inviteUser.role, host: false});
+      this._inviteUserList.push({
+        id: inviteUser.id,
+        name: inviteUser.name,
+        role: inviteUser.role,
+        host: false,
+      });
       this._inviteUserId = "";
       runInAction(() => {
         alert("초대가 완료되었습니다.");
@@ -1079,7 +1076,7 @@ export class RoomStore implements RoomViewModel {
   }
 
   public pushHostUserList = (hostid: string) => {
-    this._inviteUserList.forEach( user => {
+    this._inviteUserList.forEach((user) => {
       if (user.id == hostid) {
         user.host = true;
         this._hostUserList = this._hostUserList.filter(
@@ -1091,7 +1088,7 @@ export class RoomStore implements RoomViewModel {
   };
 
   public popHostUserList = (hostid: string) => {
-    this._inviteUserList.forEach( user => {
+    this._inviteUserList.forEach((user) => {
       if (user.id == hostid) {
         user.host = false;
         this._hostUserList = this._hostUserList.filter(
@@ -1099,7 +1096,6 @@ export class RoomStore implements RoomViewModel {
         );
       }
     });
-    
   };
 
   public postRoom = async (): Promise<void> => {
@@ -1111,14 +1107,17 @@ export class RoomStore implements RoomViewModel {
       const openTime = new Date();
       openTime.setSeconds(0, 0);
       this._createdRoomName =
-        openTime.getFullYear().toString() + "-" +
-        openTime.getMonth().toString() + "-" +
+        openTime.getFullYear().toString() +
+        "-" +
+        openTime.getMonth().toString() +
+        "-" +
         openTime.getDate().toString();
       this._inviteUserIdList.forEach((user) => {
         this._createdRoomName += "_";
         this._createdRoomName += user;
       });
     }
+    this._createdAt.setSeconds(0, 0);
     const roomResult = await this._roomListService.postRoomList(
       sessionToken,
       getBaseURL(),

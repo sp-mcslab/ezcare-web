@@ -62,6 +62,7 @@ const ListPage: NextPage = observer(() => {
               }}
             />
           </LocalizationProvider>
+          <div>진료실 예약 시, 예약 시간 10분 전부터 진료실이 오픈됩니다.</div>
         </div>
 
         <div style={{ paddingTop: "30px" }}>

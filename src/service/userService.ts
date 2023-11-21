@@ -1,6 +1,7 @@
 import { Result } from "@/models/common/Result";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
 import { UserRoleDto } from "@/dto/UserRoleDto";
+import { UserSearchDto } from "@/dto/UserSearchDto";
 
 const HEADER = {
   "Content-Type": "application/json",
@@ -58,6 +59,24 @@ export class UserService {
       return data.data as boolean;
     } catch (e) {
       return false;
+    }
+  }
+
+  public async findUserById(userId: string): Promise<Result<UserSearchDto>> {
+    try {
+      const response = await fetchAbsolute(`api/user`, {
+        method: "POST",
+        body: JSON.stringify({ userId }),
+        headers: HEADER,
+      });
+      if (response.ok) {
+        return Result.createSuccessUsingResponseData(response);
+      } else {
+        console.log(response);
+        return await Result.createErrorUsingResponseMessage(response);
+      }
+    } catch (e) {
+      return Result.createErrorUsingException(e);
     }
   }
 }

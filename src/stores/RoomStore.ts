@@ -983,8 +983,9 @@ export class RoomStore implements RoomViewModel {
   private _createdRoomName: string = "";
   private _createdAt: string = "";
   private _inviteUserId: string = "";
-  private _inviteUserList: string[] = [];
+  private _inviteUserIdList: string[] = [];
   private _hostUserList: string[] = [];
+  private _inviteUserList: { id: string; name: string; role: string, host: boolean }[] = [];
 
   public get createdRoomName(): string {
     return this._createdRoomName;
@@ -1030,18 +1031,46 @@ export class RoomStore implements RoomViewModel {
     this._inviteUserId = userid;
   };
 
-  public get inviteUserList(): string[] {
+  public get inviteUserIdList(): string[] {
+    return this._inviteUserIdList;
+  }
+
+  public get inviteUserList(): { id: string; name: string; role: string, host: boolean }[] {
     return this._inviteUserList;
   }
 
-  public pushInviteUserList = () => {
+  public popInviteUserList = (inviteid: string) => {
+    this._inviteUserIdList = this._inviteUserIdList.filter(
+      (element) => element !== inviteid
+    );
+    
     this._inviteUserList = this._inviteUserList.filter(
+      (element) => element.id !== inviteid
+    );
+  };
+
+  public pushinviteUserIdList = async (): Promise<void> => {
+    this._inviteUserIdList = this._inviteUserIdList.filter(
       (element) => element !== this._inviteUserId
     );
-    this._inviteUserList.push(this._inviteUserId);
-    this._inviteUserId = "";
+
+    this._inviteUserList = this._inviteUserList.filter(
+      (element) => element.id !== this._inviteUserId
+    );
+
+    const validResult = await this._userService.findUserById(this._inviteUserId);
+    if (validResult.isSuccess) {
+      const inviteUser = validResult.getOrNull()!!;
+      this._inviteUserIdList.push(inviteUser.id);
+      this._inviteUserList.push({id: inviteUser.id, name: inviteUser.name, role: inviteUser.role, host: false});
+      this._inviteUserId = "";
+      runInAction(() => {
+        alert("초대가 완료되었습니다.");
+      });
+      return;
+    }
     runInAction(() => {
-      alert("초대가 완료되었습니다.");
+      alert("초대에 실패했습니다.");
     });
   };
 
@@ -1050,16 +1079,27 @@ export class RoomStore implements RoomViewModel {
   }
 
   public pushHostUserList = (hostid: string) => {
-    this._hostUserList = this._hostUserList.filter(
-      (element) => element !== hostid
-    );
-    this._hostUserList.push(hostid);
+    this._inviteUserList.forEach( user => {
+      if (user.id == hostid) {
+        user.host = true;
+        this._hostUserList = this._hostUserList.filter(
+          (element) => element !== hostid
+        );
+        this._hostUserList.push(hostid);
+      }
+    });
   };
 
   public popHostUserList = (hostid: string) => {
-    this._hostUserList = this._hostUserList.filter(
-      (element) => element !== hostid
-    );
+    this._inviteUserList.forEach( user => {
+      if (user.id == hostid) {
+        user.host = false;
+        this._hostUserList = this._hostUserList.filter(
+          (element) => element !== hostid
+        );
+      }
+    });
+    
   };
 
   public postRoom = async (): Promise<void> => {
@@ -1067,12 +1107,24 @@ export class RoomStore implements RoomViewModel {
     if (sessionToken == null) {
       return;
     }
+    if (this._createdRoomName == "") {
+      const openTime = new Date();
+      openTime.setSeconds(0, 0);
+      this._createdRoomName =
+        openTime.getFullYear().toString() + "-" +
+        openTime.getMonth().toString() + "-" +
+        openTime.getDate().toString();
+      this._inviteUserIdList.forEach((user) => {
+        this._createdRoomName += "_";
+        this._createdRoomName += user;
+      });
+    }
     const roomResult = await this._roomListService.postRoomList(
       sessionToken,
       getBaseURL(),
       this._createdRoomName,
       this._createdAt,
-      this._inviteUserList,
+      this._inviteUserIdList,
       this._hostUserList
     );
     if (roomResult.isSuccess) {
@@ -1292,7 +1344,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
 
-    this._inviteUserList = invitedUsers;
+    this._inviteUserIdList = invitedUsers;
     return invitedUsers;
   };
 

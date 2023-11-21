@@ -24,6 +24,7 @@ const ListPage: NextPage = observer(() => {
   useEffect(() => {
     (async () => {
       await roomStore.getRoleWithSessionToken();
+      await roomStore.getUserIdWithSessionToken();
     })();
   }, [roomStore]);
 
@@ -39,6 +40,19 @@ const ListPage: NextPage = observer(() => {
 
   return (
     <div className="App">
+      <div>
+        {roomStore.userRole && roomStore.uid ? (
+          <div
+            style={{
+              fontSize: "40px",
+              paddingTop: "20px",
+              marginLeft: "30%",
+            }}
+          >
+            {roomStore.uid} - {roomStore.userRole}
+          </div>
+        ) : undefined}
+      </div>
       <div
         style={{
           display: "inline-block",
@@ -80,7 +94,7 @@ const ListPage: NextPage = observer(() => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {roomStore.RoomList.filter(it => it.flag).map((room, i) => (
+              {roomStore.RoomList.filter((it) => it.flag).map((room, i) => (
                 <TableRow key={room.id}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell
@@ -107,11 +121,7 @@ const ListPage: NextPage = observer(() => {
         </TableContainer>
       </div>
       <div style={{ paddingTop: "25px" }}>
-        <Button
-          onClick={() => router.replace("/auth/logout")}
-        >
-          로그아웃
-        </Button>
+        <Button onClick={() => router.replace("/auth/logout")}>로그아웃</Button>
       </div>
     </div>
   );

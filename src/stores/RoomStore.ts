@@ -969,7 +969,7 @@ export class RoomStore implements RoomViewModel {
 
   public loadRoomList = async (): Promise<void> => {
     const sessionToken = getSessionTokenFromLocalStorage();
-    if (sessionToken == null) {
+    if (sessionToken == null || sessionToken.length <= 0) {
       return;
     }
     const roomResult = await this._roomListService.getRoomList(sessionToken);

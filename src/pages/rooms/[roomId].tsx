@@ -583,11 +583,13 @@ const RemoteMediaGroup: NextPage<{
                     return;
                   }
                   return (
-                    <div key={`${peerId}-screen`}>
+                    <div key={`${peerId}-screen`} className={styles.cameraElement}>
                       <ScreenShareVideo
                         id={`${peerId}-screen`}
                         videoStream={mediaStream}
                         roomStore={roomStore}
+                        width="100%"
+                        height="100%"
                       ></ScreenShareVideo>
                       {/* 공유화면입니다!!!!!!!!!!!!!! */}
                     </div>
@@ -700,11 +702,13 @@ const RemoteMediaGroup: NextPage<{
                   return;
                 }
                 return (
-                  <div key={`${peerId}-screen`}>
+                  <div key={`${peerId}-screen`} className={styles.cameraElement}>
                     <ScreenShareVideo
                       id={`${peerId}-screen`}
                       videoStream={mediaStream}
                       roomStore={roomStore}
+                      width="100%"
+                      height="100%"
                     ></ScreenShareVideo>
                     {/* 공유화면입니다!!!!!!!!!!!!!! */}
                   </div>
@@ -918,7 +922,9 @@ const ScreenShareVideo: NextPage<{
   id: string;
   videoStream: MediaStream | undefined;
   roomStore: RoomStore;
-}> = ({ id, videoStream, roomStore }) => {
+  width: string;
+  height: string;
+}> = ({ id, videoStream, roomStore, width, height }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -929,7 +935,7 @@ const ScreenShareVideo: NextPage<{
   }, [videoStream]);
 
   return (
-    <video ref={videoRef} id={id} autoPlay className="video" muted></video>
+    <video ref={videoRef} id={id} autoPlay className="video" muted width={width} height={height}></video>
   );
 };
 

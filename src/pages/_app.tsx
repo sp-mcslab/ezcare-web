@@ -4,6 +4,7 @@ import React, { useContext, useEffect } from "react";
 import "../styles/_main.scss";
 import { ThemeContext, ThemeProvider } from "@/context/ThemeContext";
 import userGlobalStore from "@/stores/global/UserGlobalStore";
+import Menu from "@/components/Menu";
 
 export default function App({ Component, pageProps }: AppProps) {
   const { theme } = useContext(ThemeContext);
@@ -14,6 +15,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider>
+    <Menu/>
       <div className={`${theme}`}>
         <div className={"background flex"}>
           <Component {...pageProps} />

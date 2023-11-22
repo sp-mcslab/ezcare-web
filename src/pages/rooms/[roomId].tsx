@@ -583,7 +583,10 @@ const RemoteMediaGroup: NextPage<{
                     return;
                   }
                   return (
-                    <div key={`${peerId}-screen`} className={styles.cameraElement}>
+                    <div
+                      key={`${peerId}-screen`}
+                      className={styles.cameraElement}
+                    >
                       <ScreenShareVideo
                         id={`${peerId}-screen`}
                         videoStream={mediaStream}
@@ -702,7 +705,10 @@ const RemoteMediaGroup: NextPage<{
                   return;
                 }
                 return (
-                  <div key={`${peerId}-screen`} className={styles.cameraElement}>
+                  <div
+                    key={`${peerId}-screen`}
+                    className={styles.cameraElement}
+                  >
                     <ScreenShareVideo
                       id={`${peerId}-screen`}
                       videoStream={mediaStream}
@@ -818,8 +824,8 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
         )
       ) {
         await roomStore.changeSpeaker(roomStore.speakerDeviceList[0].deviceId);
-        roomStore.setCurrentAudioDeviceId(
-          roomStore.audioDeviceList[0].deviceId
+        roomStore.setCurrentSpeakerDeviceId(
+          roomStore.speakerDeviceList[0].deviceId
         );
       }
     };
@@ -935,7 +941,15 @@ const ScreenShareVideo: NextPage<{
   }, [videoStream]);
 
   return (
-    <video ref={videoRef} id={id} autoPlay className="video" muted width={width} height={height}></video>
+    <video
+      ref={videoRef}
+      id={id}
+      autoPlay
+      className="video"
+      muted
+      width={width}
+      height={height}
+    ></video>
   );
 };
 

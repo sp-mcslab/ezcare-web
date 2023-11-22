@@ -386,7 +386,10 @@ export class RoomStore implements RoomViewModel {
         });
       })
       // 카메라 or 마이크가 없으면 mediaStream 불러오지 못해서 error 출력 -> 로비에서 연결 중... 무한 출력
-      .catch((error) => console.error(`${error}: mediastream 받아오기 실패`));
+      .catch((error) => {
+        console.error(`${error}: mediastream 받아오기 실패`);
+        alert("카메라와 마이크가 모두 연결되어있어야 합니다.");
+      });
   };
 
   public onNotExistsRoomId = () => {
@@ -587,7 +590,7 @@ export class RoomStore implements RoomViewModel {
   public changeSpeaker = async (deviceId: string) => {
     /*
      * HTMLMediaElement.setSinkId() 설명:
-     * 1. typescript에서 지원하지 않아서 type 무시하였음
+     * 1. typescript 타입 정의에서 HTMLMediaElement 인터페이스에 setSinkId 메서드가 포함되어 있지 않아서 타입을 무시하여 메서드를 호출해야한다.
      * 참고: https://stackoverflow.com/questions/58222222/setsinkid-does-not-exist-on-htmlmediaelement
      * 2. Desktop 의 Chrome, FireFox, Edge, Opera 외 지원하지 않음
      */
@@ -892,16 +895,6 @@ export class RoomStore implements RoomViewModel {
 
   public deleteAudioComponentRef = (id: string) => {
     this._audioComponentRefs.delete(id);
-    let isDeleted = true;
-    for (let [refId, _] of this._audioComponentRefs) {
-      if (refId === id) {
-        isDeleted = false;
-        console.log(`unmount 된 Audio ref가 사라지지 않았습니다 : ${refId}`);
-      }
-    }
-    if (isDeleted) {
-      console.log(`Audio ref가 성공적으로 삭제되었습니다 : ${id}`);
-    }
   };
 
   public getEnableHideRemoteVideoByUserId = (userId: string) => {
@@ -917,7 +910,7 @@ export class RoomStore implements RoomViewModel {
       (ps) => ps.uid !== this.uid
     );
     const userIds = peerStatesExceptMe.map((ps) => ps.uid);
-    return this._roomSocketService.closeAudioByHost(userIds);
+    this._roomSocketService.closeAudioByHost(userIds);
   };
 
   public muteOneAudio = (peerId: string) => {
@@ -926,7 +919,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     const userIds: string[] = [peerId];
-    return this._roomSocketService.closeAudioByHost(userIds);
+    this._roomSocketService.closeAudioByHost(userIds);
   };
 
   public closeAllVideo = () => {
@@ -938,7 +931,7 @@ export class RoomStore implements RoomViewModel {
       (ps) => ps.uid !== this.uid
     );
     const userIds = peerStatesExceptMe.map((ps) => ps.uid);
-    return this._roomSocketService.closeVideoByHost(userIds);
+    this._roomSocketService.closeVideoByHost(userIds);
   };
 
   public closeOneVideo = (peerId: string) => {
@@ -947,7 +940,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     const userIds: string[] = [peerId];
-    return this._roomSocketService.closeVideoByHost(userIds);
+    this._roomSocketService.closeVideoByHost(userIds);
   };
 
   public onMuteMicrophone = () => {
@@ -1172,7 +1165,6 @@ export class RoomStore implements RoomViewModel {
     if (this.isNotEnableMultiAndThereIsRemoteScreenVideo()) {
       this.produceScreenShareAndDisConnectOtherScreen();
     }
-    console.log(`화면공유 오류발생: shareMyScreen()`);
   }
 
   public addMediaStreamTrackEndedEvent(track: MediaStreamTrack) {

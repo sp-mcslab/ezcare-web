@@ -77,6 +77,15 @@ const ListPage: NextPage = observer(() => {
           >
             방 생성
           </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.replace("/admin/call-log")}
+            style={{marginLeft:"10px"}}
+          >
+            통화 이력
+          </Button>
         </div>
       ) : undefined}
       <div>

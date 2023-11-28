@@ -38,7 +38,23 @@ const ListPage: NextPage = observer(() => {
 
   return (
     <div className="App">
-      <div style={{ fontSize: "30px", paddingTop: "50px" }}>방 생성</div>
+      <div style={{ fontSize: "30px", paddingTop: "50px", paddingBottom: "25px" }}>
+        방 생성
+        <div
+          style={{
+            display: "inline-block",
+            float: "right",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.replace("/rooms")}
+          >
+            목록으로
+          </Button>
+        </div>
+      </div>
 
       <div
         style={{ display: "inline-block", paddingRight: "30px", float: "left" }}

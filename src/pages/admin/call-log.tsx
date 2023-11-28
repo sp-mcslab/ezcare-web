@@ -23,14 +23,22 @@ const LogPage: NextPage = observer(() => {
 
   return (
     <div className="App">
-      <div
-        style={{
-          display: "inline-block",
-          fontSize: "30px",
-          paddingTop: "50px",
-        }}
-      >
-        방 목록
+      <div style={{ fontSize: "30px", paddingTop: "50px"}}>
+        통화 이력
+        <div
+          style={{
+            display: "inline-block",
+            float: "right",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.replace("/rooms")}
+          >
+            목록으로
+          </Button>
+        </div>
       </div>
       <div>
         <TableContainer>

@@ -153,6 +153,9 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
 
   const rooms = await client.room.findMany({
     where: where,
+    orderBy: {
+      openat: "desc", // Replace 'createdAt' with the field you want to sort by
+    },
   });
 
   return rooms.map((room) => {
@@ -178,7 +181,6 @@ export const updateAllCallRecordOfRoom = async (
 
 export const checkRoomOpened = async (): Promise<boolean | null> => {
   const presentTime = new Date(); // 비교할 현재 시간
-  presentTime.setMinutes(presentTime.getMinutes() + 10);
   console.log("check Room Opened :: " + presentTime.toISOString());
   const result = await client.room.updateMany({
     where: {

@@ -5,6 +5,7 @@ import { RoomStore } from "@/stores/RoomStore";
 import { useRouter } from "next/router";
 import {
   Button,
+  Checkbox,
   Table,
   TableBody,
   TableCell,
@@ -68,6 +69,13 @@ const ListPage: NextPage = observer(() => {
           />
         </div>
         <div style={{ paddingTop: "25px" }}>
+          <Checkbox 
+            value={roomStore.isRoomCreateLater}
+            onChange={roomStore.UpdateIsRoomCreateLater}
+          />
+          예약 방 생성
+        </div>
+        <div style={{ paddingTop: "25px" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
               format="YYYY-MM-DD hh:mm"
@@ -76,6 +84,7 @@ const ListPage: NextPage = observer(() => {
               onChange={(e) => {
                 roomStore.updateCreatedAt(e);
               }}
+              disabled={!roomStore.isRoomCreateLater}
             />
           </LocalizationProvider>
           <div>진료실 예약 시, 예약 시간 10분 전부터 진료실이 오픈됩니다.</div>

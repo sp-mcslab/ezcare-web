@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getRooms } from "@/controller/room.controller";
+import { postRoomLater } from "@/controller/room.controller";
 
 export default async function roomHandler(
   req: NextApiRequest,
@@ -7,8 +7,8 @@ export default async function roomHandler(
 ) {
   const { method } = req;
   switch (method) {
-    case "GET":
-      await getRooms(req, res);
+    case "POST":
+      await postRoomLater(req, res);
       break;
     default:
       res.status(405).end(`Method ${method} Not Allowed`);

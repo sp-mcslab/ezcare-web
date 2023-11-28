@@ -26,7 +26,38 @@ export class RoomListService {
     }
   }
 
-  public async postRoomList(
+  public async postRoomNow(
+    token: string,
+    baseUrl: string,
+    name: string,
+    invitedUserIds: string[], // 초대된 회원의 ID 목록
+    hostUserIds: string[]
+  ): Promise<Result<RoomDto[]>> {
+    try {
+      const response = await fetchAbsolute(`api/rooms/post-now`, {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          invitedUserIds,
+          hostUserIds,
+          baseUrl,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          "x-ezcare-session-token": token,
+        },
+      });
+      if (response.ok) {
+        return Result.createSuccessUsingResponseData(response);
+      } else {
+        return Result.createErrorUsingResponseMessage(response);
+      }
+    } catch (e) {
+      return Result.createErrorUsingException(e);
+    }
+  }
+
+  public async postRoomLater(
     token: string,
     baseUrl: string,
     name: string,
@@ -35,7 +66,7 @@ export class RoomListService {
     hostUserIds: string[]
   ): Promise<Result<RoomDto[]>> {
     try {
-      const response = await fetchAbsolute(`api/rooms`, {
+      const response = await fetchAbsolute(`api/rooms/post-later`, {
         method: "POST",
         body: JSON.stringify({
           name,

@@ -20,7 +20,10 @@ import roomListService from "@/service/roomListService";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
-export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
+export const postRoomLater = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
   // 진료실 생성
   const { name, openAt, invitedUserIds, hostUserIds, baseUrl } = req.body;
 
@@ -66,6 +69,68 @@ export const postRoom = async (req: NextApiRequest, res: NextApiResponse) => {
       invitedUserIds,
       hostUserIds,
       flag
+    );
+
+    await createHost(room.id, creatorId);
+
+    const roomUrl = (baseUrl as string) + room.id;
+
+    res.status(201);
+    res.json({
+      message: "진료실 개설을 성공했습니다.",
+      data: {
+        room,
+        roomUrl,
+      },
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};
+
+export const postRoomNow = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  // 진료실 생성
+  const { name, invitedUserIds, hostUserIds, baseUrl } = req.body;
+
+  const creatorId = getIdFromToken(
+    req.headers["x-ezcare-session-token"] as string,
+    secretKey
+  ); // 방 생성자의 id get.
+
+  const currentTime = new Date();
+  currentTime.setSeconds(0, 0);
+
+  //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
+  if (creatorId == null) {
+    res.status(401).end();
+    return;
+  }
+
+  if (baseUrl == undefined) {
+    console.log("base url is undefined");
+    res.status(404).end();
+    return;
+  }
+
+  try {
+    const room = await createRoom(
+      creatorId,
+      name,
+      currentTime,
+      currentTime,
+      invitedUserIds,
+      hostUserIds,
+      true
     );
 
     await createHost(room.id, creatorId);

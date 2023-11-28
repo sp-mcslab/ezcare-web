@@ -134,7 +134,7 @@ export class RoomSocketService {
     if (this._socket != null) {
       return;
     }
-    this._socket = io(SOCKET_SERVER_URL);
+    this._socket = io(SOCKET_SERVER_URL, { closeOnBeforeunload: false });
     this._socket.on(
       CONNECTION_SUCCESS,
       async ({ socketId }: { socketId: string }) => {
@@ -848,8 +848,13 @@ export class RoomSocketService {
     socket.emit(DISCONNECT_OTHER_SCREEN_SHARE, userId);
   };
 
-  public broadcastStopShareScreen() {
+  public broadcastStopShareScreen = () => {
     const socket = this._requireSocket();
     socket.emit(BROADCAST_STOP_SHARE_SCREEN);
-  }
+  };
+
+  public exitRoom = () => {
+    const socket = this._requireSocket();
+    socket.disconnect();
+  };
 }

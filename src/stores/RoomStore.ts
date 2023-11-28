@@ -113,6 +113,7 @@ export class RoomStore implements RoomViewModel {
   private _currentVideoDeviceId: string | undefined = undefined;
   private _currentAudioDeviceId: string | undefined = undefined;
   private _currentSpeakerDeviceId: string | undefined = undefined;
+  private _exited: boolean = false;
 
   /**
    * 회원에게 알림을 보내기위한 메시지이다.
@@ -355,6 +356,10 @@ export class RoomStore implements RoomViewModel {
 
   public get kickedToWaitingRoom(): boolean {
     return this._kickedToWaitingRoom;
+  }
+
+  public get exited(): boolean {
+    return this._exited;
   }
 
   public get userMessage(): string | undefined {
@@ -1370,5 +1375,12 @@ export class RoomStore implements RoomViewModel {
 
   public changeViewMode = () => {
     this._viewMode = !this._viewMode;
+  };
+
+  public exitRoom = () => {
+    if (confirm("정말 방을 나가시겠습니까?")) {
+      this._roomSocketService.exitRoom();
+      this._exited = true;
+    }
   };
 }

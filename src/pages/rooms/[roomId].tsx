@@ -227,6 +227,23 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
       }
     }, [roomStore.kickedToWaitingRoom, router]);
 
+    useEffect(() => {
+      if (roomStore.exited) {
+        router.replace("/");
+      }
+    }, [roomStore.exited, router]);
+
+    useEffect(() => {
+      const browserExitHandler = (event: BeforeUnloadEvent) => {
+        event.preventDefault();
+        roomStore.exitRoom();
+        // event.returnValue = true;
+      };
+      window.addEventListener("beforeunload", browserExitHandler);
+      return () =>
+        window.removeEventListener("beforeunload", browserExitHandler);
+    }, []);
+
     const handleKickButtonClick = (userId: string) => {
       const targetUserName = roomStore.requireUserNameBy(userId);
       const confirmed = confirm(`정말로 ${targetUserName}님을 강퇴할까요?`);
@@ -412,6 +429,16 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
               Tile view로 전환
             </Button>
           )}
+          <Button
+            id="exit"
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              roomStore.exitRoom();
+            }}
+          >
+            나가기
+          </Button>
           {roomStore.isHost && (
             <div style={{ display: "inline-block" }}>
               <Button

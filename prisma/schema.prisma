@@ -47,12 +47,6 @@ model Invite {
   @@id([userid, roomid], map: "PK_INVITE")
 }
 
-enum RoomState {
-  CLOSED
-  OPENED
-  SCHEDULED
-}
-
 model Room {
   id           String       @id(map: "PK_ROOM") @db.VarChar(100)
   creatorid    String       @db.VarChar(100)
@@ -62,7 +56,7 @@ model Room {
   deletedat    DateTime?    @db.Timestamptz(6)
   hospitalCode String       @db.VarChar(100)
   tenantcode   String       @db.VarChar(100)
-  flag         RoomState     @default(CLOSED)
+  flag         RoomFlag     @default(CLOSED)
   CallRecord   CallRecord[]
   Host         Host[]
   Invite       Invite[]
@@ -100,3 +94,8 @@ enum UserRole {
   systemManager
 }
 
+enum RoomFlag {
+  CLOSED
+  OPENED
+  SCHEDULED
+}

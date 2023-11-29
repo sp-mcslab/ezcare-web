@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { RoomState } from "@prisma/client";
+import { RoomFlag } from "@prisma/client";
 import {
   checkRoomClosed,
   checkRoomOpened,
@@ -54,7 +54,7 @@ export const postRoomNow = async (
       currentTime,
       invitedUserIds,
       hostUserIds,
-      RoomState.OPENED
+      RoomFlag.OPENED
     );
 
     await createHost(room.id, creatorId);
@@ -93,13 +93,13 @@ export const postRoomLater = async (
     secretKey
   ); // 방 생성자의 id get.
 
-  let flag: RoomState = RoomState.SCHEDULED; // Use the enum values
+  let flag: RoomFlag = RoomFlag.SCHEDULED; // Use the enum values
 
   const currentTime = new Date();
   currentTime.setSeconds(0, 0);
   const openTime = new Date(openAt);
 
-  if (openTime.getTime() == currentTime.getTime()) flag = RoomState.OPENED;
+  if (openTime.getTime() == currentTime.getTime()) flag = RoomFlag.OPENED;
 
   console.log("진료실 open 예정 시간은 : " + openTime + " 입니다. ");
   console.log("current Time : " + currentTime + "/ open Time : " + openTime);

@@ -1,11 +1,11 @@
-import { Room, RoomState } from "@prisma/client";
+import { Room, RoomFlag } from "@prisma/client";
 
 export class RoomDto {
   public readonly id: string;
   public readonly name: string;
   public readonly openAt: Date;
   public readonly creatorId: string;
-  public readonly flag: RoomState | null;
+  public readonly flag: RoomFlag | null;
 
   constructor({
     id,
@@ -18,7 +18,7 @@ export class RoomDto {
     name: string;
     openAt: Date;
     creatorId: string;
-    flag: RoomState;
+    flag: RoomFlag;
   }) {
     // 이 부분은 인자를 전달할때 name을 지정해서 넘길 수 있어서 이렇게 했습니다.
     this.id = id;

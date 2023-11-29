@@ -2,7 +2,7 @@ import client from "prisma/client";
 import { uuid } from "uuidv4";
 import { RoomDto } from "@/dto/RoomDto";
 import { UserDto } from "@/dto/UserDto";
-import { Room, RoomState } from "@prisma/client";
+import { Room, RoomFlag } from "@prisma/client";
 
 const HOSPITAL_CODE = "A0013";
 const TENANT_CODE = "A001";
@@ -25,7 +25,7 @@ export const createRoom = async (
   openAt: Date,
   invitedUsers: string[],
   hostedUsers: string[],
-  flag: RoomState
+  flag: RoomFlag
 ): Promise<RoomDto> => {
   // 생성할 방의 고유 아이디 (기본키 id)
   const roomUniqueId = uuid();
@@ -82,12 +82,12 @@ export const deleteRoomReq = async (roomId: string) => {
             AND: [
               { id: roomId },
               { NOT: { deletedat: null } },
-              { flag: RoomState.OPENED },
+              { flag: RoomFlag.OPENED },
             ],
           },
         ],
       },
-      data: { deletedat: new Date(), flag: RoomState.CLOSED },
+      data: { deletedat: new Date(), flag: RoomFlag.CLOSED },
     });
     return roomId;
   } catch (e) {
@@ -159,7 +159,7 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
     where: {
       AND: [
         where,
-        { OR: [{ flag: RoomState.OPENED }, { flag: RoomState.SCHEDULED }] },
+        { OR: [{ flag: RoomFlag.OPENED }, { flag: RoomFlag.SCHEDULED }] },
       ],
     },
     orderBy: {
@@ -195,12 +195,12 @@ export const checkRoomOpened = async (): Promise<boolean | null> => {
     where: {
       AND: [
         { deletedat: null },
-        { flag: RoomState.SCHEDULED },
+        { flag: RoomFlag.SCHEDULED },
         { openat: { lte: presentTime } },
       ],
     },
     data: {
-      flag: RoomState.OPENED,
+      flag: RoomFlag.OPENED,
     },
   });
 
@@ -215,12 +215,12 @@ export const checkRoomClosed = async (): Promise<boolean | null> => {
     where: {
       AND: [
         { NOT: { deletedat: null } },
-        { flag: RoomState.OPENED },
+        { flag: RoomFlag.OPENED },
         { deletedat: { lte: presentTime } },
       ],
     },
     data: {
-      flag: RoomState.CLOSED,
+      flag: RoomFlag.CLOSED,
     },
   });
 

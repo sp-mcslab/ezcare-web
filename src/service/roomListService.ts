@@ -16,6 +16,7 @@ export class RoomListService {
           "x-ezcare-session-token": token,
         },
       });
+      console.log(response);
       if (response.ok) {
         return Result.createSuccessUsingResponseData(response);
       } else {

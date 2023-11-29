@@ -38,6 +38,9 @@ const ListPage: NextPage = observer(() => {
     router.replace("/");
   };
 
+  const localDate = new Date();
+  const localTimezone = localDate.getTimezoneOffset() / 60;
+
   return (
     <div className="App">
       <div>
@@ -81,7 +84,13 @@ const ListPage: NextPage = observer(() => {
         </div>
       )}
       {roomStore.userRole == "systemManager" && (
-        <div>
+        <div
+          style={{
+            display: "inline-block",
+            float: "right",
+            paddingTop: "50px",
+          }}
+        >
           <Button
             variant="contained"
             color="primary"
@@ -101,21 +110,56 @@ const ListPage: NextPage = observer(() => {
                 <TableCell style={{ width: "300px", textAlign: "center" }}>
                   제목
                 </TableCell>
+                <TableCell>
+                  오픈 시간
+                </TableCell>
+                <TableCell>
+                  생성자
+                </TableCell>
+                <TableCell></TableCell>
                 {roomStore.userRole == "nurse" ? (
                   <TableCell></TableCell>
                 ) : undefined}
               </TableRow>
             </TableHead>
             <TableBody>
-              {roomStore.RoomList.filter((it) => it.flag).map((room, i) => (
+              {roomStore.RoomList.map((room, i) => (
                 <TableRow key={room.id}>
                   <TableCell>{i + 1}</TableCell>
-                  <TableCell
-                    onClick={() => router.replace("/rooms/" + room.id)}
-                    style={{ cursor: "pointer", textAlign: "center" }}
-                  >
-                    {room.name}
-                  </TableCell>
+                  {room.flag == 'SCHEDULED' ? (
+                    <TableCell
+                      style={{ textAlign: "center" }}
+                    >
+                      [예약 중] {room.name}
+                    </TableCell>
+                  ) : (
+                    <TableCell
+                      style={{ textAlign: "center" }}
+                    >
+                      {room.name}
+                    </TableCell>
+                  )}
+                  <TableCell>{
+                    room.openAt.toString().substring(0, 10) +
+                    " " +
+                    (parseInt(room.openAt.toString().substring(11, 13)) - localTimezone).toString().padStart(2, "0") +
+                    room.openAt.toString().substring(13, 19)
+                  }</TableCell>
+                  <TableCell>{room.creatorId}</TableCell>
+                  {room.flag == 'SCHEDULED' ? (
+                    <TableCell>
+                    </TableCell>
+                  ) : (
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => router.replace("/rooms/" + room.id)}
+                      >
+                        입장
+                      </Button>
+                    </TableCell>
+                  )}
                   {roomStore.userRole == "nurse" ? (
                     <TableCell>
                       <Button

@@ -5,6 +5,7 @@ import {
   checkRoomOpened,
   createRoom,
   deleteRoomReq,
+  findRoomById,
   updateAllCallRecordOfRoom,
 } from "@/repository/room.repository";
 import { createHost, findUserHostByRoomId } from "@/repository/host.repository";
@@ -223,6 +224,38 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
     if (typeof e === "string") {
       console.log("error:400", e);
       res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};
+
+export const getRoomById = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const room = await findRoomById(req.query.roomId as string);
+
+    if (room == null) {
+      res.status(404);
+      res.json({
+        message: "존재하지 않는 진료실입니다.",
+      });
+      return;
+    }
+
+    res.status(200);
+    res.json({
+      message: "해당 진료실이 조회되었습니다.",
+      data: room,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(404);
       return;
     }
     console.log("error: 500", e);

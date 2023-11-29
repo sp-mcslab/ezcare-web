@@ -172,6 +172,18 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
   });
 };
 
+export const findRoomById = async (roomId: string): Promise<RoomDto | null> => {
+  const room = await client.room.findUnique({
+    where: {
+      id: roomId,
+    },
+  });
+
+  if (room == null) return null;
+
+  return RoomDto.fromEntity(room);
+};
+
 export const updateAllCallRecordOfRoom = async (
   roomId: string
 ): Promise<boolean> => {

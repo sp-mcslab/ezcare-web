@@ -2,7 +2,7 @@ import client from "prisma/client";
 import { uuid } from "uuidv4";
 import { RoomDto } from "@/dto/RoomDto";
 import { UserDto } from "@/dto/UserDto";
-import { Host, Room } from "@prisma/client";
+import { Room, RoomState } from "@prisma/client";
 
 const HOSPITAL_CODE = "A0013";
 const TENANT_CODE = "A001";
@@ -25,7 +25,7 @@ export const createRoom = async (
   openAt: Date,
   invitedUsers: string[],
   hostedUsers: string[],
-  flag: boolean
+  flag: RoomState
 ): Promise<RoomDto> => {
   // 생성할 방의 고유 아이디 (기본키 id)
   const roomUniqueId = uuid();
@@ -79,11 +79,15 @@ export const deleteRoomReq = async (roomId: string) => {
         OR: [
           { AND: [{ id: roomId }, { deletedat: null }] },
           {
-            AND: [{ id: roomId }, { NOT: { deletedat: null } }, { flag: true }],
+            AND: [
+              { id: roomId },
+              { NOT: { deletedat: null } },
+              { flag: RoomState.OPENED },
+            ],
           },
         ],
       },
-      data: { deletedat: new Date(), flag: false },
+      data: { deletedat: new Date(), flag: RoomState.CLOSED },
     });
     return roomId;
   } catch (e) {
@@ -152,7 +156,12 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
   }
 
   const rooms = await client.room.findMany({
-    where: where,
+    where: {
+      AND: [
+        where,
+        { OR: [{ flag: RoomState.OPENED }, { flag: RoomState.SCHEDULED }] },
+      ],
+    },
     orderBy: {
       openat: "desc", // Replace 'createdAt' with the field you want to sort by
     },
@@ -186,12 +195,12 @@ export const checkRoomOpened = async (): Promise<boolean | null> => {
     where: {
       AND: [
         { deletedat: null },
-        { flag: false },
+        { flag: RoomState.SCHEDULED },
         { openat: { lte: presentTime } },
       ],
     },
     data: {
-      flag: true,
+      flag: RoomState.OPENED,
     },
   });
 
@@ -206,12 +215,12 @@ export const checkRoomClosed = async (): Promise<boolean | null> => {
     where: {
       AND: [
         { NOT: { deletedat: null } },
-        { flag: true },
+        { flag: RoomState.OPENED },
         { deletedat: { lte: presentTime } },
       ],
     },
     data: {
-      flag: false,
+      flag: RoomState.CLOSED,
     },
   });
 

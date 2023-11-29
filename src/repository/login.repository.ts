@@ -1,6 +1,4 @@
 import prisma from "../../prisma/client";
-import { User } from "@prisma/client";
-import { RoomDto } from "@/dto/RoomDto";
 import { UserDto } from "@/dto/UserDto";
 
 export const findUser = async (

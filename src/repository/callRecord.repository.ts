@@ -1,6 +1,5 @@
 import client from "prisma/client";
 import { uuid } from "uuidv4";
-import { RoomDto } from "@/dto/RoomDto";
 import { CallLogItemDto } from "@/dto/CallLogItemDto";
 
 const HOSPITAL_CODE = "A0013";

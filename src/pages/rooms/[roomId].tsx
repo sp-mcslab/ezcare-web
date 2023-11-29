@@ -554,10 +554,13 @@ const RemoteMediaGroup: NextPage<{
                     throw Error("피어 상태가 존재하지 않습니다.");
                   }
                   return (
-                    <div key={peerId} className={styles.cameraElement}>
+                    <div key={peerId} className={styles.cameraListElement}>
                       <div className={styles.stateContainer}>
                         {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                         {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
+                      </div>
+                      <div className={styles.nameContainer}>
+                        {peerId}
                       </div>
                       <Video
                         id={peerId}
@@ -612,8 +615,11 @@ const RemoteMediaGroup: NextPage<{
                   return (
                     <div
                       key={`${peerId}-screen`}
-                      className={styles.cameraElement}
+                      className={styles.cameraListElement}
                     >
+                      <div className={styles.nameContainer}>
+                        {peerId}
+                      </div>
                       <ScreenShareVideo
                         id={`${peerId}-screen`}
                         videoStream={mediaStream}
@@ -648,7 +654,7 @@ const RemoteMediaGroup: NextPage<{
         <>
           <div>
             <div>
-              <div className={styles.localCameraElement}>
+              <div className={styles.localCameraTileContainer}>
                 <div className={styles.stateContainer}>
                   {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
                   {!roomStore.enabledLocalAudio ? <BsMicMuteFill /> : ""}
@@ -662,6 +668,54 @@ const RemoteMediaGroup: NextPage<{
                       width="100%"
                       height="100%"
                     />
+                    {roomStore.isHost && (
+                      <div>
+                        <Button
+                          disabled
+                          sx={{
+                            "&.Mui-disabled": {
+                              background: "rgba(0,0,0,0)",
+                              color: "rgba(0,0,0,0)"
+                            }
+                          }}
+                        >
+                          마이크 뮤트
+                        </Button>
+                        <Button
+                          disabled
+                          sx={{
+                            "&.Mui-disabled": {
+                              background: "rgba(0,0,0,0)",
+                              color: "rgba(0,0,0,0)"
+                            }
+                          }}
+                        >
+                          비디오 뮤트
+                        </Button>
+                        <Button
+                          disabled
+                          sx={{
+                            "&.Mui-disabled": {
+                              background: "rgba(0,0,0,0)",
+                              color: "rgba(0,0,0,0)"
+                            }
+                          }}
+                        >
+                          대기실로 강퇴
+                        </Button>
+                        <Button
+                          disabled
+                          sx={{
+                            "&.Mui-disabled": {
+                              background: "rgba(0,0,0,0)",
+                              color: "rgba(0,0,0,0)"
+                            }
+                          }}
+                        >
+                          강퇴
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className={styles.localCameraNullTile}>
@@ -669,6 +723,7 @@ const RemoteMediaGroup: NextPage<{
                   </div>
                 )}
               </div>
+
               {remoteVideoStreamByPeerIdEntries.map((entry) => {
                 const [peerId, mediaStream] = entry;
                 const peerState = peerStates.find((p) => p.uid === peerId);
@@ -676,10 +731,13 @@ const RemoteMediaGroup: NextPage<{
                   throw Error("피어 상태가 존재하지 않습니다.");
                 }
                 return (
-                  <div key={peerId} className={styles.cameraElement}>
+                  <div key={peerId} className={styles.cameraTileElement}>
                     <div className={styles.stateContainer}>
                       {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                       {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
+                    </div>
+                    <div className={styles.nameContainer}>
+                      {peerId}
                     </div>
                     <Video
                       id={peerId}
@@ -734,8 +792,11 @@ const RemoteMediaGroup: NextPage<{
                 return (
                   <div
                     key={`${peerId}-screen`}
-                    className={styles.cameraElement}
+                    className={styles.cameraTileElement}
                   >
+                    <div className={styles.nameContainer}>
+                      {peerId}
+                    </div>
                     <ScreenShareVideo
                       id={`${peerId}-screen`}
                       videoStream={mediaStream}
@@ -927,15 +988,6 @@ const Video: NextPage<{
     }
   }, [videoStream]);
 
-  const handleVideoControl = (video: { userId: string }) => {
-    const myVideo = videoRef.current;
-    if (myVideo!.id !== "localVideo") {
-      roomStore.getEnableHideRemoteVideoByUserId(video.userId)
-        ? roomStore.hideRemoteVideo(video.userId)
-        : roomStore.showRemoteVideo(video.userId);
-    }
-  };
-
   return (
     <video
       ref={videoRef}
@@ -943,7 +995,6 @@ const Video: NextPage<{
       autoPlay
       className="video"
       muted
-      onClick={() => handleVideoControl({ userId: id })}
       width={width}
       height={height}
     ></video>

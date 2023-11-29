@@ -62,7 +62,7 @@ const ListPage: NextPage = observer(() => {
       >
         방 목록
       </div>
-      {roomStore.userRole == "nurse" ? (
+      {roomStore.userRole == "nurse" && (
         <div
           style={{
             display: "inline-block",
@@ -78,16 +78,20 @@ const ListPage: NextPage = observer(() => {
             방 생성
           </Button>
 
+        </div>
+      )}
+      {roomStore.userRole == "systemManager" && (
+        <div>
           <Button
             variant="contained"
             color="primary"
             onClick={() => router.replace("/admin/call-log")}
-            style={{marginLeft:"10px"}}
+            style={{ marginLeft: "10px" }}
           >
             통화 이력
           </Button>
         </div>
-      ) : undefined}
+      )}
       <div>
         <TableContainer>
           <Table>

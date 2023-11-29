@@ -1097,7 +1097,7 @@ export class RoomStore implements RoomViewModel {
   };
 
   private _isRoomCreateLater: boolean = false;
-  
+
   public get isRoomCreateLater(): boolean {
     return this._isRoomCreateLater;
   }
@@ -1117,9 +1117,15 @@ export class RoomStore implements RoomViewModel {
       this._createdRoomName =
         openTime.getFullYear().toString() +
         "-" +
-        openTime.getMonth().toString() +
+        (openTime.getMonth() + 1).toString() +
         "-" +
-        openTime.getDate().toString();
+        openTime.getDate().toString() +
+        "-" +
+        openTime.getHours().toString() +
+        ":" +
+        openTime.getMinutes().toString() +
+        ":" +
+        openTime.getSeconds().toString();
       this._inviteUserIdList.forEach((user) => {
         this._createdRoomName += "_";
         this._createdRoomName += user;

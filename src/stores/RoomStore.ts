@@ -26,8 +26,8 @@ import { BlockedUser } from "@/models/room/BlockedUser";
 import { uuidv4 } from "@firebase/util";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { RoomDto } from "@/dto/RoomDto";
-import userService, { UserService } from "@/service/userService";
-import roomService, { RoomService } from "@/service/roomService";
+import { UserService } from "@/service/userService";
+import { RoomService } from "@/service/roomService";
 import { RefObject } from "react";
 import { getBaseURL } from "@/utils/getBaseURL";
 
@@ -1422,4 +1422,19 @@ export class RoomStore implements RoomViewModel {
       this._exited = true;
     }
   };
+
+  private _roomTitle: string = "";
+
+  public get roomTitle(): string {
+    return this._roomTitle;
+  }
+
+  public getRoomById = async (roomId: string): Promise<void> => {
+    const roomResult = await this._roomListService.getRoomById(roomId);
+    if (roomResult.isSuccess) {
+      this._roomTitle = roomResult.getOrNull()!.name;
+    }
+    return;
+  };
+
 }

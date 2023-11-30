@@ -43,6 +43,7 @@ const RoomScaffold: NextPage = observer(() => {
       if (typeof roomId === "string") {
         await roomStore.getIsHostWithSessionToken(roomId);
         await roomStore.setInvitation(roomId, roomStore.uid);
+        await roomStore.getRoomById(roomId);
       }
     })();
   }, [roomStore, roomId]);
@@ -93,6 +94,9 @@ const WaitingRoom: NextPage<{
   return (
     <>
       <div style={{ textAlign: "center", paddingTop: "50px" }}>
+        <div style={{ fontSize: "20px" }}>
+          {roomStore.roomTitle}
+        </div>
         <Video
           id="localVideo"
           videoStream={roomStore.localVideoStream}
@@ -299,6 +303,9 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
         </div>
 
         <div className={styles.side}>
+          <div style={{ fontSize: "20px" }}>
+            {roomStore.roomTitle}
+          </div>
           <div className={styles.chatElement}>
             <div className={styles.chatMessage}>
               <ChatMessage messages={roomStore.chatMessages} />

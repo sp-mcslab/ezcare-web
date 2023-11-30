@@ -123,6 +123,22 @@ export class RoomListService {
       return Result.createErrorUsingException(e);
     }
   }
+
+  public async getRoomById(roomId: string): Promise<Result<RoomDto>> {
+    try {
+      const response = await fetchAbsolute(`api/rooms/${roomId}`, {
+        method: "GET",
+        headers: HEADER,
+      });
+      if (response.ok) {
+        return Result.createSuccessUsingResponseData(response);
+      } else {
+        return Result.createErrorUsingResponseMessage(response);
+      }
+    } catch (e) {
+      return Result.createErrorUsingException(e);
+    }
+  }
 }
 
 const roomListService = new RoomListService();

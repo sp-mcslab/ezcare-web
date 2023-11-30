@@ -47,6 +47,16 @@ const APPROVE_JOINING_ROOM = "approveJoiningRoom";
 const REJECT_JOINING_ROOM = "rejectJoiningRoom";
 
 /**
+ * 호스트들에게 환자의 입장이 허용되었음을 알리기 위한 프로토콜이다.
+ */
+const PEER_APPROVED_TO_JOIN = "peerApprovedToJoin";
+
+/**
+ * 호스트들에게 환자의 입장이 허용되었음을 알리기 위한 프로토콜이다.
+ */
+const PEER_REJECTED_TO_JOIN = "peerRejectedToJoin";
+
+/**
  * 입장 요청 후, 입장 전 탭을 닫았을 때, 입장 요청을 취소하기 위한 프로토콜이다.
  */
 const CANCEL_JOIN_REQUEST = "cancelJoinRequest";
@@ -233,6 +243,8 @@ export {
   REQUEST_TO_JOIN_ROOM,
   APPROVE_JOINING_ROOM,
   REJECT_JOINING_ROOM,
+  PEER_APPROVED_TO_JOIN,
+  PEER_REJECTED_TO_JOIN,
   CANCEL_JOIN_REQUEST,
   JOIN_WAITING_ROOM,
   OTHER_PEER_JOINED_ROOM,

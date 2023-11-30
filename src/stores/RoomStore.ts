@@ -59,6 +59,8 @@ export interface RoomViewModel {
   onMuteMicrophone: () => void;
   onHideVideo: () => void;
   onCancelJoinRequest: (userId: string) => void;
+  onApproveJoinRequest: (userId: string) => void;
+  onRejectJoinRequest: (userId: string) => void;
   onChangeJoinerList: (userId: string) => void;
   onRemoveJoinerList: (disposedPeerId: string) => void;
   onGetUsersInfo: (roomId: string) => void;
@@ -457,6 +459,30 @@ export class RoomStore implements RoomViewModel {
     this._awaitingPeerIds = this._awaitingPeerIds.filter((p) => p !== userId);
   };
 
+  public onApproveJoinRequest = (userId: string) => {
+    console.log("onApproveJoinRequest: ", userId);
+    // TODO: 호스트가 맞는지 검증하기
+    if (!this._isHost) {
+      return;
+    }
+    if (this._state !== RoomState.JOINED) {
+      return;
+    }
+    this._awaitingPeerIds = this._awaitingPeerIds.filter((p) => p !== userId);
+  };
+
+  public onRejectJoinRequest = (userId: string) => {
+    console.log("onRejectJoinRequest: ", userId);
+    // TODO: 호스트가 맞는지 검증하기
+    if (!this._isHost) {
+      return;
+    }
+    if (this._state !== RoomState.JOINED) {
+      return;
+    }
+    this._awaitingPeerIds = this._awaitingPeerIds.filter((p) => p !== userId);
+  };
+
   public onChangeJoinerList = (userId: string) => {
     console.log("onChangeJoinerList ", userId);
 
@@ -490,7 +516,6 @@ export class RoomStore implements RoomViewModel {
     }
 
     const existsRoom = result.getOrNull()!;
-    console.log("existsRoom: ", existsRoom);
     if (!existsRoom) {
       this._failedToJoinMessage = "아직 방이 열리지 않았습니다.";
       this._awaitConfirmToJoin = false;

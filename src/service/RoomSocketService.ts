@@ -38,6 +38,8 @@ import {
   DISCONNECT,
   DISCONNECT_OTHER_SCREEN_SHARE,
   BROADCAST_STOP_SHARE_SCREEN,
+  PEER_APPROVED_TO_JOIN,
+  PEER_REJECTED_TO_JOIN,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -155,6 +157,7 @@ export class RoomSocketService {
         }
         this._roomViewModel.onConnectedWaitingRoom(waitingRoomData);
         this._listenWaitingRoomEvents();
+        this._listenHostRoomEvents();
       }
     );
   };
@@ -177,6 +180,16 @@ export class RoomSocketService {
     });
     socket.on(REJECT_JOINING_ROOM, () => {
       this._roomViewModel.onWaitingRoomEvent(new RejectedJoiningRoomEvent());
+    });
+  };
+
+  private _listenHostRoomEvents = () => {
+    const socket = this._requireSocket();
+    socket.on(PEER_APPROVED_TO_JOIN, (userId: string) => {
+      this._roomViewModel.onApproveJoinRequest(userId);
+    });
+    socket.on(PEER_REJECTED_TO_JOIN, (userId: string) => {
+      this._roomViewModel.onRejectJoinRequest(userId);
     });
   };
 
@@ -227,6 +240,7 @@ export class RoomSocketService {
         switch (result.type) {
           case "success":
             resolve(Result.success(undefined));
+            this._roomViewModel.onRejectJoinRequest(userId);
             break;
           case "failure":
             resolve(Result.error(Error(result.message)));

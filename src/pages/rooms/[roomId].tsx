@@ -170,14 +170,20 @@ const WaitingRoom: NextPage<{
               입장
             </Button>
           ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={!roomStore.enableJoinButton}
-              onClick={() => roomStore.requestToJoinRoom()}
-            >
-              입장요청
-            </Button>
+            <div>
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={!roomStore.enableJoinButton}
+                onClick={() => roomStore.requestToJoinRoom()}
+              >
+                입장요청
+              </Button>
+              {!roomStore.enableJoinButton &&
+              roomStore.failedToJoinMessage === undefined ? (
+                <div>입장 요청 대기 중입니다...</div>
+              ) : null}
+            </div>
           )}
           {/*TODO: 임시로 두는 버튼입니다. 추후에 회원 기능이 구현되면 회원 타입이 환자인 경우만 보여야 합니다.*/}
           {/*231024 : 실제 이지케어텍 api가 아닌 자체 db로 작업 완료. 이후 수정 요망.*/}
@@ -566,9 +572,7 @@ const RemoteMediaGroup: NextPage<{
                         {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                         {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
                       </div>
-                      <div className={styles.nameContainer}>
-                        {peerId}
-                      </div>
+                      <div className={styles.nameContainer}>{peerId}</div>
                       <Video
                         id={peerId}
                         videoStream={mediaStream}
@@ -624,9 +628,7 @@ const RemoteMediaGroup: NextPage<{
                       key={`${peerId}-screen`}
                       className={styles.cameraListElement}
                     >
-                      <div className={styles.nameContainer}>
-                        {peerId}
-                      </div>
+                      <div className={styles.nameContainer}>{peerId}</div>
                       <ScreenShareVideo
                         id={`${peerId}-screen`}
                         videoStream={mediaStream}
@@ -682,8 +684,8 @@ const RemoteMediaGroup: NextPage<{
                           sx={{
                             "&.Mui-disabled": {
                               background: "rgba(0,0,0,0)",
-                              color: "rgba(0,0,0,0)"
-                            }
+                              color: "rgba(0,0,0,0)",
+                            },
                           }}
                         >
                           마이크 뮤트
@@ -693,8 +695,8 @@ const RemoteMediaGroup: NextPage<{
                           sx={{
                             "&.Mui-disabled": {
                               background: "rgba(0,0,0,0)",
-                              color: "rgba(0,0,0,0)"
-                            }
+                              color: "rgba(0,0,0,0)",
+                            },
                           }}
                         >
                           비디오 뮤트
@@ -704,8 +706,8 @@ const RemoteMediaGroup: NextPage<{
                           sx={{
                             "&.Mui-disabled": {
                               background: "rgba(0,0,0,0)",
-                              color: "rgba(0,0,0,0)"
-                            }
+                              color: "rgba(0,0,0,0)",
+                            },
                           }}
                         >
                           대기실로 강퇴
@@ -715,8 +717,8 @@ const RemoteMediaGroup: NextPage<{
                           sx={{
                             "&.Mui-disabled": {
                               background: "rgba(0,0,0,0)",
-                              color: "rgba(0,0,0,0)"
-                            }
+                              color: "rgba(0,0,0,0)",
+                            },
                           }}
                         >
                           강퇴
@@ -743,9 +745,7 @@ const RemoteMediaGroup: NextPage<{
                       {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                       {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
                     </div>
-                    <div className={styles.nameContainer}>
-                      {peerId}
-                    </div>
+                    <div className={styles.nameContainer}>{peerId}</div>
                     <Video
                       id={peerId}
                       videoStream={mediaStream}
@@ -801,9 +801,7 @@ const RemoteMediaGroup: NextPage<{
                     key={`${peerId}-screen`}
                     className={styles.cameraTileElement}
                   >
-                    <div className={styles.nameContainer}>
-                      {peerId}
-                    </div>
+                    <div className={styles.nameContainer}>{peerId}</div>
                     <ScreenShareVideo
                       id={`${peerId}-screen`}
                       videoStream={mediaStream}

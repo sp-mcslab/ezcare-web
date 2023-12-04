@@ -1,7 +1,6 @@
 import { RoomSocketService } from "@/service/RoomSocketService";
 import { RoomListService } from "@/service/roomListService";
 import { makeAutoObservable, observable, runInAction } from "mobx";
-import { InvalidStateError } from "mediasoup-client/lib/errors";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
 import { beep } from "@/service/SoundPlayer";
 import { ChatMessage } from "@/models/room/ChatMessage";
@@ -28,7 +27,6 @@ import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { RoomDto } from "@/dto/RoomDto";
 import { UserService } from "@/service/userService";
 import { RoomService } from "@/service/roomService";
-import { RefObject } from "react";
 import { getBaseURL } from "@/utils/getBaseURL";
 
 export interface RoomViewModel {
@@ -54,7 +52,7 @@ export interface RoomViewModel {
   onDisposedPeer: (disposedPeerId: string) => void;
   onKicked: (userId: string) => void;
   onKickedToWaitingRoom: (userId: string) => void;
-  onBlocked: (userId: string) => void;
+  // onBlocked: (userId: string) => void;
   onRequestToJoinRoom: (userId: string) => void;
   onMuteMicrophone: () => void;
   onHideVideo: () => void;
@@ -78,7 +76,9 @@ export class RoomStore implements RoomViewModel {
   private _state: RoomState = RoomState.CREATED;
 
   private _localVideoStream?: MediaStream = undefined;
+  private _enabledOffVideo: boolean = false;
   private _localAudioStream?: MediaStream = undefined;
+  private _enabledMuteAudio: boolean = false;
   private _localScreenVideoStream?: MediaStream = undefined;
   private _enabledHeadset: boolean = true;
   private _enabledMultipleScreenShare: boolean = false;
@@ -188,9 +188,17 @@ export class RoomStore implements RoomViewModel {
     return this._localVideoStream !== undefined;
   }
 
+  public enabledOffVideo = (): boolean => {
+    return this._localVideoStream !== undefined && this._enabledOffVideo;
+  };
+
   public get enabledLocalAudio(): boolean {
     return this._localAudioStream !== undefined;
   }
+
+  public enabledMuteAudio = (): boolean => {
+    return this._localAudioStream !== undefined && this._enabledMuteAudio;
+  };
 
   public get enabledLocalScreenVideo(): boolean {
     return this._localScreenVideoStream !== undefined;
@@ -373,30 +381,37 @@ export class RoomStore implements RoomViewModel {
   };
 
   public onConnectedWaitingRoom = async (waitingRoomData: WaitingRoomData) => {
-    const mediaStream = await this._mediaUtil
-      .fetchLocalMedia({
-        video: true,
-        audio: true,
-      })
-      // 카메라와 마이크가 둘다 연결되어있으면 mediaStream 불러옴
-      .then((mediaStream) => {
-        console.log("mediastream 받아오기 성공");
-        runInAction(() => {
-          this._localVideoStream =
-            this._mediaUtil.getMediaStreamUsingFirstVideoTrackOf(mediaStream);
-          this._localAudioStream =
-            this._mediaUtil.getMediaStreamUsingFirstAudioTrackOf(mediaStream);
-          this._state = RoomState.WAITING_ROOM;
-          this._waitingRoomData = waitingRoomData;
-          this._masterId = waitingRoomData.masterId;
-          this._blacklist = waitingRoomData.blacklist;
+    let successGetMediaStream = false;
+    while (!successGetMediaStream) {
+      const mediaStream = await this._mediaUtil
+        .fetchLocalMedia({
+          video: true,
+          audio: true,
+        })
+        // 카메라와 마이크가 둘다 연결되어있으면 mediaStream 불러옴
+        .then((mediaStream) => {
+          console.log("mediastream 받아오기 성공");
+          runInAction(() => {
+            this._localVideoStream =
+              this._mediaUtil.getMediaStreamUsingFirstVideoTrackOf(mediaStream);
+            this._enabledOffVideo = true;
+            this._localAudioStream =
+              this._mediaUtil.getMediaStreamUsingFirstAudioTrackOf(mediaStream);
+            this._enabledMuteAudio = true;
+            this._state = RoomState.WAITING_ROOM;
+            // 미디어서버에서 roomId로 진료실 검색 후 없으면 waitingRoomData === undefined
+            this._waitingRoomData = waitingRoomData;
+            this._masterId = waitingRoomData.masterId;
+            this._blacklist = waitingRoomData.blacklist;
+          });
+          successGetMediaStream = true;
+        })
+        // 카메라 or 마이크가 없으면 mediaStream 불러오지 못해서 error 출력 -> 로비에서 연결 중... 무한 출력
+        .catch((error) => {
+          console.error(`${error}: mediastream 받아오기 실패`);
+          alert("카메라와 마이크가 모두 연결되어있어야 합니다.");
         });
-      })
-      // 카메라 or 마이크가 없으면 mediaStream 불러오지 못해서 error 출력 -> 로비에서 연결 중... 무한 출력
-      .catch((error) => {
-        console.error(`${error}: mediastream 받아오기 실패`);
-        alert("카메라와 마이크가 모두 연결되어있어야 합니다.");
-      });
+    }
   };
 
   public onNotExistsRoomId = () => {
@@ -426,6 +441,7 @@ export class RoomStore implements RoomViewModel {
       this.joinRoom();
     } else if (event instanceof RejectedJoiningRoomEvent) {
       this._onRejectedJoining();
+      this._awaitConfirmToJoin = false;
     } else {
       throw Error("지원되지 않는 event입니다.");
     }
@@ -636,15 +652,19 @@ export class RoomStore implements RoomViewModel {
 
   public showVideo = async () => {
     if (this._localVideoStream !== undefined) {
-      throw new InvalidStateError(
-        "로컬 비디오가 있는 상태에서 비디오를 생성하려 했습니다."
+      console.error(
+        `비디오 스트림이 이미 있는 상태에서 새로운 스트림을 생성하려 했습니다.`
       );
+      this._localVideoStream = undefined;
     }
     let media: MediaStream;
-    if (this._currentVideoDeviceId == undefined) {
+    if (this._currentVideoDeviceId === undefined) {
       media = await this._mediaUtil.fetchLocalMedia({
         video: true,
       });
+      this._currentVideoDeviceId = this._videoDeviceList.find(
+        (video) => video.label === media.getTracks()[0].label
+      )?.deviceId;
     } else {
       media = await this._mediaUtil.fetchLocalVideo(this._currentVideoDeviceId);
     }
@@ -652,32 +672,37 @@ export class RoomStore implements RoomViewModel {
       const track = media.getVideoTracks()[0];
       this._localVideoStream = new MediaStream([track]);
       await this._roomSocketService.produceVideoTrack(track);
+      this._enabledOffVideo = true;
     });
   };
 
   public hideVideo = () => {
     if (this._localVideoStream === undefined) {
-      throw new InvalidStateError(
-        "로컬 비디오가 없는 상태에서 비디오를 끄려 했습니다."
-      );
+      console.error("로컬 비디오가 없는 상태에서 비디오를 끄려 했습니다.");
+      this._roomSocketService.closeVideoProducer();
+      this._enabledOffVideo = false;
+    } else {
+      this._roomSocketService.closeVideoProducer();
+      this._localVideoStream.getTracks().forEach((track) => track.stop());
+      this._localVideoStream = undefined;
+      this._enabledOffVideo = false;
     }
-    this._roomSocketService.closeVideoProducer();
-    this._localVideoStream.getTracks().forEach((track) => track.stop());
-    this._localVideoStream = undefined;
   };
 
   public unmuteMicrophone = async () => {
     if (this._localAudioStream !== undefined) {
-      throw new InvalidStateError(
-        "로컬 오디오가 있는 상태에서 오디오를 생성하려 했습니다."
-      );
+      console.error("로컬 오디오가 있는 상태에서 오디오를 생성하려 했습니다.");
+      this._localAudioStream = undefined;
     }
     if (!this.enabledHeadset) {
       this.unmuteHeadset();
     }
     let media: MediaStream;
-    if (this._currentAudioDeviceId == null) {
+    if (this._currentAudioDeviceId === undefined) {
       media = await this._mediaUtil.fetchLocalMedia({ audio: true });
+      this._currentAudioDeviceId = this._audioDeviceList.find(
+        (audio) => audio.label === media.getTracks()[0].label
+      )?.deviceId;
     } else {
       media = await this._mediaUtil.fetchLocalAudioInput(
         this._currentAudioDeviceId
@@ -687,18 +712,21 @@ export class RoomStore implements RoomViewModel {
       const track = media.getAudioTracks()[0];
       this._localAudioStream = new MediaStream([track]);
       await this._roomSocketService.produceAudioTrack(track);
+      this._enabledMuteAudio = true;
     });
   };
 
   public muteMicrophone = () => {
     if (this._localAudioStream === undefined) {
-      throw new InvalidStateError(
-        "로컬 오디오가 없는 상태에서 오디오를 끄려 했습니다."
-      );
+      console.error("로컬 오디오가 없는 상태에서 오디오를 끄려 했습니다.");
+      this._roomSocketService.closeAudioProducer();
+      this._enabledMuteAudio = false;
+    } else {
+      this._roomSocketService.closeAudioProducer();
+      this._localAudioStream.getTracks().forEach((track) => track.stop());
+      this._localAudioStream = undefined;
+      this._enabledMuteAudio = false;
     }
-    this._roomSocketService.closeAudioProducer();
-    this._localAudioStream.getTracks().forEach((track) => track.stop());
-    this._localAudioStream = undefined;
   };
 
   public unmuteHeadset = () => {
@@ -720,7 +748,7 @@ export class RoomStore implements RoomViewModel {
 
   public hideRemoteVideo = (userId: string) => {
     const remoteVideoStream = this._remoteVideoStreamsByPeerId.get(userId);
-    if (remoteVideoStream != null) {
+    if (remoteVideoStream !== undefined) {
       remoteVideoStream.getVideoTracks().forEach((video) => video.stop());
     }
     this._roomSocketService.hideRemoteVideo(userId);
@@ -838,7 +866,7 @@ export class RoomStore implements RoomViewModel {
       const kickedPeerState = this._peerStates.find(
         (peer) => peer.uid === userId
       );
-      if (kickedPeerState == null) {
+      if (kickedPeerState === undefined) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
       this._userMessage = `${kickedPeerState.name}님이 강퇴되었습니다.`;
@@ -857,26 +885,26 @@ export class RoomStore implements RoomViewModel {
       const kickedPeerState = this._peerStates.find(
         (peer) => peer.uid === userId
       );
-      if (kickedPeerState == null) {
+      if (kickedPeerState === undefined) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
       this._userMessage = `${kickedPeerState.name}님이 대기실로 강퇴되었습니다.`;
     }
   };
 
-  public onBlocked = (userId: string) => {
-    const blockedPeerState = this._peerStates.find(
-      (peer) => peer.uid === userId
-    );
-    if (blockedPeerState == null) {
-      throw Error("차단한 피어의 상태 정보가 없습니다.");
-    }
-    this._blacklist = [
-      ...this._blacklist,
-      { id: userId, name: blockedPeerState.name },
-    ];
-    this.onKicked(userId);
-  };
+  // public onBlocked = (userId: string) => {
+  //   const blockedPeerState = this._peerStates.find(
+  //     (peer) => peer.uid === userId
+  //   );
+  //   if (blockedPeerState == null) {
+  //     throw Error("차단한 피어의 상태 정보가 없습니다.");
+  //   }
+  //   this._blacklist = [
+  //     ...this._blacklist,
+  //     { id: userId, name: blockedPeerState.name },
+  //   ];
+  //   this.onKicked(userId);
+  // };
 
   public clearUserMessage = () => {
     this._userMessage = undefined;
@@ -889,13 +917,15 @@ export class RoomStore implements RoomViewModel {
     this._peerStates = this._peerStates.filter((peer) => peer.uid !== peerId);
   };
 
-  public setVideoDeviceList = (videoDeviceList: MediaDeviceInfo[]) => {
+  public setVideoDeviceList = async (videoDeviceList: MediaDeviceInfo[]) => {
     this._videoDeviceList = videoDeviceList;
   };
-  public setAudioDeviceList = (audioDeviceList: MediaDeviceInfo[]) => {
+  public setAudioDeviceList = async (audioDeviceList: MediaDeviceInfo[]) => {
     this._audioDeviceList = audioDeviceList;
   };
-  public setSpeakerDeviceList = (speakerDeviceList: MediaDeviceInfo[]) => {
+  public setSpeakerDeviceList = async (
+    speakerDeviceList: MediaDeviceInfo[]
+  ) => {
     this._speakerDeviceList = speakerDeviceList;
   };
 
@@ -1310,7 +1340,6 @@ export class RoomStore implements RoomViewModel {
 
   public stopShareMyScreen = () => {
     if (this._localScreenVideoStream === undefined) {
-      // throw new InvalidStateError("로컬 공유화면이 없는 상태에서 화면공유를 끄려 했습니다.");
       console.log("로컬 공유화면이 없는 상태에서 화면 공유 중지");
       this._roomSocketService.closeScreenVideoProducer();
       this._roomSocketService.broadcastStopShareScreen();
@@ -1462,4 +1491,7 @@ export class RoomStore implements RoomViewModel {
     return;
   };
 
+  public removeRemoteVideoStreamByPeerId = (peerId: string) => {
+    this._remoteVideoStreamsByPeerId.delete(peerId);
+  };
 }

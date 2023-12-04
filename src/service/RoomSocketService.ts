@@ -140,7 +140,7 @@ export class RoomSocketService {
     this._socket.on(
       CONNECTION_SUCCESS,
       async ({ socketId }: { socketId: string }) => {
-        console.log("Connected: ", socketId);
+        console.log("Connected MediaServer Socket Id : ", socketId);
         this._connectWaitingRoom(roomId);
       }
     );
@@ -150,12 +150,12 @@ export class RoomSocketService {
     this._requireSocket().emit(
       JOIN_WAITING_ROOM,
       roomId,
-      (waitingRoomData?: WaitingRoomData) => {
-        if (waitingRoomData == null) {
+      async (waitingRoomData?: WaitingRoomData) => {
+        if (waitingRoomData === undefined) {
           this._roomViewModel.onNotExistsRoomId();
           return;
         }
-        this._roomViewModel.onConnectedWaitingRoom(waitingRoomData);
+        await this._roomViewModel.onConnectedWaitingRoom(waitingRoomData);
         this._listenWaitingRoomEvents();
         this._listenHostRoomEvents();
       }
@@ -291,7 +291,8 @@ export class RoomSocketService {
           this._listenRoomEvents(this._device);
           this._getRemoteProducersAndCreateReceiveTransport(this._device);
         } catch (e) {
-          // TODO
+          // TODO: 예외 처리 더 필요한 지 확인
+          console.error(`JOIN_ROOM 에러 : ${e}`);
         }
       }
     );
@@ -349,7 +350,7 @@ export class RoomSocketService {
     socket.on(KICK_USER_TO_WAITINGR_ROOM, (userId) => {
       this._roomViewModel.onKickedToWaitingRoom(userId);
     });
-    socket.on(BLOCK_USER, this._roomViewModel.onBlocked);
+    // socket.on(BLOCK_USER, this._roomViewModel.onBlocked);
     socket.on(REQUEST_TO_JOIN_ROOM, this._roomViewModel.onRequestToJoinRoom);
     socket.on(CLOSE_AUDIO_BY_HOST, () => {
       this._roomViewModel.onMuteMicrophone();
@@ -757,7 +758,7 @@ export class RoomSocketService {
 
   public showRemoteVideo = (userId: string) => {
     const socket = this._requireSocket();
-
+    // TODO : 사용하지 않는 함수 제거 or 예외처리 필요한가?
     socket.emit(
       SHOW_REMOTE_VIDEO,
       userId,

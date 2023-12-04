@@ -111,7 +111,7 @@ const WaitingRoom: NextPage<{
               color="primary"
               style={{ margin: "8px" }}
               onClick={() =>
-                roomStore.enabledLocalVideo
+                roomStore.enabledOffVideo()
                   ? roomStore.hideVideo()
                   : roomStore.showVideo()
               }
@@ -124,7 +124,7 @@ const WaitingRoom: NextPage<{
               color="primary"
               style={{ margin: "8px" }}
               onClick={() =>
-                roomStore.enabledLocalAudio
+                roomStore.enabledMuteAudio()
                   ? roomStore.muteMicrophone()
                   : roomStore.unmuteMicrophone()
               }
@@ -160,14 +160,24 @@ const WaitingRoom: NextPage<{
           ) : undefined}
 
           {roomStore.userRole == "nurse" || roomStore.userRole == "doctor" ? (
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={!roomStore.enableJoinButton}
-              onClick={() => roomStore.joinRoom()}
-            >
-              입장
-            </Button>
+            <div>
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={!roomStore.enableJoinButton}
+                onClick={() => roomStore.joinRoom()}
+              >
+                입장
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ marginLeft: "16px" }}
+                onClick={() => router.replace("/")}
+              >
+                나가기
+              </Button>
+            </div>
           ) : (
             <div>
               <Button
@@ -178,20 +188,20 @@ const WaitingRoom: NextPage<{
               >
                 입장요청
               </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                style={{ marginLeft: "16px" }}
+                onClick={() => router.replace("/")}
+              >
+                나가기
+              </Button>
               {!roomStore.enableJoinButton &&
               roomStore.failedToJoinMessage === undefined ? (
                 <div>입장 요청 대기 중입니다...</div>
               ) : null}
             </div>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            style={{ marginLeft: "16px" }}
-            onClick={() => router.replace("/")}
-          >
-            나가기
-          </Button>
           {/*TODO: 임시로 두는 버튼입니다. 추후에 회원 기능이 구현되면 회원 타입이 환자인 경우만 보여야 합니다.*/}
           {/*231024 : 실제 이지케어텍 api가 아닌 자체 db로 작업 완료. 이후 수정 요망.*/}
         </div>
@@ -211,8 +221,8 @@ const WaitingRoom: NextPage<{
 
 const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
   ({ roomStore }) => {
-    const enabledVideo = roomStore.enabledLocalVideo;
-    const enabledAudio = roomStore.enabledLocalAudio;
+    const enabledOffVideo = roomStore.enabledOffVideo();
+    const enabledMuteAudio = roomStore.enabledMuteAudio();
     const enabledHeadset = roomStore.enabledHeadset;
     const enabledScreenVideo = roomStore.enabledLocalScreenVideo;
 
@@ -279,13 +289,13 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
       }
     };
 
-    const handleBlockButtonClick = (userId: string) => {
-      const targetUserName = roomStore.requireUserNameBy(userId);
-      const confirmed = confirm(`정말로 ${targetUserName}님을 차단할까요?`);
-      if (confirmed) {
-        roomStore.blockUser(userId);
-      }
-    };
+    // const handleBlockButtonClick = (userId: string) => {
+    //   const targetUserName = roomStore.requireUserNameBy(userId);
+    //   const confirmed = confirm(`정말로 ${targetUserName}님을 차단할까요?`);
+    //   if (confirmed) {
+    //     roomStore.blockUser(userId);
+    //   }
+    // };
 
     return (
       <div className={styles.main}>
@@ -311,7 +321,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             }
             onKickClick={handleKickButtonClick}
             onKickToWaitingRoomClick={handleKickToWaitingRoomButtonClick}
-            onBlockClick={handleBlockButtonClick}
+            // onBlockClick={handleBlockButtonClick}
           />
         </div>
 
@@ -384,22 +394,22 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             variant="contained"
             color="primary"
             onClick={() =>
-              enabledVideo ? roomStore.hideVideo() : roomStore.showVideo()
+              enabledOffVideo ? roomStore.hideVideo() : roomStore.showVideo()
             }
           >
-            {enabledVideo ? "Hide Video" : "Show Video"}
+            {enabledOffVideo ? "Hide Video" : "Show Video"}
           </Button>
           <Button
             id="microphoneToggle"
             variant="contained"
             color="primary"
             onClick={() =>
-              enabledAudio
+              enabledMuteAudio
                 ? roomStore.muteMicrophone()
                 : roomStore.unmuteMicrophone()
             }
           >
-            {enabledAudio ? "Mute Mic" : "Unmute Mic"}
+            {enabledMuteAudio ? "Mute Mic" : "Unmute Mic"}
           </Button>
           <Button
             id="headphoneToggle"
@@ -502,7 +512,7 @@ const RemoteMediaGroup: NextPage<{
   remoteScreenVideoStreamByPeerIdEntries: [string, MediaStream][];
   onKickClick: (userId: string) => void;
   onKickToWaitingRoomClick: (userId: string) => void;
-  onBlockClick: (userId: string) => void;
+  // onBlockClick: (userId: string) => void;
 }> = observer(
   ({
     roomStore,
@@ -513,7 +523,7 @@ const RemoteMediaGroup: NextPage<{
     remoteScreenVideoStreamByPeerIdEntries,
     onKickClick,
     onKickToWaitingRoomClick,
-    onBlockClick,
+    // onBlockClick,
   }) => {
     const masterPopupMenus = Object.values(MasterPopupMenus);
     const viewMode = roomStore.viewMode;
@@ -545,9 +555,9 @@ const RemoteMediaGroup: NextPage<{
               <div className={styles.localCameraListContainer}>
                 <div className={styles.stateContainer}>
                   {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
-                  {!roomStore.enabledLocalAudio ? <BsMicMuteFill /> : ""}
+                  {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
-                {roomStore.localVideoStream ? (
+                {roomStore.enabledOffVideo() ? (
                   <div>
                     <Video
                       id="localVideo"
@@ -569,7 +579,9 @@ const RemoteMediaGroup: NextPage<{
                   const [peerId, mediaStream] = entry;
                   const peerState = peerStates.find((p) => p.uid === peerId);
                   if (peerState === undefined) {
-                    throw Error("피어 상태가 존재하지 않습니다.");
+                    console.error("유저와 일치하는 peerState 가 없습니다.");
+                    roomStore.removeRemoteVideoStreamByPeerId(peerId);
+                    return;
                   }
                   return (
                     <div key={peerId} className={styles.cameraListElement}>
@@ -624,10 +636,6 @@ const RemoteMediaGroup: NextPage<{
 
                 {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
                   const [peerId, mediaStream] = entry;
-                  const peerState = peerStates.find((p) => p.uid === peerId);
-                  if (peerState === undefined) {
-                    return;
-                  }
                   return (
                     <div
                       key={`${peerId}-screen`}
@@ -671,9 +679,9 @@ const RemoteMediaGroup: NextPage<{
               <div className={styles.localCameraTileContainer}>
                 <div className={styles.stateContainer}>
                   {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
-                  {!roomStore.enabledLocalAudio ? <BsMicMuteFill /> : ""}
+                  {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
-                {roomStore.localVideoStream ? (
+                {roomStore.enabledOffVideo() ? (
                   <div>
                     <Video
                       id="localVideo"
@@ -742,7 +750,9 @@ const RemoteMediaGroup: NextPage<{
                 const [peerId, mediaStream] = entry;
                 const peerState = peerStates.find((p) => p.uid === peerId);
                 if (peerState === undefined) {
-                  throw Error("피어 상태가 존재하지 않습니다.");
+                  console.error("유저와 일치하는 peerState 가 없습니다.");
+                  roomStore.removeRemoteVideoStreamByPeerId(peerId);
+                  return;
                 }
                 return (
                   <div key={peerId} className={styles.cameraTileElement}>
@@ -797,10 +807,6 @@ const RemoteMediaGroup: NextPage<{
 
               {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
                 const [peerId, mediaStream] = entry;
-                const peerState = peerStates.find((p) => p.uid === peerId);
-                if (peerState === undefined) {
-                  return;
-                }
                 return (
                   <div
                     key={`${peerId}-screen`}
@@ -868,23 +874,32 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
       const videoInput = devices.filter(
         (device) => device.kind === "videoinput"
       );
-      roomStore.setVideoDeviceList(videoInput);
       // 아래는 위와 동일한데 오디오인 것만 다르다.
       const audioInput = devices.filter(
         (device) => device.kind === "audioinput"
       );
-      roomStore.setAudioDeviceList(audioInput);
       // 사용가능한 스피커 목록 불러오기
       const audioOutput = devices.filter(
         (device) => device.kind === "audiooutput"
       );
-      roomStore.setSpeakerDeviceList(audioOutput);
+
+      await roomStore.setVideoDeviceList(videoInput);
+      await roomStore.setAudioDeviceList(audioInput);
+      await roomStore.setSpeakerDeviceList(audioOutput);
+
       // 사용할 스피커 deviceId 상태 저장
       const defaultDeviceId = audioOutput.find(
         (speaker) => speaker.label === "default"
       )?.deviceId;
-      // TODO: 이 부분 [0]이 아니라 default 장치를 세팅할 수 있는지 확인
-      if (defaultDeviceId !== undefined) {
+      if (
+        defaultDeviceId === undefined &&
+        roomStore.speakerDeviceList.length > 0
+      ) {
+        console.log(`default speaker device is undefined`);
+        const firstDevice = roomStore.speakerDeviceList[0].deviceId;
+        await roomStore.changeSpeaker(firstDevice);
+        roomStore.setCurrentSpeakerDeviceId(firstDevice);
+      } else {
         console.log(`[initDevice]: defaultDeviceId: ${defaultDeviceId}`);
         roomStore.setCurrentSpeakerDeviceId(defaultDeviceId);
       }
@@ -897,6 +912,7 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
       await initDevice();
       // 조건문: 각 device 리스트에 현재 deviceId 와 일치하는 device 가 없다면 ...
       if (
+        roomStore.videoDeviceList.length > 0 &&
         !roomStore.videoDeviceList.some(
           (device) => device.deviceId === roomStore.currentVideoDeviceId
         )
@@ -907,6 +923,7 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
         );
       }
       if (
+        roomStore.audioDeviceList.length > 0 &&
         !roomStore.audioDeviceList.some(
           (device) => device.deviceId === roomStore.currentAudioDeviceId
         )
@@ -917,6 +934,7 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
         );
       }
       if (
+        roomStore.speakerDeviceList.length > 0 &&
         !roomStore.speakerDeviceList.some(
           (device) => device.deviceId === roomStore.currentSpeakerDeviceId
         )

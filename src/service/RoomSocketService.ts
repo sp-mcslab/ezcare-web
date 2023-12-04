@@ -151,7 +151,7 @@ export class RoomSocketService {
       JOIN_WAITING_ROOM,
       roomId,
       async (waitingRoomData?: WaitingRoomData) => {
-        if (waitingRoomData === undefined) {
+        if (waitingRoomData == null) {
           this._roomViewModel.onNotExistsRoomId();
           return;
         }

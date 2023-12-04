@@ -698,7 +698,7 @@ export class RoomStore implements RoomViewModel {
       this.unmuteHeadset();
     }
     let media: MediaStream;
-    if (this._currentAudioDeviceId === undefined) {
+    if (this._currentAudioDeviceId == null) {
       media = await this._mediaUtil.fetchLocalMedia({ audio: true });
       this._currentAudioDeviceId = this._audioDeviceList.find(
         (audio) => audio.label === media.getTracks()[0].label
@@ -748,7 +748,7 @@ export class RoomStore implements RoomViewModel {
 
   public hideRemoteVideo = (userId: string) => {
     const remoteVideoStream = this._remoteVideoStreamsByPeerId.get(userId);
-    if (remoteVideoStream !== undefined) {
+    if (remoteVideoStream != null) {
       remoteVideoStream.getVideoTracks().forEach((video) => video.stop());
     }
     this._roomSocketService.hideRemoteVideo(userId);
@@ -866,7 +866,7 @@ export class RoomStore implements RoomViewModel {
       const kickedPeerState = this._peerStates.find(
         (peer) => peer.uid === userId
       );
-      if (kickedPeerState === undefined) {
+      if (kickedPeerState == null) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
       this._userMessage = `${kickedPeerState.name}님이 강퇴되었습니다.`;
@@ -885,7 +885,7 @@ export class RoomStore implements RoomViewModel {
       const kickedPeerState = this._peerStates.find(
         (peer) => peer.uid === userId
       );
-      if (kickedPeerState === undefined) {
+      if (kickedPeerState == null) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
       this._userMessage = `${kickedPeerState.name}님이 대기실로 강퇴되었습니다.`;

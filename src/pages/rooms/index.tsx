@@ -52,7 +52,7 @@ const ListPage: NextPage = observer(() => {
               marginLeft: "30%",
             }}
           >
-            {roomStore.uid} - {roomStore.userRole}
+            {roomStore.uid} - {roomStore.userName} - {roomStore.userRole}
           </div>
         ) : undefined}
       </div>

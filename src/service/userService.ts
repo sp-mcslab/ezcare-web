@@ -8,7 +8,7 @@ const HEADER = {
 };
 
 export class UserService {
-  public async findUserRole(token: string): Promise<Result<UserRoleDto>> {
+  public async findUserRole(token: string): Promise<Result<UserSearchDto>> {
     try {
       const response = await fetchAbsolute(`api/auth/user`, {
         method: "POST",

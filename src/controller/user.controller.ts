@@ -15,7 +15,7 @@ export const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
-    const user = await findUserRoleById(userId);
+    const user = await findUserById(userId);
     if (user == null) {
       res.status(401).end();
       return;
@@ -27,6 +27,7 @@ export const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
       data: {
         id: userId as string,
         role: user.role,
+        name: user.name,
       },
     });
   } catch (e) {

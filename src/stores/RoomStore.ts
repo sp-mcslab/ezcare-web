@@ -1371,12 +1371,17 @@ export class RoomStore implements RoomViewModel {
 
   //유저 권한, 호스트 여부 조회, 초대 인원 조회
   private _userRole: string = "";
+  private _userName: string = "";
   private _isHost: boolean = false;
   private _isInvited: boolean = false;
 
   public get userRole(): string | null {
     return this._userRole;
   }
+  public get userName(): string | null {
+    return this._userName;
+  }
+
   public get isHost(): boolean | null {
     return this._isHost;
   }
@@ -1446,6 +1451,7 @@ export class RoomStore implements RoomViewModel {
     const validResult = await this._userService.findUserRole(sessionToken);
     if (validResult.isSuccess) {
       this._userRole = validResult.getOrNull()!.role;
+      this._userName = validResult.getOrNull()!.name;
     }
   };
 

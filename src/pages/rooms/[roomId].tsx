@@ -672,11 +672,20 @@ const RemoteMediaGroup: NextPage<{
         </>
       );
     } else {
+      let containerWidth = 85;
+      if (roomStore.joiningPeerIds.length < 2)
+        containerWidth = 70;
+      else if (roomStore.joiningPeerIds.length < 3)
+        containerWidth = 85 / 2;
+      else if (roomStore.joiningPeerIds.length < 7)
+        containerWidth = 85 / 3;
+      else
+        containerWidth = 85 / 4;
       return (
         <>
           <div>
             <div>
-              <div className={styles.localCameraTileContainer}>
+              <div className={styles.localCameraTileContainer} style={{width: containerWidth + "%"}}>
                 <div className={styles.stateContainer}>
                   {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
@@ -755,7 +764,7 @@ const RemoteMediaGroup: NextPage<{
                   return;
                 }
                 return (
-                  <div key={peerId} className={styles.cameraTileElement}>
+                  <div key={peerId} className={styles.cameraTileElement} style={{width: containerWidth + "%"}}>
                     <div className={styles.stateContainer}>
                       {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                       {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
@@ -811,6 +820,7 @@ const RemoteMediaGroup: NextPage<{
                   <div
                     key={`${peerId}-screen`}
                     className={styles.cameraTileElement}
+                    style={{width: containerWidth + "%"}}
                   >
                     <div className={styles.nameContainer}>{peerId}</div>
                     <ScreenShareVideo

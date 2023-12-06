@@ -1,11 +1,12 @@
-import { RoomSocketService } from "@/service/RoomSocketService";
-import { RoomListService } from "@/service/roomListService";
-import { makeAutoObservable, observable, runInAction } from "mobx";
-import { MediaKind } from "mediasoup-client/lib/RtpParameters";
-import { beep } from "@/service/SoundPlayer";
+import {
+  ALREADY_JOINED_ROOM_MESSAGE,
+  CONNECTING_ROOM_MESSAGE,
+  ROOM_IS_FULL_MESSAGE
+} from "@/constants/roomMessage";
+import { RoomDto } from "@/dto/RoomDto";
 import { ChatMessage } from "@/models/room/ChatMessage";
+import { PeerState } from "@/models/room/PeerState";
 import { RoomState } from "@/models/room/RoomState";
-import { MediaUtil } from "@/utils/MediaUtil";
 import { WaitingRoomData } from "@/models/room/WaitingRoomData";
 import {
   ApprovedJoiningRoomEvent,
@@ -14,6 +15,11 @@ import {
   RejectedJoiningRoomEvent,
   WaitingRoomEvent,
 } from "@/models/room/WaitingRoomEvent";
+
+import { RoomSocketService } from "@/service/RoomSocketService";
+import { beep } from "@/service/SoundPlayer";
+import { RoomListService } from "@/service/roomListService";
+
 import {
   ALREADY_JOINED_ROOM_MESSAGE,
   CONNECTING_ROOM_MESSAGE,
@@ -24,8 +30,15 @@ import { uuidv4 } from "@firebase/util";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { RoomDto } from "@/dto/RoomDto";
 import { UserService } from "@/service/userService";
+
 import { RoomService } from "@/service/roomService";
+import { UserService } from "@/service/userService";
+import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
+import { MediaUtil } from "@/utils/MediaUtil";
 import { getBaseURL } from "@/utils/getBaseURL";
+import { uuidv4 } from "@firebase/util";
+import { MediaKind } from "mediasoup-client/lib/RtpParameters";
+import { makeAutoObservable, observable, runInAction } from "mobx";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -50,7 +63,6 @@ export interface RoomViewModel {
   onDisposedPeer: (disposedPeerId: string) => void;
   onKicked: (userId: string) => void;
   onKickedToWaitingRoom: (userId: string) => void;
-  // onBlocked: (userId: string) => void;
   onRequestToJoinRoom: (userId: string) => void;
   onMuteMicrophone: () => void;
   onHideVideo: () => void;
@@ -104,7 +116,6 @@ export class RoomStore implements RoomViewModel {
   private _awaitingPeerIds: string[] = [];
   private _joiningPeerIds: string[] = [];
   private readonly _chatMessages: ChatMessage[] = observable.array([]);
-  private _blacklist: BlockedUser[] = [];
   private _kicked: boolean = false;
   private _kickedToWaitingRoom: boolean = false;
   private _videoDeviceList: MediaDeviceInfo[] = [];
@@ -250,11 +261,6 @@ export class RoomStore implements RoomViewModel {
     );
   };
 
-  private _isCurrentUserBlocked = (waitingRoomData: WaitingRoomData) => {
-    const currentUserId = this._requireCurrentUserId();
-    return waitingRoomData.blacklist.some((user) => user.id === currentUserId);
-  };
-
   public get failedToJoinMessage(): string | undefined {
     return this._failedToJoinMessage;
   }
@@ -271,13 +277,6 @@ export class RoomStore implements RoomViewModel {
       return undefined;
     }
     return undefined;
-  }
-
-  public get hasPassword(): boolean {
-    if (this._waitingRoomData === undefined) {
-      return false;
-    }
-    return this._waitingRoomData.hasPassword;
   }
 
   public get passwordInput(): string {
@@ -301,12 +300,6 @@ export class RoomStore implements RoomViewModel {
     }
     if (this._isCurrentUserMaster(waitingRoomData)) {
       return true;
-    }
-    if (this._isCurrentUserBlocked(waitingRoomData)) {
-      return false;
-    }
-    if (waitingRoomData.hasPassword && this._passwordInput.length === 0) {
-      return false;
     }
     return !this._isRoomFull(waitingRoomData);
   }
@@ -346,10 +339,6 @@ export class RoomStore implements RoomViewModel {
 
   public get enabledChatSendButton(): boolean {
     return this._chatInput.length > 0;
-  }
-
-  public get blacklist(): BlockedUser[] {
-    return this._blacklist;
   }
 
   public get kicked(): boolean {
@@ -394,7 +383,6 @@ export class RoomStore implements RoomViewModel {
             // 미디어서버에서 roomId로 진료실 검색 후 없으면 waitingRoomData === undefined
             this._waitingRoomData = waitingRoomData;
             this._masterId = waitingRoomData.masterId;
-            this._blacklist = waitingRoomData.blacklist;
           });
           successGetMediaStream = true;
         })
@@ -841,7 +829,6 @@ export class RoomStore implements RoomViewModel {
   public unblockUser = async (userId: string) => {
     try {
       await this._roomSocketService.unblockUser(userId);
-      this._blacklist = this._blacklist.filter((user) => user.id !== userId);
     } catch (e) {
       this._userMessage =
         typeof e === "string" ? e : "회원 차단 해제를 실패했습니다.";
@@ -883,20 +870,6 @@ export class RoomStore implements RoomViewModel {
       this._userMessage = `${kickedPeerState.name}님이 대기실로 강퇴되었습니다.`;
     }
   };
-
-  // public onBlocked = (userId: string) => {
-  //   const blockedPeerState = this._peerStates.find(
-  //     (peer) => peer.uid === userId
-  //   );
-  //   if (blockedPeerState == null) {
-  //     throw Error("차단한 피어의 상태 정보가 없습니다.");
-  //   }
-  //   this._blacklist = [
-  //     ...this._blacklist,
-  //     { id: userId, name: blockedPeerState.name },
-  //   ];
-  //   this.onKicked(userId);
-  // };
 
   public clearUserMessage = () => {
     this._userMessage = undefined;

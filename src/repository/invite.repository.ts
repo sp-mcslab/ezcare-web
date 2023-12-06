@@ -2,9 +2,6 @@ import client from "prisma/client";
 import { Invite } from "@prisma/client";
 import { InviteDto } from "@/dto/InviteDto";
 
-const HOSPITAL_CODE = "A0013";
-const TENANT_CODE = "A001";
-
 export const findInvitedUsersByRoomId = async (
   roomid: string
 ): Promise<Invite[] | null> => {

@@ -1,6 +1,5 @@
 import { Result } from "@/models/common/Result";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
-import { UserRoleDto } from "@/dto/UserRoleDto";
 import { UserSearchDto } from "@/dto/UserSearchDto";
 
 const HEADER = {

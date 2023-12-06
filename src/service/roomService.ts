@@ -28,24 +28,6 @@ export class RoomService {
     }
   }
 
-  public async getRecentRooms(userId: string): Promise<Result<RoomOverview[]>> {
-    try {
-      const response = await fetchAbsolute(`api/users/${userId}/recent-rooms`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        return Result.createSuccessUsingResponseData(response);
-      } else {
-        return Result.createErrorUsingResponseMessage(response);
-      }
-    } catch (e) {
-      return Result.createErrorUsingException(e);
-    }
-  }
-
   public async createRoom(room: Room): Promise<Result<string>> {
     try {
       const requestBody = new RoomCreateRequestBody(room);
@@ -111,25 +93,6 @@ export class RoomService {
       return data.data.invitedUsers as string[];
     } catch (e) {
       return;
-    }
-  }
-
-  public async uploadThumbnailImage(
-    roomId: string,
-    formData: FormData
-  ): Promise<Result<string>> {
-    try {
-      const response = await fetchAbsolute(`api/rooms/${roomId}/thumbnail`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-      if (!response.ok) {
-        return await Result.createErrorUsingResponseMessage(response);
-      }
-      return Result.createSuccessUsingResponseData(response);
-    } catch (e) {
-      return Result.createErrorUsingException(e);
     }
   }
 }

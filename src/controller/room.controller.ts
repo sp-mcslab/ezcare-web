@@ -20,6 +20,7 @@ import roomListService from "@/service/roomListService";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
+// 즉시 방 생성
 export const postRoomNow = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -82,6 +83,7 @@ export const postRoomNow = async (
   }
 };
 
+// 예약 방 생성
 export const postRoomLater = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -157,6 +159,7 @@ export const postRoomLater = async (
   }
 };
 
+// 방 삭제
 export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if ((await deleteRoomReq(req.query.roomId as string)) == undefined)
@@ -192,6 +195,7 @@ export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
+// 방 목록 조회
 export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const schedule = require("node-schedule");
@@ -232,6 +236,7 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
+// 방 아이디로 방 조회
 export const getRoomById = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -264,6 +269,7 @@ export const getRoomById = async (
   }
 };
 
+// 진료실 상태 확인
 export const checkRoomFlag = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -282,6 +288,7 @@ export const checkRoomFlag = async (
   }
 };
 
+// 호스트 조회
 export const getHostById = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -323,6 +330,7 @@ export const getHostById = async (
   }
 };
 
+// 초대 목록 조회
 export const getInvitedUsersByRoomId = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -359,6 +367,7 @@ export const getInvitedUsersByRoomId = async (
   }
 };
 
+// 초대 신청
 export const postInvitation = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -400,132 +409,4 @@ export const postInvitation = async (
     res.json({ message: "초대 목록애 추가되지 않았습니다." });
     return;
   }
-};
-
-export const getRoomAvailability = async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
-  // try {
-  //   const roomId = req.query.roomId;
-  //   if (typeof roomId !== "string") {
-  //     res.status(500).end("path에 roomId가 존재하지 않습니다.");
-  //     return;
-  //   }
-  //   const requestBody = new RoomAvailabilityRequestBody(req.body.userId);
-  //   const userId = requestBody.userId;
-  //   const room = await findRoomById(roomId);
-  //
-  //   if (room == null) {
-  //     res.status(404).end(new ResponseBody({ message: NO_ROOM_ERROR_MESSAGE }));
-  //     return;
-  //   }
-  //
-  //   if (room.master_id !== userId && (await isRoomFull(room.id))) {
-  //     res
-  //       .status(400)
-  //       .end(new ResponseBody({ message: ROOM_IS_FULL_ERROR_MESSAGE }));
-  //     return;
-  //   }
-  //
-  //   if (await isUserBlockedAtRoom(userId, room.id)) {
-  //     res
-  //       .status(400)
-  //       .end(
-  //         new ResponseBody({ message: INVALID_ROOM_PASSWORD_ERROR_MESSAGE })
-  //       );
-  //     return;
-  //   }
-  //
-  //   res.status(200).end(new ResponseBody({ message: ROOM_AVAILABLE_MESSAGE }));
-  // } catch (e) {
-  //   if (typeof e === "string") {
-  //     res.status(400).end(e);
-  //     return;
-  //   }
-  //   console.log("ERROR: ", e);
-  //   res
-  //     .status(500)
-  //     .end(new ResponseBody({ message: SERVER_INTERNAL_ERROR_MESSAGE }));
-  // }
-};
-
-export const getRecentRooms = async (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => {
-  // try {
-  //   if (typeof req.query.userId !== "string") {
-  //     res.status(400).send(new ResponseBody({ message: REQUEST_QUERY_ERROR }));
-  //     return;
-  //   }
-  //   const roomsGetBody = new RecentRoomsGetRequest(req.query.userId);
-  //   const result = await findRecentRooms(roomsGetBody.userId);
-  //   res.status(201).json(
-  //     new ResponseBody({
-  //       data: result,
-  //       message: GET_RECENT_ROOM_SUCCESS,
-  //     })
-  //   );
-  // } catch (e) {
-  //   if (typeof e === "string") {
-  //     res.status(400).send(new ResponseBody({ message: e }));
-  //     return;
-  //   }
-  //   res
-  //     .status(500)
-  //     .send(new ResponseBody({ message: SERVER_INTERNAL_ERROR_MESSAGE }));
-  // }
-};
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-export const postRoomThumbnail = async (
-  req: NextApiRequest & { [key: string]: any },
-  res: NextApiResponse
-) => {
-  // try {
-  //   const multerUpload = multer({
-  //     storage: multer.diskStorage({
-  //       filename: function (req, file, callback) {
-  //         const ext = path.extname(file.originalname);
-  //         callback(null, "test" + ext);
-  //       },
-  //     }),
-  //     limits: { fileSize: MAX_IMAGE_BYTE_SIZE },
-  //   });
-  //   await runMiddleware(req, res, multerUpload.single("roomThumbnail"));
-  //   const file = req.file;
-  //   const others = req.body;
-  //   const signedUrl: string = await multipartUploader(
-  //     "rooms/" + others.roomId + ".png",
-  //     file.path
-  //   );
-  //
-  //   res.status(201).send(
-  //     new ResponseBody({
-  //       message: SET_ROOM_THUMBNAIL_SUCCESS,
-  //       data: signedUrl,
-  //     })
-  //   );
-  // } catch (e) {
-  //   if (e instanceof MulterError && e.code === "LIMIT_FILE_SIZE") {
-  //     res
-  //       .status(400)
-  //       .send(new ResponseBody({ message: IMAGE_SIZE_EXCEED_MESSAGE }));
-  //     return;
-  //   }
-  //   if (typeof e === "string") {
-  //     res.status(400).send(new ResponseBody({ message: e }));
-  //     return;
-  //   }
-  //   res
-  //     .status(500)
-  //     .send(new ResponseBody({ message: SERVER_INTERNAL_ERROR_MESSAGE }));
-  //   return;
-  // }
 };

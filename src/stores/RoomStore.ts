@@ -16,9 +16,7 @@ import {
 } from "@/models/room/WaitingRoomEvent";
 import {
   ALREADY_JOINED_ROOM_MESSAGE,
-  BLACKLIST_CANNOT_JOIN_ROOM_MESSAGE,
   CONNECTING_ROOM_MESSAGE,
-  ROOM_IS_FULL_MESSAGE,
 } from "@/constants/roomMessage";
 import { PeerState } from "@/models/room/PeerState";
 import { BlockedUser } from "@/models/room/BlockedUser";
@@ -271,12 +269,6 @@ export class RoomStore implements RoomViewModel {
     }
     if (this._isCurrentUserMaster(waitingRoomData)) {
       return undefined;
-    }
-    if (this._isRoomFull(waitingRoomData)) {
-      return ROOM_IS_FULL_MESSAGE;
-    }
-    if (this._isCurrentUserBlocked(waitingRoomData)) {
-      return BLACKLIST_CANNOT_JOIN_ROOM_MESSAGE;
     }
     return undefined;
   }

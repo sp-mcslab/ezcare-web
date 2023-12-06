@@ -98,7 +98,7 @@ export const deleteRoomReq = async (roomId: string) => {
 export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
   let where = {};
   if (user.role === "nurse") {
-    //간호사 -> 만든 방, 호스트인 방, 초대받은 방
+    //간호사 -> 호스트인 방, 초대받은 방
     where = {
       OR: [
         {
@@ -163,7 +163,7 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
       ],
     },
     orderBy: {
-      openat: "desc", // Replace 'createdAt' with the field you want to sort by
+      openat: "desc",
     },
   });
 
@@ -238,63 +238,3 @@ export const checkRoomClosed = async (): Promise<boolean | null> => {
 
   return !!result;
 };
-
-// export const findRoomById = async (roomId: string): Promise<Room | null> => {
-//   return await prisma.room.findUnique({
-//     where: {
-//       id: roomId,
-//     },
-//   });
-// };
-//
-// export const isRoomFull = async (roomId: string): Promise<boolean> => {
-//   const histories = await prisma.study_history.findMany({
-//     where: {
-//       room_id: roomId,
-//       exit_at: undefined,
-//     },
-//   });
-//   return histories.length === MAX_ROOM_CAPACITY;
-// };
-//
-// export const isUserBlockedAtRoom = async (
-//   userId: string,
-//   roomId: string
-// ): Promise<boolean> => {
-//   const block = await prisma.block.findUnique({
-//     where: {
-//       room_id_user_id: {
-//         room_id: roomId,
-//         user_id: userId,
-//       },
-//     },
-//   });
-//   return block != null;
-// };
-
-//
-// export const findRecentRooms = async (userId: string) => {
-//   const rooms = await client.study_history.findMany({
-//     where: { user_id: userId, room: { deleted_at: null } },
-//     distinct: "room_id",
-//     take: MAX_RECENT_ROOM_NUM,
-//     orderBy: { join_at: "desc" },
-//     include: {
-//       room: { include: { study_history: { where: { exit_at: null } } } },
-//     },
-//   });
-//   return rooms.map((rooms) => {
-//     return new RoomOverview(
-//       rooms.room.id,
-//       rooms.room.master_id,
-//       rooms.room.title,
-//       rooms.room.password ? true : false,
-//       rooms.room.thumbnail,
-//       rooms.room.study_history.length,
-//       MAX_ROOM_CAPACITY,
-//       [] //room.room_tags
-//     );
-//   });
-// };
-//
-//

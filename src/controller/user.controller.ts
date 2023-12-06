@@ -1,9 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getIdFromToken } from "@/utils/JwtUtil";
-import { findUserRoleById, findUserById } from "@/repository/user.repository";
+import { findUserById } from "@/repository/user.repository";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
+// 사용자 아이디 조회
 export const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const userId = getIdFromToken(
@@ -37,8 +38,12 @@ export const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export const getUserById = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { userId }= req.body;
+// 아이디로 사용자 조회
+export const getUserById = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  const { userId } = req.body;
   try {
     const user = await findUserById(userId);
 

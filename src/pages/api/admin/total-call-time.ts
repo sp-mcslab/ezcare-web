@@ -1,10 +1,6 @@
 //라우팅
 import { NextApiRequest, NextApiResponse } from "next";
-import {
-  getCallLog,
-  getTotalCallTime,
-  postCallLog,
-} from "@/controller/admin.controller";
+import { getTotalCallTime } from "@/controller/admin.controller";
 
 export default async function CallTimeHandler(
   req: NextApiRequest,

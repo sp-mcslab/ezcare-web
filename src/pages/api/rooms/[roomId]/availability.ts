@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getRoomAvailability } from "@/controller/room.controller";
 
 export default async function availabilityHandler(
   req: NextApiRequest,
@@ -10,7 +9,6 @@ export default async function availabilityHandler(
 
   switch (method) {
     case "GET":
-      await getRoomAvailability(req, res);
       break;
     default:
       res.status(405).end(`Method ${method} Not Allowed`);

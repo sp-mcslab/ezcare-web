@@ -1,9 +1,6 @@
 import client from "prisma/client";
-import { Host, Room } from "@prisma/client";
+import { Host } from "@prisma/client";
 import { HostDto } from "@/dto/HostDto";
-
-const HOSPITAL_CODE = "A0013";
-const TENANT_CODE = "A001";
 
 export const findUserHostByRoomId = async (
   roomid: string

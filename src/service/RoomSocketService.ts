@@ -11,7 +11,6 @@ import {
   CONSUME_RESUME,
   CREATE_WEB_RTC_TRANSPORT,
   GET_PRODUCER_IDS,
-  HIDE_REMOTE_VIDEO,
   JOIN_ROOM,
   JOIN_WAITING_ROOM,
   KICK_USER,
@@ -25,7 +24,6 @@ import {
   REJECT_JOINING_ROOM,
   REQUEST_TO_JOIN_ROOM,
   SEND_CHAT,
-  SHOW_REMOTE_VIDEO,
   TRANSPORT_PRODUCER,
   TRANSPORT_PRODUCER_CONNECT,
   TRANSPORT_RECEIVER_CONNECT,
@@ -737,42 +735,6 @@ export class RoomSocketService {
     }
     producer.close();
     this._screenVideoProducer = undefined;
-  };
-
-  public hideRemoteVideo = (userId: string) => {
-    this._receiveTransportWrappers = this._receiveTransportWrappers.filter(
-      (wrapper) => {
-        if (
-          wrapper.userId === userId &&
-          wrapper.consumer.kind === "video" &&
-          !wrapper.consumer.appData.isScreenShare
-        ) {
-          this._requireSocket().emit(HIDE_REMOTE_VIDEO, wrapper.producerId);
-          wrapper.consumer.close();
-          return false;
-        }
-        return true;
-      }
-    );
-  };
-
-  public showRemoteVideo = (userId: string) => {
-    const socket = this._requireSocket();
-    // TODO : 사용하지 않는 함수 제거 or 예외처리 필요한가?
-    socket.emit(
-      SHOW_REMOTE_VIDEO,
-      userId,
-      async (userAndProducerId: UserAndProducerId) => {
-        if (this._device === undefined) {
-          throw Error("Device 필드가 초기화 되지 않았습니다.");
-        }
-        await this._createReceiveTransport(
-          userAndProducerId.producerId,
-          userAndProducerId.userId,
-          this._device
-        );
-      }
-    );
   };
 
   public muteHeadset = () => {

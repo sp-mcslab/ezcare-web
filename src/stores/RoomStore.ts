@@ -1,6 +1,6 @@
 import {
   ALREADY_JOINED_ROOM_MESSAGE,
-  CONNECTING_ROOM_MESSAGE
+  CONNECTING_ROOM_MESSAGE,
 } from "@/constants/roomMessage";
 import { RoomDto } from "@/dto/RoomDto";
 import { ChatMessage } from "@/models/room/ChatMessage";
@@ -715,20 +715,6 @@ export class RoomStore implements RoomViewModel {
     this._enabledHeadset = false;
   };
 
-  public hideRemoteVideo = (userId: string) => {
-    const remoteVideoStream = this._remoteVideoStreamsByPeerId.get(userId);
-    if (remoteVideoStream != null) {
-      remoteVideoStream.getVideoTracks().forEach((video) => video.stop());
-    }
-    this._roomSocketService.hideRemoteVideo(userId);
-    this._remoteVideoSwitchByPeerId.set(userId, false);
-  };
-
-  public showRemoteVideo = (userId: string) => {
-    this._roomSocketService.showRemoteVideo(userId);
-    this._remoteVideoSwitchByPeerId.set(userId, true);
-  };
-
   public onChangePeerState = (state: PeerState) => {
     this._peerStates = this._peerStates.filter((s) => state.uid !== s.uid);
     this._peerStates.push(state);
@@ -909,10 +895,6 @@ export class RoomStore implements RoomViewModel {
 
   public deleteAudioComponentRef = (id: string) => {
     this._audioComponentRefs.delete(id);
-  };
-
-  public getEnableHideRemoteVideoByUserId = (userId: string) => {
-    return this._remoteVideoSwitchByPeerId.get(userId);
   };
 
   public muteAllAudio = () => {

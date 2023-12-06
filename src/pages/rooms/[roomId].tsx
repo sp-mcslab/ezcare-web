@@ -1,17 +1,16 @@
-import { NextPage } from "next";
-import React, { useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
-import { RoomStore } from "@/stores/RoomStore";
-import { useRouter } from "next/router";
 import { ChatMessage } from "@/models/room/ChatMessage";
-import { RoomState } from "@/models/room/RoomState";
 import { PeerState } from "@/models/room/PeerState";
+import { RoomState } from "@/models/room/RoomState";
+import { RoomStore } from "@/stores/RoomStore";
 import { getEnumKeyByEnumValue } from "@/utils/EnumUtil";
-import { RoomSettingDialog } from "@/components/RoomSettingDialog";
-import { Button, createTheme, ThemeProvider } from "@mui/material";
-import styles from "../../styles/room.module.scss";
-import { BsMicMuteFill, BsCameraVideoOffFill } from "react-icons/bs";
+import { Button, ThemeProvider, createTheme } from "@mui/material";
+import { observer } from "mobx-react";
+import { NextPage } from "next";
+import { useRouter } from "next/router";
+import React, { useEffect, useRef, useState } from "react";
+import { BsCameraVideoOffFill, BsMicMuteFill } from "react-icons/bs";
 import { MdHeadsetOff } from "react-icons/md";
+import styles from "../../styles/room.module.scss";
 
 enum MasterPopupMenus {
   //Block = "차단",
@@ -149,14 +148,6 @@ const WaitingRoom: NextPage<{
         <div style={{ padding: "16px" }}>
           {roomStore.failedToJoinMessage !== undefined ? (
             <div>{roomStore.failedToJoinMessage}</div>
-          ) : undefined}
-          {roomStore.hasPassword ? (
-            <input
-              type="password"
-              placeholder="비밀번호 입력..."
-              value={roomStore.passwordInput}
-              onChange={(e) => roomStore.updatePasswordInput(e.target.value)}
-            />
           ) : undefined}
 
           {roomStore.userRole == "nurse" || roomStore.userRole == "doctor" ? (
@@ -299,12 +290,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
 
     return (
       <div className={styles.main}>
-        <RoomSettingDialog
-          open={openSettingDialog}
-          onClose={() => setOpenSettingDialog(false)}
-          onUnblockedUser={(user) => roomStore.unblockUser(user.id)}
-          blacklist={roomStore.blacklist}
-        />
         <div className={styles.cameraContainer}>
           <RemoteMediaGroup
             roomStore={roomStore}

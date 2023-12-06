@@ -1,8 +1,3 @@
-import { Result } from "@/models/common/Result";
-import { RoomCreateRequestBody } from "@/models/room/RoomCreateRequestBody";
-import { RoomOverview } from "@/models/room/RoomOverview";
-import { Room } from "@/stores/RoomListStore";
-import { RoomDeleteRequestBody } from "@/models/room/RoomDeleteRequestBody";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
 
 const HEADER = {
@@ -10,59 +5,6 @@ const HEADER = {
 };
 
 export class RoomService {
-  public async getRooms(page: number): Promise<Result<RoomOverview[]>> {
-    try {
-      const response = await fetchAbsolute(`api/rooms?page=${page}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        return Result.createSuccessUsingResponseData(response);
-      } else {
-        return Result.createErrorUsingResponseMessage(response);
-      }
-    } catch (e) {
-      return Result.createErrorUsingException(e);
-    }
-  }
-
-  public async createRoom(room: Room): Promise<Result<string>> {
-    try {
-      const requestBody = new RoomCreateRequestBody(room);
-      const response = await fetchAbsolute(`api/rooms`, {
-        method: "POST",
-        body: JSON.stringify(requestBody),
-        headers: HEADER,
-      });
-      if (response.ok) {
-        return Result.createSuccessUsingResponseMessage(response);
-      } else {
-        return await Result.createErrorUsingResponseMessage(response);
-      }
-    } catch (e) {
-      return Result.createErrorUsingException(e);
-    }
-  }
-
-  public async deleteRoom(roomId: string) {
-    try {
-      const requestBody = new RoomDeleteRequestBody(roomId);
-      const response = await fetchAbsolute(`api/rooms/${roomId}`, {
-        method: "DELETE",
-        body: JSON.stringify(requestBody),
-        headers: HEADER,
-      });
-      if (response.ok) {
-        return Result.createSuccessUsingResponseData(response);
-      } else {
-        return await Result.createErrorUsingResponseMessage(response);
-      }
-    } catch (e) {
-      return Result.createErrorUsingException(e);
-    }
-  }
 
   public async getInvitedUsers(roomId: string): Promise<string[] | undefined> {
     try {

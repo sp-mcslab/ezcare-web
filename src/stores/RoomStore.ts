@@ -1,7 +1,6 @@
 import {
   ALREADY_JOINED_ROOM_MESSAGE,
-  CONNECTING_ROOM_MESSAGE,
-  ROOM_IS_FULL_MESSAGE
+  CONNECTING_ROOM_MESSAGE
 } from "@/constants/roomMessage";
 import { RoomDto } from "@/dto/RoomDto";
 import { ChatMessage } from "@/models/room/ChatMessage";
@@ -20,23 +19,13 @@ import { RoomSocketService } from "@/service/RoomSocketService";
 import { beep } from "@/service/SoundPlayer";
 import { RoomListService } from "@/service/roomListService";
 
-import {
-  ALREADY_JOINED_ROOM_MESSAGE,
-  CONNECTING_ROOM_MESSAGE,
-} from "@/constants/roomMessage";
-import { PeerState } from "@/models/room/PeerState";
-import { BlockedUser } from "@/models/room/BlockedUser";
-import { uuidv4 } from "@firebase/util";
-import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
-import { RoomDto } from "@/dto/RoomDto";
 import { UserService } from "@/service/userService";
+import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
+import { uuidv4 } from "@firebase/util";
 
 import { RoomService } from "@/service/roomService";
-import { UserService } from "@/service/userService";
-import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { MediaUtil } from "@/utils/MediaUtil";
 import { getBaseURL } from "@/utils/getBaseURL";
-import { uuidv4 } from "@firebase/util";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
 import { makeAutoObservable, observable, runInAction } from "mobx";
 

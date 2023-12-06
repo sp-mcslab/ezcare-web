@@ -6,6 +6,7 @@ import {
   createRecord,
   findRecordAllRoom,
 } from "@/repository/callRecord.repository";
+import si from "systeminformation";
 
 export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -108,6 +109,40 @@ export const getTotalCallTime = async (
     res.status(200).json({
       message: "전체 진료시간을 조회했습니다. (밀리초)",
       data: totalCallTime,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};
+
+export const getServerHealth = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    // npm install os, npm install diskusage, npm install systeminformation,
+    var si = require("systeminformation");
+
+    const cpuInfo = await si.cpu();
+    const memoryInfo = await si.mem();
+    const diskInfo = await si.fsSize();
+    const networkInfo = await si.networkStats();
+
+    res.status(200).json({
+      message: "서버 헬스 체크 성공하였습니다.",
+      data: {
+        cpu: cpuInfo,
+        memory: memoryInfo,
+        disk: diskInfo,
+        network: networkInfo,
+      },
     });
   } catch (e) {
     if (typeof e === "string") {

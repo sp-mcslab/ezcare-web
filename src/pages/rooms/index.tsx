@@ -1,8 +1,4 @@
-import { NextPage } from "next";
-import React, { useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
 import { RoomStore } from "@/stores/RoomStore";
-import { useRouter } from "next/router";
 import {
   Button,
   Table,
@@ -12,6 +8,12 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { observer } from "mobx-react";
+import { NextPage } from "next";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 const ListPage: NextPage = observer(() => {
   const [roomStore] = useState(new RoomStore());
@@ -33,13 +35,12 @@ const ListPage: NextPage = observer(() => {
     return <></>;
   }
 
+  dayjs.extend(utc);
+  
   const deleteRoom = async (roomId: string) => {
     await roomStore.deleteRoom(roomId);
     router.replace("/");
   };
-
-  const localDate = new Date();
-  const localTimezone = localDate.getTimezoneOffset() / 60;
 
   return (
     <div className="App">
@@ -140,10 +141,7 @@ const ListPage: NextPage = observer(() => {
                     </TableCell>
                   )}
                   <TableCell>{
-                    room.openAt.toString().substring(0, 10) +
-                    " " +
-                    (parseInt(room.openAt.toString().substring(11, 13)) - localTimezone).toString().padStart(2, "0") +
-                    room.openAt.toString().substring(13, 19)
+                    dayjs(room.openAt).utc(true).format("YYYY-MM-DD HH:mm").toString()
                   }</TableCell>
                   <TableCell>{room.creatorId}</TableCell>
                   {room.flag == 'SCHEDULED' ? (

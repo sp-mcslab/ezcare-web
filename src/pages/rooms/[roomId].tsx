@@ -201,10 +201,22 @@ const WaitingRoom: NextPage<{
         {/* TODO: 회원 기능 구현되면 삭제하기. 임시용 회원 ID 입력 필드임. */}
         <div>
           <div>{t("user_id")}</div>
-          <input
-            value={roomStore.uid}
-            onChange={(e) => roomStore.updateUserId(e.target.value)}
-          />
+          {i18n.language == "ar_AE" ? (
+            <div>
+              <input
+                value={roomStore.uid}
+                onChange={(e) => roomStore.updateUserId(e.target.value)}
+                dir="rtl"
+              />
+            </div>
+          ) : (
+            <div>
+              <input
+                value={roomStore.uid}
+                onChange={(e) => roomStore.updateUserId(e.target.value)}
+              />
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -306,6 +318,8 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             remoteScreenVideoStreamByPeerIdEntries={
               roomStore.remoteScreenVideoStreamByPeerIdEntries
             }
+            remoteVideoConsumerScore={roomStore.remoteVideoConsumerScore}
+            remoteAudioConsumerScore={roomStore.remoteAudioConsumerScore}
             onKickClick={handleKickButtonClick}
             onKickToWaitingRoomClick={handleKickToWaitingRoomButtonClick}
           />
@@ -317,28 +331,50 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             <div className={styles.chatMessage}>
               <ChatMessage messages={roomStore.chatMessages} />
             </div>
-            <div className={styles.chatButton}>
-              <input
-                value={roomStore.chatInput}
-                style={{ padding: "8px" }}
-                size={35}
-                onChange={(e) => roomStore.updateChatInput(e.target.value)}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                disabled={!roomStore.enabledChatSendButton}
-                onClick={() => roomStore.sendChat()}
-              >
-                {t("submit")}
-              </Button>
-            </div>
+            {i18n.language == "ar_AE" ? (
+              <div className={styles.chatButton}>
+                <input
+                  value={roomStore.chatInput}
+                  style={{ padding: "8px" }}
+                  size={35}
+                  onChange={(e) => roomStore.updateChatInput(e.target.value)}
+                  dir="rtl"
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={!roomStore.enabledChatSendButton}
+                  onClick={() => roomStore.sendChat()}
+                >
+                  {t("submit")}
+                </Button>
+              </div>
+            ) : (
+              <div className={styles.chatButton}>
+                <input
+                  value={roomStore.chatInput}
+                  style={{ padding: "8px" }}
+                  size={35}
+                  onChange={(e) => roomStore.updateChatInput(e.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={!roomStore.enabledChatSendButton}
+                  onClick={() => roomStore.sendChat()}
+                >
+                  {t("submit")}
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* TODO: 호스트인 경우에만 아래의 입장 대기목록 보이도록 수정 */}
           {roomStore.isHost && (
             <div className={styles.sideElement}>
-              <div className={styles.sideTitle}>{t("waiting_list_for_enter")}</div>
+              <div className={styles.sideTitle}>
+                {t("waiting_list_for_enter")}
+              </div>
               <br />
               {roomStore.awaitingPeerIds.map((userId) => {
                 return (
@@ -496,17 +532,20 @@ const RemoteMediaGroup: NextPage<{
   remoteVideoStreamByPeerIdEntries: [string, MediaStream][];
   remoteAudioStreamByPeerIdEntries: [string, MediaStream][];
   remoteScreenVideoStreamByPeerIdEntries: [string, MediaStream][];
+  remoteVideoConsumerScore: [string, number][];
+  remoteAudioConsumerScore: [string, number][];
   onKickClick: (userId: string) => void;
   onKickToWaitingRoomClick: (userId: string) => void;
   // onBlockClick: (userId: string) => void;
 }> = observer(
   ({
     roomStore,
-    isCurrentUserMaster,
     peerStates,
     remoteVideoStreamByPeerIdEntries,
     remoteAudioStreamByPeerIdEntries,
     remoteScreenVideoStreamByPeerIdEntries,
+    remoteVideoConsumerScore,
+    remoteAudioConsumerScore,
     onKickClick,
     onKickToWaitingRoomClick,
     // onBlockClick,
@@ -639,19 +678,18 @@ const RemoteMediaGroup: NextPage<{
       );
     } else {
       let containerWidth = 85;
-      if (roomStore.joiningPeerIds.length < 2)
-        containerWidth = 70;
-      else if (roomStore.joiningPeerIds.length < 3)
-        containerWidth = 85 / 2;
-      else if (roomStore.joiningPeerIds.length < 7)
-        containerWidth = 85 / 3;
-      else
-        containerWidth = 85 / 4;
+      if (roomStore.joiningPeerIds.length < 2) containerWidth = 70;
+      else if (roomStore.joiningPeerIds.length < 3) containerWidth = 85 / 2;
+      else if (roomStore.joiningPeerIds.length < 7) containerWidth = 85 / 3;
+      else containerWidth = 85 / 4;
       return (
         <>
           <div>
             <div>
-              <div className={styles.localCameraTileContainer} style={{width: containerWidth + "%"}}>
+              <div
+                className={styles.localCameraTileContainer}
+                style={{ width: containerWidth + "%" }}
+              >
                 <div className={styles.stateContainer}>
                   {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
@@ -730,7 +768,11 @@ const RemoteMediaGroup: NextPage<{
                   return;
                 }
                 return (
-                  <div key={peerId} className={styles.cameraTileElement} style={{width: containerWidth + "%"}}>
+                  <div
+                    key={peerId}
+                    className={styles.cameraTileElement}
+                    style={{ width: containerWidth + "%" }}
+                  >
                     <div className={styles.stateContainer}>
                       {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                       {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
@@ -786,7 +828,7 @@ const RemoteMediaGroup: NextPage<{
                   <div
                     key={`${peerId}-screen`}
                     className={styles.cameraTileElement}
-                    style={{width: containerWidth + "%"}}
+                    style={{ width: containerWidth + "%" }}
                   >
                     <div className={styles.nameContainer}>{peerId}</div>
                     <ScreenShareVideo

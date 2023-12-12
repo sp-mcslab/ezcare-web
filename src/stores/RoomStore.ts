@@ -136,6 +136,14 @@ export class RoomStore implements RoomViewModel {
   private _remoteAudioConsumerScore: Map<string, number> = observable.map(
     new Map()
   );
+  
+  public get remoteVideoConsumerScore(): [string, number][] {
+    return [...this._remoteVideoConsumerScore.entries()];
+  }
+
+  public get remoteAudioConsumerScore(): [string, number][] {
+    return [...this._remoteAudioConsumerScore.entries()];
+  }
 
   /**
    * 회원에게 알림을 보내기위한 메시지이다.

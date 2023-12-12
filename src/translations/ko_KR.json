@@ -46,7 +46,7 @@
   "setting": "설정",
   "error_peerstate": "유저와 일치하는 peerState 가 없습니다.",
   "mute_mic": "마이크 뮤트",
-  "mute_vid": "유저와 일치하는 peerState 가 없습니다.",
+  "mute_vid": "비디오 뮤트",
   "kick_to_waiting_room": "대기실로 강퇴",
   "kick": "강퇴"
 }

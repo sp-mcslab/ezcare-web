@@ -72,7 +72,7 @@ const ListPage: NextPage = observer(() => {
       >
         {t("room_list")}
       </div>
-      {roomStore.userRole == "nurse" && (
+      {roomStore.userRole == "N" && (
         <div
           style={{
             display: "inline-block",
@@ -89,7 +89,7 @@ const ListPage: NextPage = observer(() => {
           </Button>
         </div>
       )}
-      {roomStore.userRole == "systemManager" && (
+      {roomStore.userRole == "S" && (
         <div
           style={{
             display: "inline-block",
@@ -119,7 +119,7 @@ const ListPage: NextPage = observer(() => {
                 <TableCell>{t("open_time")}</TableCell>
                 <TableCell>{t("creator")}</TableCell>
                 <TableCell></TableCell>
-                {roomStore.userRole == "nurse" ? (
+                {roomStore.userRole == "N" ? (
                   <TableCell></TableCell>
                 ) : undefined}
               </TableRow>
@@ -157,7 +157,7 @@ const ListPage: NextPage = observer(() => {
                       </Button>
                     </TableCell>
                   )}
-                  {roomStore.userRole == "nurse" ? (
+                  {roomStore.userRole == "N" ? (
                     <TableCell>
                       <Button
                         variant="contained"

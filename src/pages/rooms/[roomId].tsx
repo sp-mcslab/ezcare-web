@@ -151,7 +151,7 @@ const WaitingRoom: NextPage<{
             <div>{t("not_open")}</div>
           )}
 
-          {roomStore.userRole == "nurse" || roomStore.userRole == "doctor" ? (
+          {roomStore.userRole == "N" || roomStore.userRole == "D" ? (
             <div>
               <Button
                 variant="contained"

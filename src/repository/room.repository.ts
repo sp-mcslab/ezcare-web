@@ -4,13 +4,13 @@ import { RoomDto } from "@/dto/RoomDto";
 import { UserDto } from "@/dto/UserDto";
 import { Room, RoomFlag } from "@prisma/client";
 
-const HOSPITAL_CODE = "A0013";
-const TENANT_CODE = "A001";
+const HOSPITAL_CODE = "H001";
+const TENANT_CODE = "H0013";
 export const findAllRooms = async (): Promise<Room[] | undefined> => {
   try {
     return await client.room.findMany({
       orderBy: {
-        createdat: "desc", // Replace 'createdAt' with the field you want to sort by
+        createdat: "desc",
       },
     });
   } catch (e) {
@@ -55,6 +55,8 @@ export const createRoom = async (
         createMany: {
           data: hostedUsers.map((userid) => ({
             userid: userid,
+            hospitalcode: HOSPITAL_CODE,
+            tenantcode: TENANT_CODE,
           })),
         },
       },
@@ -62,6 +64,8 @@ export const createRoom = async (
         createMany: {
           data: invitedUsers.map((userid) => ({
             userid: userid,
+            hospitalcode: HOSPITAL_CODE,
+            tenantcode: TENANT_CODE,
           })),
         },
       },
@@ -97,7 +101,7 @@ export const deleteRoomReq = async (roomId: string) => {
 
 export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
   let where = {};
-  if (user.role === "nurse") {
+  if (user.role === "N") {
     //간호사 -> 호스트인 방, 초대받은 방
     where = {
       OR: [
@@ -120,7 +124,7 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
         },
       ],
     };
-  } else if (user.role === "doctor") {
+  } else if (user.role === "D") {
     // 의사 -> 호스트인 방, 초대받은 방
     where = {
       OR: [
@@ -140,7 +144,7 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
         },
       ],
     };
-  } else if (user.role === "patient") {
+  } else if (user.role === "P") {
     // 환자 -> 초대받은 방
     where = {
       OR: [

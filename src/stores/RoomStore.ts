@@ -136,7 +136,7 @@ export class RoomStore implements RoomViewModel {
   private _remoteAudioConsumerScore: Map<string, number> = observable.map(
     new Map()
   );
-  
+
   public get remoteVideoConsumerScore(): [string, number][] {
     return [...this._remoteVideoConsumerScore.entries()];
   }
@@ -598,7 +598,7 @@ export class RoomStore implements RoomViewModel {
       userId: userId,
       roomId: roomId,
       joinAt: new Date(),
-      exitAt: null, // You can set this to the appropriate value
+      exitAt: null,
     };
 
     const axios = require("axios");

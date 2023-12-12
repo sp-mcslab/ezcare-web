@@ -2,6 +2,9 @@ import client from "prisma/client";
 import { uuid } from "uuidv4";
 import { CallLogItemDto } from "@/dto/CallLogItemDto";
 
+const HOSPITAL_CODE = "H001";
+const TENANT_CODE = "H0013";
+
 // 모든 진료실의 이력 조회
 export const findRecordAllRoom = async (
   roomId: string
@@ -42,6 +45,8 @@ export const createRecord = async (
       roomid: roomId,
       joinat: joinAt,
       exitat: exitAt,
+      hospitalcode: HOSPITAL_CODE,
+      tenantcode: TENANT_CODE,
     },
   });
 

@@ -2,6 +2,9 @@ import client from "prisma/client";
 import { Invite } from "@prisma/client";
 import { InviteDto } from "@/dto/InviteDto";
 
+const HOSPITAL_CODE = "H001";
+const TENANT_CODE = "H0013";
+
 export const findInvitedUsersByRoomId = async (
   roomid: string
 ): Promise<Invite[] | null> => {
@@ -26,6 +29,8 @@ export const createInvitation = async (
       data: {
         roomid: roomId,
         userid: userId,
+        hospitalcode: HOSPITAL_CODE,
+        tenantcode: TENANT_CODE,
       },
     });
     return InviteDto.fromEntity(inviteEntity);

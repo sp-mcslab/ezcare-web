@@ -2,6 +2,9 @@ import client from "prisma/client";
 import { Host } from "@prisma/client";
 import { HostDto } from "@/dto/HostDto";
 
+const HOSPITAL_CODE = "H001";
+const TENANT_CODE = "H0013";
+
 export const findUserHostByRoomId = async (
   roomid: string
 ): Promise<Host[] | null> => {
@@ -26,6 +29,8 @@ export const createHost = async (
       data: {
         roomid: roomId,
         userid: userId,
+        hospitalcode: HOSPITAL_CODE,
+        tenantcode: TENANT_CODE,
       },
     });
     return HostDto.fromEntity(hostEntity);

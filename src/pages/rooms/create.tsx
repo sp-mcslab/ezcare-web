@@ -27,7 +27,7 @@ const ListPage: NextPage = observer(() => {
   useEffect(() => {
     (async () => {
       await roomStore.getRoleWithSessionToken();
-      if (roomStore.userRole != "nurse") {
+      if (roomStore.userRole != "N") {
         router.replace("/rooms");
         return <></>;
       }
@@ -172,7 +172,7 @@ const ListPage: NextPage = observer(() => {
                     <Button
                       variant="contained"
                       color="primary"
-                      disabled={row.role == "patient" || row.host == true}
+                      disabled={row.role == "P" || row.host == true}
                       onClick={() => roomStore.pushHostUserList(row.id)}
                     >
                       {t("register")}
@@ -180,7 +180,7 @@ const ListPage: NextPage = observer(() => {
                     <Button
                       variant="contained"
                       color="primary"
-                      disabled={row.role == "patient" || row.host == false}
+                      disabled={row.role == "P" || row.host == false}
                       onClick={() => roomStore.popHostUserList(row.id)}
                     >
                       {t("cancel")}

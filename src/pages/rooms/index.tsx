@@ -184,6 +184,7 @@ const ListPage: NextPage = observer(() => {
             float: "right",
           }}
         >
+          <Button onClick={() => changeLang("ar_AE")}>العربية</Button>
           <Button onClick={() => changeLang("en_US")}>English</Button>
           <Button onClick={() => changeLang("ko_KR")}>한국어</Button>
         </div>

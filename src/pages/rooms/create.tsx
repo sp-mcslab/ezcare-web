@@ -41,7 +41,9 @@ const ListPage: NextPage = observer(() => {
 
   return (
     <div className="App">
-      <div style={{ fontSize: "30px", paddingTop: "50px", paddingBottom: "25px" }}>
+      <div
+        style={{ fontSize: "30px", paddingTop: "50px", paddingBottom: "25px" }}
+      >
         {t("room_create")}
         <div
           style={{
@@ -62,16 +64,28 @@ const ListPage: NextPage = observer(() => {
       <div
         style={{ display: "inline-block", paddingRight: "30px", float: "left" }}
       >
+        {i18n.language == "ar_AE" ? (
+          <div style={{ paddingTop: "25px" }}>
+            <input
+              placeholder={t("title")}
+              value={roomStore.createdRoomName}
+              style={{ padding: "8px" }}
+              onChange={(e) => roomStore.updateCreatedRoomName(e.target.value)}
+              dir="rtl"
+            />
+          </div>
+        ) : (
+          <div style={{ paddingTop: "25px" }}>
+            <input
+              placeholder={t("title")}
+              value={roomStore.createdRoomName}
+              style={{ padding: "8px" }}
+              onChange={(e) => roomStore.updateCreatedRoomName(e.target.value)}
+            />
+          </div>
+        )}
         <div style={{ paddingTop: "25px" }}>
-          <input
-            placeholder={t("title")}
-            value={roomStore.createdRoomName}
-            style={{ padding: "8px" }}
-            onChange={(e) => roomStore.updateCreatedRoomName(e.target.value)}
-          />
-        </div>
-        <div style={{ paddingTop: "25px" }}>
-          <Checkbox 
+          <Checkbox
             value={roomStore.isRoomCreateLater}
             onChange={roomStore.UpdateIsRoomCreateLater}
           />
@@ -91,28 +105,54 @@ const ListPage: NextPage = observer(() => {
           </LocalizationProvider>
         </div>
 
-        <div style={{ paddingTop: "30px" }}>
-          <input
-            placeholder={t("input_patient_code")}
-            style={{ padding: "8px" }}
-            value={roomStore.inviteUserId}
-            onChange={(e) => roomStore.UpdateInviteUserId(e.target.value)}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => roomStore.pushinviteUserIdList()}
-          >
-            {t("invite")}
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => postRoom()}
-          >
-            {t("room_create")}
-          </Button>
-        </div>
+        {i18n.language == "ar_AE" ? (
+          <div style={{ paddingTop: "30px" }}>
+            <input
+              placeholder={t("input_patient_code")}
+              style={{ padding: "8px" }}
+              value={roomStore.inviteUserId}
+              onChange={(e) => roomStore.UpdateInviteUserId(e.target.value)}
+              dir="rtl"
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => roomStore.pushinviteUserIdList()}
+            >
+              {t("invite")}
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => postRoom()}
+            >
+              {t("room_create")}
+            </Button>
+          </div>
+        ) : (
+          <div style={{ paddingTop: "30px" }}>
+            <input
+              placeholder={t("input_patient_code")}
+              style={{ padding: "8px" }}
+              value={roomStore.inviteUserId}
+              onChange={(e) => roomStore.UpdateInviteUserId(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => roomStore.pushinviteUserIdList()}
+            >
+              {t("invite")}
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => postRoom()}
+            >
+              {t("room_create")}
+            </Button>
+          </div>
+        )}
       </div>
       <div style={{ display: "inline-block" }}>
         <TableContainer>

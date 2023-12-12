@@ -12,10 +12,12 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 const LogPage: NextPage = observer(() => {
   const [adminStore] = useState(new AdminStore());
   const router = useRouter();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     adminStore.findRecordAllRoom();
@@ -23,8 +25,8 @@ const LogPage: NextPage = observer(() => {
 
   return (
     <div className="App">
-      <div style={{ fontSize: "30px", paddingTop: "50px"}}>
-        통화 이력
+      <div style={{ fontSize: "30px", paddingTop: "50px" }}>
+        {t("call_log")}
         <div
           style={{
             display: "inline-block",
@@ -36,7 +38,7 @@ const LogPage: NextPage = observer(() => {
             color="primary"
             onClick={() => router.replace("/rooms")}
           >
-            목록으로
+            {t("go_list")}
           </Button>
         </div>
       </div>

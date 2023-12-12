@@ -14,10 +14,12 @@ import { observer } from "mobx-react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const ListPage: NextPage = observer(() => {
   const [roomStore] = useState(new RoomStore());
   const router = useRouter();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     roomStore.loadRoomList();
@@ -36,10 +38,14 @@ const ListPage: NextPage = observer(() => {
   }
 
   dayjs.extend(utc);
-  
+
   const deleteRoom = async (roomId: string) => {
     await roomStore.deleteRoom(roomId);
     router.replace("/");
+  };
+
+  const changeLang = async (lang: string) => {
+    i18n.changeLanguage(lang);
   };
 
   return (
@@ -64,7 +70,7 @@ const ListPage: NextPage = observer(() => {
           paddingTop: "50px",
         }}
       >
-        방 목록
+        {t("room_list")}
       </div>
       {roomStore.userRole == "nurse" && (
         <div
@@ -79,9 +85,8 @@ const ListPage: NextPage = observer(() => {
             color="primary"
             onClick={() => router.replace("/rooms/create")}
           >
-            방 생성
+            {t("room_create")}
           </Button>
-
         </div>
       )}
       {roomStore.userRole == "systemManager" && (
@@ -98,7 +103,7 @@ const ListPage: NextPage = observer(() => {
             onClick={() => router.replace("/admin/call-log")}
             style={{ marginLeft: "10px" }}
           >
-            통화 이력
+            {t("call_log")}
           </Button>
         </div>
       )}
@@ -109,14 +114,10 @@ const ListPage: NextPage = observer(() => {
               <TableRow>
                 <TableCell>No</TableCell>
                 <TableCell style={{ width: "300px", textAlign: "center" }}>
-                  제목
+                  {t("title")}
                 </TableCell>
-                <TableCell>
-                  오픈 시간
-                </TableCell>
-                <TableCell>
-                  생성자
-                </TableCell>
+                <TableCell>{t("open_time")}</TableCell>
+                <TableCell>{t("creator")}</TableCell>
                 <TableCell></TableCell>
                 {roomStore.userRole == "nurse" ? (
                   <TableCell></TableCell>
@@ -127,26 +128,24 @@ const ListPage: NextPage = observer(() => {
               {roomStore.RoomList.map((room, i) => (
                 <TableRow key={room.id}>
                   <TableCell>{i + 1}</TableCell>
-                  {room.flag == 'SCHEDULED' ? (
-                    <TableCell
-                      style={{ textAlign: "center" }}
-                    >
-                      [예약 중] {room.name}
+                  {room.flag == "SCHEDULED" ? (
+                    <TableCell style={{ textAlign: "center" }}>
+                      [{t("reservation")}] {room.name}
                     </TableCell>
                   ) : (
-                    <TableCell
-                      style={{ textAlign: "center" }}
-                    >
+                    <TableCell style={{ textAlign: "center" }}>
                       {room.name}
                     </TableCell>
                   )}
-                  <TableCell>{
-                    dayjs(room.openAt).utc(true).format("YYYY-MM-DD HH:mm").toString()
-                  }</TableCell>
+                  <TableCell>
+                    {dayjs(room.openAt)
+                      .utc(true)
+                      .format("YYYY-MM-DD HH:mm")
+                      .toString()}
+                  </TableCell>
                   <TableCell>{room.creatorId}</TableCell>
-                  {room.flag == 'SCHEDULED' ? (
-                    <TableCell>
-                    </TableCell>
+                  {room.flag == "SCHEDULED" ? (
+                    <TableCell></TableCell>
                   ) : (
                     <TableCell>
                       <Button
@@ -154,7 +153,7 @@ const ListPage: NextPage = observer(() => {
                         color="primary"
                         onClick={() => router.replace("/rooms/" + room.id)}
                       >
-                        입장
+                        {t("join")}
                       </Button>
                     </TableCell>
                   )}
@@ -165,7 +164,7 @@ const ListPage: NextPage = observer(() => {
                         color="primary"
                         onClick={() => deleteRoom(room.id)}
                       >
-                        삭제
+                        {t("delete")}
                       </Button>
                     </TableCell>
                   ) : undefined}
@@ -176,7 +175,18 @@ const ListPage: NextPage = observer(() => {
         </TableContainer>
       </div>
       <div style={{ paddingTop: "25px" }}>
-        <Button onClick={() => router.replace("/auth/logout")}>로그아웃</Button>
+        <Button onClick={() => router.replace("/auth/logout")}>
+          {t("logout")}
+        </Button>
+
+        <div
+          style={{
+            float: "right",
+          }}
+        >
+          <Button onClick={() => changeLang("en_US")}>English</Button>
+          <Button onClick={() => changeLang("ko_KR")}>한국어</Button>
+        </div>
       </div>
     </div>
   );

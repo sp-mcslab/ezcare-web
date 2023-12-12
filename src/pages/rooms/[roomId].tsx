@@ -2,7 +2,6 @@ import { ChatMessage } from "@/models/room/ChatMessage";
 import { PeerState } from "@/models/room/PeerState";
 import { RoomState } from "@/models/room/RoomState";
 import { RoomStore } from "@/stores/RoomStore";
-import { getEnumKeyByEnumValue } from "@/utils/EnumUtil";
 import { Button, ThemeProvider, createTheme } from "@mui/material";
 import { observer } from "mobx-react";
 import { NextPage } from "next";
@@ -11,19 +10,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { BsCameraVideoOffFill, BsMicMuteFill } from "react-icons/bs";
 import { MdHeadsetOff } from "react-icons/md";
 import styles from "../../styles/room.module.scss";
-
-enum MasterPopupMenus {
-  //Block = "차단",
-  Mute = "마이크 뮤트",
-  Close = "비디오 끄기",
-  KickWait = "대기실로 강퇴",
-  Kick = "강퇴",
-}
+import { useTranslation } from "react-i18next";
 
 const RoomScaffold: NextPage = observer(() => {
   const [roomStore] = useState(new RoomStore());
   const router = useRouter();
   const roomId = router.query.roomId;
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     if (typeof roomId === "string") {
@@ -69,17 +62,18 @@ const theme = createTheme({
 
 const NotExistsPage: NextPage = () => {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   return (
     <>
       <div style={{ textAlign: "center", paddingTop: "50px" }}>
-        <div>존재하지 않는 방입니다.</div>
+        <div>{t("room_error")}</div>
         <div style={{ paddingTop: "50px" }}>
           <Button
             variant="contained"
             color="primary"
             onClick={() => router.replace("/")}
           >
-            홈으로
+            {t("home")}
           </Button>
         </div>
       </div>
@@ -91,6 +85,7 @@ const WaitingRoom: NextPage<{
   roomStore: RoomStore;
 }> = observer(({ roomStore }) => {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   return (
     <>
       <div style={{ textAlign: "center", paddingTop: "50px" }}>
@@ -146,9 +141,15 @@ const WaitingRoom: NextPage<{
           </div>
         </ThemeProvider>
         <div style={{ padding: "16px" }}>
-          {roomStore.failedToJoinMessage !== undefined ? (
-            <div>{roomStore.failedToJoinMessage}</div>
-          ) : undefined}
+          {roomStore.failedToJoinMessage == "refuse_enter" && (
+            <div>{t("refuse_enter")}</div>
+          )}
+          {roomStore.failedToJoinMessage == "request_transfer_failed" && (
+            <div>{t("request_transfer_failed")}</div>
+          )}
+          {roomStore.failedToJoinMessage == "not_open" && (
+            <div>{t("not_open")}</div>
+          )}
 
           {roomStore.userRole == "nurse" || roomStore.userRole == "doctor" ? (
             <div>
@@ -158,7 +159,7 @@ const WaitingRoom: NextPage<{
                 disabled={!roomStore.enableJoinButton}
                 onClick={() => roomStore.joinRoom()}
               >
-                입장
+                {t("join")}
               </Button>
               <Button
                 variant="contained"
@@ -166,7 +167,7 @@ const WaitingRoom: NextPage<{
                 style={{ marginLeft: "16px" }}
                 onClick={() => router.replace("/")}
               >
-                나가기
+                {t("exit")}
               </Button>
             </div>
           ) : (
@@ -177,7 +178,7 @@ const WaitingRoom: NextPage<{
                 disabled={!roomStore.enableJoinButton}
                 onClick={() => roomStore.requestToJoinRoom()}
               >
-                입장요청
+                {t("request_join")}
               </Button>
               <Button
                 variant="contained"
@@ -185,11 +186,11 @@ const WaitingRoom: NextPage<{
                 style={{ marginLeft: "16px" }}
                 onClick={() => router.replace("/")}
               >
-                나가기
+                {t("exit")}
               </Button>
               {!roomStore.enableJoinButton &&
               roomStore.failedToJoinMessage === undefined ? (
-                <div>입장 요청 대기 중입니다...</div>
+                <div>{t("wait_request_join")}</div>
               ) : null}
             </div>
           )}
@@ -199,7 +200,7 @@ const WaitingRoom: NextPage<{
         <div>{roomStore.waitingRoomMessage}</div>
         {/* TODO: 회원 기능 구현되면 삭제하기. 임시용 회원 ID 입력 필드임. */}
         <div>
-          <div>회원 ID:</div>
+          <div>{t("user_id")}</div>
           <input
             value={roomStore.uid}
             onChange={(e) => roomStore.updateUserId(e.target.value)}
@@ -220,6 +221,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     const isCurrentUserMaster = roomStore.isCurrentUserMaster;
     const router = useRouter();
     const [openSettingDialog, setOpenSettingDialog] = React.useState(false);
+    const { t, i18n } = useTranslation();
 
     const viewMode = roomStore.viewMode;
 
@@ -232,7 +234,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
 
     useEffect(() => {
       if (roomStore.kicked) {
-        alert("방장에 의해 강퇴되었습니다.");
+        alert(t("kicked"));
         router.replace("/");
       }
     }, [roomStore.kicked, router]);
@@ -240,7 +242,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     useEffect(() => {
       if (roomStore.kickedToWaitingRoom) {
         const roomId = router.query.roomId;
-        alert("방장에 의해 로비로 강퇴되었습니다.");
+        alert(t("kicked_to_waiting_room"));
         router.replace("/rooms").then(() => router.replace("/rooms/" + roomId));
       }
     }, [roomStore.kickedToWaitingRoom, router]);
@@ -264,7 +266,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
 
     const handleKickButtonClick = (userId: string) => {
       const targetUserName = roomStore.requireUserNameBy(userId);
-      const confirmed = confirm(`정말로 ${targetUserName}님을 강퇴할까요?`);
+      const confirmed = confirm(t("message_kick") + ` (${targetUserName})`);
       if (confirmed) {
         roomStore.kickUser(userId);
       }
@@ -273,7 +275,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     const handleKickToWaitingRoomButtonClick = (userId: string) => {
       const targetUserName = roomStore.requireUserNameBy(userId);
       const confirmed = confirm(
-        `정말로 ${targetUserName}님을 대기실로 강퇴할까요?`
+        t("message_kick_to_waiting_room") + ` (${targetUserName})`
       );
       if (confirmed) {
         roomStore.kickUserToWaitingRoom(userId);
@@ -306,7 +308,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             }
             onKickClick={handleKickButtonClick}
             onKickToWaitingRoomClick={handleKickToWaitingRoomButtonClick}
-            // onBlockClick={handleBlockButtonClick}
           />
         </div>
 
@@ -329,7 +330,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 disabled={!roomStore.enabledChatSendButton}
                 onClick={() => roomStore.sendChat()}
               >
-                전송
+                {t("submit")}
               </Button>
             </div>
           </div>
@@ -337,7 +338,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
           {/* TODO: 호스트인 경우에만 아래의 입장 대기목록 보이도록 수정 */}
           {roomStore.isHost && (
             <div className={styles.sideElement}>
-              <div className={styles.sideTitle}>입장 대기자 목록</div>
+              <div className={styles.sideTitle}>{t("waiting_list_for_enter")}</div>
               <br />
               {roomStore.awaitingPeerIds.map((userId) => {
                 return (
@@ -348,14 +349,14 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                       color="secondary"
                       onClick={() => roomStore.approveJoiningRoom(userId)}
                     >
-                      승인
+                      {t("accept")}
                     </Button>
                     <Button
                       variant="contained"
                       color="secondary"
                       onClick={() => roomStore.rejectJoiningRoom(userId)}
                     >
-                      거부
+                      {t("refuse")}
                     </Button>
                   </>
                 );
@@ -363,7 +364,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             </div>
           )}
           <div className={styles.sideElement}>
-            <div className={styles.sideTitle}>방 참여자 목록</div>
+            <div className={styles.sideTitle}>{t("room_participant_list")}</div>
             {roomStore.joiningPeerIds.map((joiner) => {
               return (
                 <>
@@ -429,7 +430,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 roomStore.changeViewMode();
               }}
             >
-              List view로 전환
+              {t("change_list_view")}
             </Button>
           ) : (
             <Button
@@ -439,7 +440,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 roomStore.changeViewMode();
               }}
             >
-              Tile view로 전환
+              {t("change_tile_view")}
             </Button>
           )}
           <Button
@@ -450,7 +451,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
               roomStore.exitRoom();
             }}
           >
-            나가기
+            {t("exit")}
           </Button>
           {roomStore.isHost && (
             <div style={{ display: "inline-block" }}>
@@ -459,14 +460,14 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 color="secondary"
                 onClick={() => roomStore.muteAllAudio()}
               >
-                mute-all(host)
+                {t("mute_all")}
               </Button>
               <Button
                 variant="contained"
                 color="secondary"
                 onClick={() => roomStore.closeAllVideo()}
               >
-                close-all-Vids(host)
+                {t("close_all_vids")}
               </Button>
             </div>
           )}
@@ -479,7 +480,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 color="primary"
                 onClick={() => setOpenSettingDialog(true)}
               >
-                설정
+                {t("setting")}
               </Button>
             </div>
           )}
@@ -510,28 +511,8 @@ const RemoteMediaGroup: NextPage<{
     onKickToWaitingRoomClick,
     // onBlockClick,
   }) => {
-    const masterPopupMenus = Object.values(MasterPopupMenus);
+    const { t, i18n } = useTranslation();
     const viewMode = roomStore.viewMode;
-    const handleMasterPopupMenuClick = (item: string, userId: string) => {
-      const menuEnum = getEnumKeyByEnumValue(MasterPopupMenus, item);
-      switch (menuEnum) {
-        case "Kick":
-          onKickClick(userId);
-          break;
-          /* case "Block":
-          onBlockClick(userId); */
-          break;
-        case "Mute":
-          roomStore.muteOneAudio(userId);
-          break;
-        case "Close":
-          roomStore.closeOneVideo(userId);
-          break;
-        case "KickWait":
-          onKickToWaitingRoomClick(userId);
-          break;
-      }
-    };
     if (viewMode) {
       return (
         <>
@@ -564,7 +545,7 @@ const RemoteMediaGroup: NextPage<{
                   const [peerId, mediaStream] = entry;
                   const peerState = peerStates.find((p) => p.uid === peerId);
                   if (peerState === undefined) {
-                    console.error("유저와 일치하는 peerState 가 없습니다.");
+                    console.error(t("error_peerstate"));
                     roomStore.removeRemoteVideoStreamByPeerId(peerId);
                     return;
                   }
@@ -590,28 +571,28 @@ const RemoteMediaGroup: NextPage<{
                             color="secondary"
                             onClick={() => roomStore.muteOneAudio(peerId)}
                           >
-                            마이크 뮤트
+                            {t("mute_mic")}
                           </Button>
                           <Button
                             variant="contained"
                             color="secondary"
                             onClick={() => roomStore.closeOneVideo(peerId)}
                           >
-                            비디오 뮤트
+                            {t("mute_vid")}
                           </Button>
                           <Button
                             variant="contained"
                             color="secondary"
                             onClick={() => onKickToWaitingRoomClick(peerId)}
                           >
-                            대기실로 강퇴
+                            {t("kick_to_waiting_room")}
                           </Button>
                           <Button
                             variant="contained"
                             color="secondary"
                             onClick={() => onKickClick(peerId)}
                           >
-                            강퇴
+                            {t("kick")}
                           </Button>
                         </div>
                       )}
@@ -695,7 +676,7 @@ const RemoteMediaGroup: NextPage<{
                             },
                           }}
                         >
-                          마이크 뮤트
+                          {t("mute_mic")}
                         </Button>
                         <Button
                           disabled
@@ -706,7 +687,7 @@ const RemoteMediaGroup: NextPage<{
                             },
                           }}
                         >
-                          비디오 뮤트
+                          {t("mute_vid")}
                         </Button>
                         <Button
                           disabled
@@ -717,7 +698,7 @@ const RemoteMediaGroup: NextPage<{
                             },
                           }}
                         >
-                          대기실로 강퇴
+                          {t("kick_to_waiting_room")}
                         </Button>
                         <Button
                           disabled
@@ -728,7 +709,7 @@ const RemoteMediaGroup: NextPage<{
                             },
                           }}
                         >
-                          강퇴
+                          {t("kick")}
                         </Button>
                       </div>
                     )}
@@ -744,7 +725,7 @@ const RemoteMediaGroup: NextPage<{
                 const [peerId, mediaStream] = entry;
                 const peerState = peerStates.find((p) => p.uid === peerId);
                 if (peerState === undefined) {
-                  console.error("유저와 일치하는 peerState 가 없습니다.");
+                  console.error(t("error_peerstate"));
                   roomStore.removeRemoteVideoStreamByPeerId(peerId);
                   return;
                 }
@@ -770,28 +751,28 @@ const RemoteMediaGroup: NextPage<{
                           color="secondary"
                           onClick={() => roomStore.muteOneAudio(peerId)}
                         >
-                          마이크 뮤트
+                          {t("mute_mic")}
                         </Button>
                         <Button
                           variant="contained"
                           color="secondary"
                           onClick={() => roomStore.closeOneVideo(peerId)}
                         >
-                          비디오 뮤트
+                          {t("mute_vid")}
                         </Button>
                         <Button
                           variant="contained"
                           color="secondary"
                           onClick={() => onKickToWaitingRoomClick(peerId)}
                         >
-                          대기실로 강퇴
+                          {t("kick_to_waiting_room")}
                         </Button>
                         <Button
                           variant="contained"
                           color="secondary"
                           onClick={() => onKickClick(peerId)}
                         >
-                          강퇴
+                          {t("kick")}
                         </Button>
                       </div>
                     )}

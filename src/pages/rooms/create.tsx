@@ -17,10 +17,12 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 const ListPage: NextPage = observer(() => {
   const [roomStore] = useState(new RoomStore());
   const router = useRouter();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     (async () => {
@@ -40,7 +42,7 @@ const ListPage: NextPage = observer(() => {
   return (
     <div className="App">
       <div style={{ fontSize: "30px", paddingTop: "50px", paddingBottom: "25px" }}>
-        방 생성
+        {t("room_create")}
         <div
           style={{
             display: "inline-block",
@@ -52,7 +54,7 @@ const ListPage: NextPage = observer(() => {
             color="primary"
             onClick={() => router.replace("/rooms")}
           >
-            목록으로
+            {t("go_list")}
           </Button>
         </div>
       </div>
@@ -62,7 +64,7 @@ const ListPage: NextPage = observer(() => {
       >
         <div style={{ paddingTop: "25px" }}>
           <input
-            placeholder="방 제목"
+            placeholder={t("title")}
             value={roomStore.createdRoomName}
             style={{ padding: "8px" }}
             onChange={(e) => roomStore.updateCreatedRoomName(e.target.value)}
@@ -73,7 +75,7 @@ const ListPage: NextPage = observer(() => {
             value={roomStore.isRoomCreateLater}
             onChange={roomStore.UpdateIsRoomCreateLater}
           />
-          예약 방 생성
+          {t("reservation_room_create")}
         </div>
         <div style={{ paddingTop: "25px" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -87,12 +89,11 @@ const ListPage: NextPage = observer(() => {
               disabled={!roomStore.isRoomCreateLater}
             />
           </LocalizationProvider>
-          <div>진료실 예약 시, 예약 시간 10분 전부터 진료실이 오픈됩니다.</div>
         </div>
 
         <div style={{ paddingTop: "30px" }}>
           <input
-            placeholder="환자코드 혹은 사번"
+            placeholder={t("input_patient_code")}
             style={{ padding: "8px" }}
             value={roomStore.inviteUserId}
             onChange={(e) => roomStore.UpdateInviteUserId(e.target.value)}
@@ -102,14 +103,14 @@ const ListPage: NextPage = observer(() => {
             color="primary"
             onClick={() => roomStore.pushinviteUserIdList()}
           >
-            초대
+            {t("invite")}
           </Button>
           <Button
             variant="contained"
             color="primary"
             onClick={() => postRoom()}
           >
-            방 생성
+            {t("room_create")}
           </Button>
         </div>
       </div>
@@ -118,9 +119,9 @@ const ListPage: NextPage = observer(() => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>호스트</TableCell>
-                <TableCell>이름</TableCell>
-                <TableCell>권한</TableCell>
+                <TableCell>{t("host")}</TableCell>
+                <TableCell>{t("name")}</TableCell>
+                <TableCell>{t("role")}</TableCell>
                 <TableCell></TableCell>
               </TableRow>
             </TableHead>
@@ -134,7 +135,7 @@ const ListPage: NextPage = observer(() => {
                       disabled={row.role == "patient" || row.host == true}
                       onClick={() => roomStore.pushHostUserList(row.id)}
                     >
-                      등록
+                      {t("register")}
                     </Button>
                     <Button
                       variant="contained"
@@ -142,7 +143,7 @@ const ListPage: NextPage = observer(() => {
                       disabled={row.role == "patient" || row.host == false}
                       onClick={() => roomStore.popHostUserList(row.id)}
                     >
-                      해제
+                      {t("cancel")}
                     </Button>
                   </TableCell>
                   <TableCell>{row.name}</TableCell>
@@ -153,7 +154,7 @@ const ListPage: NextPage = observer(() => {
                       color="primary"
                       onClick={() => roomStore.popInviteUserList(row.id)}
                     >
-                      취소
+                      {t("delete")}
                     </Button>
                   </TableCell>
                 </TableRow>

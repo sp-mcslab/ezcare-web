@@ -439,7 +439,7 @@ export class RoomStore implements RoomViewModel {
   };
 
   private _onRejectedJoining = () => {
-    this._failedToJoinMessage = "입장이 거절되었습니다.";
+    this._failedToJoinMessage = "refuse_enter";
   };
 
   public onRequestToJoinRoom = (requesterId: string) => {
@@ -518,13 +518,13 @@ export class RoomStore implements RoomViewModel {
     this._awaitConfirmToJoin = true;
     const result = await this._roomSocketService.requestToJoin(this._uid);
     if (result.isFailure) {
-      this._failedToJoinMessage = "입장 요청 전송을 실패했습니다.";
+      this._failedToJoinMessage = "request_transfer_failed";
       this._awaitConfirmToJoin = false;
     }
 
     const existsRoom = result.getOrNull()!;
     if (!existsRoom) {
-      this._failedToJoinMessage = "아직 방이 열리지 않았습니다.";
+      this._failedToJoinMessage = "not_open";
       this._awaitConfirmToJoin = false;
     }
   };

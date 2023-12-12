@@ -63,6 +63,10 @@ export interface RoomViewModel {
   onGetUsersInfo: (roomId: string) => void;
   onDisConnectScreenShare: () => void;
   onBroadcastStopShareScreen: (userId: string) => void;
+  onVideoProducerScore: (ssrc: number, score: number) => void;
+  onAudioProducerScore: (ssrc: number, score: number) => void;
+  onVideoConsumerScore: (userId: string, score: number) => void;
+  onAudioConsumerScore: (userId: string, score: number) => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -114,6 +118,24 @@ export class RoomStore implements RoomViewModel {
   private _currentAudioDeviceId: string | undefined = undefined;
   private _currentSpeakerDeviceId: string | undefined = undefined;
   private _exited: boolean = false;
+
+  // represent local video & audio 's total network quality score (network latency, packet loss ...)
+  private _localVideoProducerScore: { ssrc: number; score: number } = {
+    ssrc: 0,
+    score: 0,
+  };
+  private _localAudioProducerScore: { ssrc: number; score: number } = {
+    ssrc: 0,
+    score: 0,
+  };
+
+  // represent remote video & audio 's total network quality score (network latency, packet loss ...)
+  private _remoteVideoConsumerScore: Map<string, number> = observable.map(
+    new Map()
+  );
+  private _remoteAudioConsumerScore: Map<string, number> = observable.map(
+    new Map()
+  );
 
   /**
    * 회원에게 알림을 보내기위한 메시지이다.
@@ -742,6 +764,34 @@ export class RoomStore implements RoomViewModel {
   public onBroadcastStopShareScreen = (userId: string) => {
     // TODO: 화면공유 종료 알림 받고 remoteScreenVideoStreamByPeerId 에서 해당 미디어 삭제
     this._remoteScreenVideoStreamsByPeerId.delete(userId);
+  };
+
+  public onVideoProducerScore = (ssrc: number, score: number) => {
+    this._localVideoProducerScore = { ssrc, score };
+    console.log(
+      `videoProducerScore[${this._localVideoProducerScore.ssrc}]: ${this._localVideoProducerScore.score}`
+    );
+  };
+
+  public onAudioProducerScore = (ssrc: number, score: number) => {
+    this._localAudioProducerScore = { ssrc, score };
+    console.log(
+      `audioProducerScore[${this._localAudioProducerScore.ssrc}]: ${this._localAudioProducerScore.score}`
+    );
+  };
+
+  public onVideoConsumerScore = (userId: string, score: number) => {
+    this._remoteVideoConsumerScore.set(userId, score);
+    for (let [userId, score] of this._remoteVideoConsumerScore.entries()) {
+      console.log(`videoConsumerScore userId: ${userId}, score: ${score}`);
+    }
+  };
+
+  public onAudioConsumerScore = (userId: string, score: number) => {
+    this._remoteAudioConsumerScore.set(userId, score);
+    for (let [userId, score] of this._remoteVideoConsumerScore.entries()) {
+      console.log(`audioConsumerScore userId: ${userId}, score: ${score}`);
+    }
   };
 
   public onAddedConsumer = (

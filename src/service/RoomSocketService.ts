@@ -33,11 +33,14 @@ import {
   CLOSE_VIDEO_BY_HOST,
   KICK_USER_TO_WAITINGR_ROOM,
   UPDATE_ROOM_JOINERS,
-  DISCONNECT,
   DISCONNECT_OTHER_SCREEN_SHARE,
   BROADCAST_STOP_SHARE_SCREEN,
   PEER_APPROVED_TO_JOIN,
   PEER_REJECTED_TO_JOIN,
+  VIDEO_PRODUCER_SCORE,
+  AUDIO_PRODUCER_SCORE,
+  VIDEO_CONSUMER_SCORE,
+  AUDIO_CONSUMER_SCORE,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -348,7 +351,6 @@ export class RoomSocketService {
     socket.on(KICK_USER_TO_WAITINGR_ROOM, (userId) => {
       this._roomViewModel.onKickedToWaitingRoom(userId);
     });
-    // socket.on(BLOCK_USER, this._roomViewModel.onBlocked);
     socket.on(REQUEST_TO_JOIN_ROOM, this._roomViewModel.onRequestToJoinRoom);
     socket.on(CLOSE_AUDIO_BY_HOST, () => {
       this._roomViewModel.onMuteMicrophone();
@@ -367,6 +369,18 @@ export class RoomSocketService {
     socket.on(BROADCAST_STOP_SHARE_SCREEN, (userId: string) =>
       this._roomViewModel.onBroadcastStopShareScreen(userId)
     );
+    socket.on(VIDEO_PRODUCER_SCORE, ({ ssrc, score }) => {
+      this._roomViewModel.onVideoProducerScore(ssrc, score);
+    });
+    socket.on(AUDIO_PRODUCER_SCORE, ({ ssrc, score }) => {
+      this._roomViewModel.onAudioProducerScore(ssrc, score);
+    });
+    socket.on(VIDEO_CONSUMER_SCORE, ({ userId, score }) => {
+      this._roomViewModel.onVideoConsumerScore(userId, score);
+    });
+    socket.on(AUDIO_CONSUMER_SCORE, ({ userId, score }) => {
+      this._roomViewModel.onAudioConsumerScore(userId, score);
+    });
   };
 
   private _createSendTransport = (

@@ -220,6 +220,26 @@ const DISCONNECT_OTHER_SCREEN_SHARE = "disconnect-other-screen-share";
  */
 const BROADCAST_STOP_SHARE_SCREEN = "broadcast-stop-share-screen";
 
+/**
+ * 미디어서버가 클라이언트에게 비디오 전송 품질을 전송하는 프로토콜이다.
+ */
+const VIDEO_PRODUCER_SCORE = "video-producer-score";
+
+/**
+ * 미디어서버가 클라이언트에게 오디오 전송 품질을 전송하는 프로토콜이다.
+ */
+const AUDIO_PRODUCER_SCORE = "audio-producer-score";
+
+/**
+ * 미디어서버가 클라이언트에게 다른 참여자로부터 받은 비디오의 전송 품질을 전송하는 프로토콜이다.
+ */
+const VIDEO_CONSUMER_SCORE = "video-consumer-score";
+
+/**
+ * 미디어서버가 클라이언트에게 다른 참여자로부터 받은 오디오의 전송 품질을 전송하는 프로토콜이다.
+ */
+const AUDIO_CONSUMER_SCORE = "audio-consumer-score";
+
 export {
   IP_ADDRESS,
   NAME_SPACE,
@@ -261,4 +281,8 @@ export {
   UPDATE_ROOM_JOINERS,
   DISCONNECT_OTHER_SCREEN_SHARE,
   BROADCAST_STOP_SHARE_SCREEN,
+  VIDEO_PRODUCER_SCORE,
+  AUDIO_PRODUCER_SCORE,
+  VIDEO_CONSUMER_SCORE,
+  AUDIO_CONSUMER_SCORE,
 };

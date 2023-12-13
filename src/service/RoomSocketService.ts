@@ -41,7 +41,7 @@ import {
   AUDIO_PRODUCER_SCORE,
   VIDEO_CONSUMER_SCORE,
   AUDIO_CONSUMER_SCORE,
-  RTC_STREAM_STAT,
+  RTP_STREAM_STAT,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -70,7 +70,7 @@ import process from "process";
 import RequestToJoinRoomArgs from "@/models/room/RequestToJoinRoomArgs";
 import { Result } from "@/models/common/Result";
 import { EventResult } from "@/models/common/EventResult";
-import { RtcStreamStat } from "@/models/room/RtcStreamStat";
+import { RtpStreamStat } from "@/models/room/RtpStreamStat";
 
 const SOCKET_SERVER_URL = process.env.NEXT_PUBLIC_MEDIA_SERVER_BASE_URL!;
 
@@ -383,7 +383,7 @@ export class RoomSocketService {
     socket.on(AUDIO_CONSUMER_SCORE, ({ userId, score }) => {
       this._roomViewModel.onAudioConsumerScore(userId, score);
     });
-    socket.on(RTC_STREAM_STAT, (stat: RtcStreamStat) => {
+    socket.on(RTP_STREAM_STAT, (stat: RtpStreamStat) => {
       this._roomViewModel.onRtcStreamStat(stat);
     });
   };

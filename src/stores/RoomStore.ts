@@ -28,7 +28,7 @@ import { MediaUtil } from "@/utils/MediaUtil";
 import { getBaseURL } from "@/utils/getBaseURL";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
 import { makeAutoObservable, observable, runInAction } from "mobx";
-import { RtcStreamStat } from "@/models/room/RtcStreamStat";
+import { RtpStreamStat } from "@/models/room/RtpStreamStat";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -68,7 +68,7 @@ export interface RoomViewModel {
   onAudioProducerScore: (ssrc: number, score: number) => void;
   onVideoConsumerScore: (userId: string, score: number) => void;
   onAudioConsumerScore: (userId: string, score: number) => void;
-  onRtcStreamStat: (stat: RtcStreamStat) => void;
+  onRtcStreamStat: (stat: RtpStreamStat) => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -139,6 +139,19 @@ export class RoomStore implements RoomViewModel {
     new Map()
   );
 
+  private _localVideoRtpStreamStat: RtpStreamStat = {
+    type: "null",
+    ssrc: 0,
+    timestamp: 0,
+    kind: "null",
+    packetCount: 0,
+    packetsLost: 0,
+    packetsDiscarded: 0,
+    packetsRetransmitted: 0,
+    packetsRepaired: 0,
+    bitrate: 0,
+  };
+
   public get remoteVideoConsumerScore(): [string, number][] {
     return [...this._remoteVideoConsumerScore.entries()];
   }
@@ -146,7 +159,7 @@ export class RoomStore implements RoomViewModel {
   public get remoteAudioConsumerScore(): [string, number][] {
     return [...this._remoteAudioConsumerScore.entries()];
   }
-  
+
   public get localVideoProducerScore(): { ssrc: number; score: number } {
     return this._localVideoProducerScore;
   }
@@ -154,15 +167,6 @@ export class RoomStore implements RoomViewModel {
   public get localAudioProducerScore(): { ssrc: number; score: number } {
     return this._localAudioProducerScore;
   }
-
-  private _localRtcStreamStat: RtcStreamStat = {
-    recvBitrate: 0,
-    sendBitrate: 0,
-    rtpRecvBitrate: 0,
-    transportId: "null",
-    type: "webrtc-transport",
-    timestamp: 0,
-  };
 
   /**
    * 회원에게 알림을 보내기위한 메시지이다.
@@ -821,10 +825,17 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
-  public onRtcStreamStat = (stat: RtcStreamStat) => {
-    this._localRtcStreamStat = stat;
+  public onRtcStreamStat = (stat: RtpStreamStat) => {
+    this._localVideoRtpStreamStat = stat;
     console.log(
-      `네트워크 통계 : timestamp ${this._localRtcStreamStat.timestamp}, 보내는대역폭: ${this._localRtcStreamStat.recvBitrate}, 받는대역폭: ${this._localRtcStreamStat.sendBitrate}, 보내는미디어대역폭: ${this._localRtcStreamStat.rtpRecvBitrate}, 트랜스포트id: ${this._localRtcStreamStat.transportId}, 타입: ${this._localRtcStreamStat.type}`
+      `미디어전송통계 : timestamp ${this._localVideoRtpStreamStat.timestamp}, type: ${this._localVideoRtpStreamStat.type}, ssrc: ${this._localVideoRtpStreamStat.ssrc}, kind: ${this._localVideoRtpStreamStat.kind}, packetCount: ${this._localVideoRtpStreamStat.packetCount}, packetsLost: ${this._localVideoRtpStreamStat.packetsLost}, packetsDiscard: ${this._localVideoRtpStreamStat.packetsDiscarded}, packetsRetransmitted: ${this._localVideoRtpStreamStat.packetsRetransmitted}, packetsRepaired: ${this._localVideoRtpStreamStat.packetsRepaired}, bitrate/s: ${this._localVideoRtpStreamStat.bitrate}/s`
+    );
+    console.log(
+      `패킷손실률: ${
+        (this._localVideoRtpStreamStat.packetsLost /
+          this._localVideoRtpStreamStat.packetCount) *
+        100
+      }%`
     );
   };
 

@@ -243,7 +243,7 @@ const AUDIO_CONSUMER_SCORE = "audio-consumer-score";
 /**
  * 미디어서버가 클라이언트에게 webrtc stream 네트워크 통계 정보를 전송하는 프로토콜이다.
  */
-const RTC_STREAM_STAT = "rtc-stream-stat";
+const RTP_STREAM_STAT = "rtc-stream-stat";
 
 export {
   IP_ADDRESS,
@@ -290,5 +290,5 @@ export {
   AUDIO_PRODUCER_SCORE,
   VIDEO_CONSUMER_SCORE,
   AUDIO_CONSUMER_SCORE,
-  RTC_STREAM_STAT,
+  RTP_STREAM_STAT,
 };

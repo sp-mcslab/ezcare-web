@@ -146,6 +146,14 @@ export class RoomStore implements RoomViewModel {
   public get remoteAudioConsumerScore(): [string, number][] {
     return [...this._remoteAudioConsumerScore.entries()];
   }
+  
+  public get localVideoProducerScore(): { ssrc: number; score: number } {
+    return this._localVideoProducerScore;
+  }
+
+  public get localAudioProducerScore(): { ssrc: number; score: number } {
+    return this._localAudioProducerScore;
+  }
 
   private _localRtcStreamStat: RtcStreamStat = {
     recvBitrate: 0,

@@ -562,6 +562,10 @@ const RemoteMediaGroup: NextPage<{
                   {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
+                <div className={styles.nameContainer}>
+                  <div>Video : {roomStore.localVideoProducerScore.score}</div>
+                  <div>Audio : {roomStore.localAudioProducerScore.score}</div>
+                </div>
                 {roomStore.enabledOffVideo() ? (
                   <div>
                     <Video
@@ -580,7 +584,7 @@ const RemoteMediaGroup: NextPage<{
               </div>
 
               <div className={styles.cameraListContainer}>
-                {remoteVideoStreamByPeerIdEntries.map((entry) => {
+                {remoteVideoStreamByPeerIdEntries.map((entry, index) => {
                   const [peerId, mediaStream] = entry;
                   const peerState = peerStates.find((p) => p.uid === peerId);
                   if (peerState === undefined) {
@@ -594,7 +598,11 @@ const RemoteMediaGroup: NextPage<{
                         {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                         {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
                       </div>
-                      <div className={styles.nameContainer}>{peerId}</div>
+                      <div className={styles.nameContainer}>
+                        {peerId}
+                        <div>Video : {roomStore.remoteVideoConsumerScore[index][1]}</div>
+                        <div>Audio : {roomStore.remoteAudioConsumerScore[index][1]}</div>
+                      </div>
                       <Video
                         id={peerId}
                         videoStream={mediaStream}
@@ -694,6 +702,10 @@ const RemoteMediaGroup: NextPage<{
                   {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
+                <div className={styles.nameContainer}>
+                  <div>Video : {roomStore.localVideoProducerScore.score}</div>
+                  <div>Audio : {roomStore.localAudioProducerScore.score}</div>
+                </div>
                 {roomStore.enabledOffVideo() ? (
                   <div>
                     <Video
@@ -759,7 +771,7 @@ const RemoteMediaGroup: NextPage<{
                 )}
               </div>
 
-              {remoteVideoStreamByPeerIdEntries.map((entry) => {
+              {remoteVideoStreamByPeerIdEntries.map((entry, index) => {
                 const [peerId, mediaStream] = entry;
                 const peerState = peerStates.find((p) => p.uid === peerId);
                 if (peerState === undefined) {
@@ -777,7 +789,11 @@ const RemoteMediaGroup: NextPage<{
                       {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                       {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
                     </div>
-                    <div className={styles.nameContainer}>{peerId}</div>
+                    <div className={styles.nameContainer}>
+                      {peerId}
+                      <div>Video : {roomStore.remoteVideoConsumerScore[index][1]}</div>
+                      <div>Audio : {roomStore.remoteAudioConsumerScore[index][1]}</div>
+                    </div>
                     <Video
                       id={peerId}
                       videoStream={mediaStream}

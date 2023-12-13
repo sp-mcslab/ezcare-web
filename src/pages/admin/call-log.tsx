@@ -40,6 +40,13 @@ const LogPage: NextPage = observer(() => {
           >
             {t("go_list")}
           </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.replace("/admin/server-health")}
+          >
+            {t("server_health")}
+          </Button>
         </div>
       </div>
       <div>

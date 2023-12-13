@@ -2,6 +2,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { findAllRooms } from "@/repository/room.repository";
 import { CallLogDto } from "@/dto/CallLogDto";
+import { HealthLogDto } from "@/dto/HealthLogDto";
 import {
   createRecord,
   findRecordAllRoom,
@@ -128,21 +129,17 @@ export const getServerHealth = async (
 ) => {
   try {
     // npm install os, npm install diskusage, npm install systeminformation,
-    var si = require("systeminformation");
 
     const cpuInfo = await si.cpu();
     const memoryInfo = await si.mem();
     const diskInfo = await si.fsSize();
     const networkInfo = await si.networkStats();
 
+    const healthLogs = await HealthLogDto.fromDataEntity(cpuInfo, memoryInfo, diskInfo, networkInfo);
+
     res.status(200).json({
       message: "서버 헬스 체크 성공하였습니다.",
-      data: {
-        cpu: cpuInfo,
-        memory: memoryInfo,
-        disk: diskInfo,
-        network: networkInfo,
-      },
+      data: healthLogs,
     });
   } catch (e) {
     if (typeof e === "string") {

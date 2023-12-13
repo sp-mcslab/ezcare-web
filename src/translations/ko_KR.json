@@ -48,5 +48,6 @@
   "mute_mic": "마이크 뮤트",
   "mute_vid": "비디오 뮤트",
   "kick_to_waiting_room": "대기실로 강퇴",
-  "kick": "강퇴"
+  "kick": "강퇴",
+  "server_health": "서버 상태"
 }

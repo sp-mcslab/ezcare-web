@@ -30,8 +30,7 @@ const RoomScaffold: NextPage = observer(() => {
   }
   useEffect(() => {
     (async () => {
-      await roomStore.getRoleWithSessionToken();
-      await roomStore.getUserIdWithSessionToken();
+      await roomStore.getUserDataWithSessionToken();
       if (typeof roomId === "string") {
         await roomStore.getIsHostWithSessionToken(roomId);
         await roomStore.setInvitation(roomId, roomStore.uid);
@@ -204,17 +203,31 @@ const WaitingRoom: NextPage<{
           {i18n.language == "ar_AE" ? (
             <div>
               <input
-                value={roomStore.uid}
-                onChange={(e) => roomStore.updateUserId(e.target.value)}
+                value={roomStore.userDisplayName}
+                onChange={(e) => roomStore.updateUserDisplayName(e.target.value)}
                 dir="rtl"
               />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => roomStore.patchUserDisplayName()}
+              >
+                {t("change")}
+              </Button>
             </div>
           ) : (
             <div>
               <input
-                value={roomStore.uid}
-                onChange={(e) => roomStore.updateUserId(e.target.value)}
+                value={roomStore.userDisplayName}
+                onChange={(e) => roomStore.updateUserDisplayName(e.target.value)}
               />
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => roomStore.patchUserDisplayName()}
+              >
+                {t("change")}
+              </Button>
             </div>
           )}
         </div>
@@ -544,8 +557,6 @@ const RemoteMediaGroup: NextPage<{
     remoteVideoStreamByPeerIdEntries,
     remoteAudioStreamByPeerIdEntries,
     remoteScreenVideoStreamByPeerIdEntries,
-    remoteVideoConsumerScore,
-    remoteAudioConsumerScore,
     onKickClick,
     onKickToWaitingRoomClick,
     // onBlockClick,

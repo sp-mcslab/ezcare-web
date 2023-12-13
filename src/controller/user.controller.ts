@@ -5,7 +5,7 @@ import { findUserById, patchDisplayName } from "@/repository/user.repository";
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
 // 사용자 아이디 조회
-export const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
+export const getUserData = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const userId = getIdFromToken(
       req.headers["x-ezcare-session-token"] as string,
@@ -28,6 +28,7 @@ export const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
       data: {
         id: userId as string,
         role: user.role,
+        displayname: user.displayname,
         name: user.name,
       },
     });

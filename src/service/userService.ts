@@ -8,7 +8,7 @@ const HEADER = {
 };
 
 export class UserService {
-  public async findUserRole(token: string): Promise<Result<UserSearchDto>> {
+  public async findUserData(token: string): Promise<Result<UserSearchDto>> {
     try {
       const response = await fetchAbsolute(`api/auth/user`, {
         method: "POST",
@@ -26,25 +26,6 @@ export class UserService {
       }
     } catch (e) {
       return Result.createErrorUsingException(e);
-    }
-  }
-
-  public async findUserId(token: string): Promise<string | null> {
-    try {
-      const response = await fetchAbsolute(`api/auth/user`, {
-        method: "POST",
-        headers: {
-          "x-ezcare-session-token": token,
-          "Hospital-Code": "A0013",
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await response.json();
-      const id = data.data.id;
-      return id;
-    } catch (e) {
-      console.log("find User from session error " + e);
-      return null;
     }
   }
 
@@ -74,6 +55,28 @@ export class UserService {
       });
       if (response.ok) {
         return Result.createSuccessUsingResponseData(response);
+      } else {
+        console.log(response);
+        return await Result.createErrorUsingResponseMessage(response);
+      }
+    } catch (e) {
+      return Result.createErrorUsingException(e);
+    }
+  }
+
+  public async patchDisplayName(token: string, displayName: string): Promise<Result<string>> {
+    try {
+      const response = await fetchAbsolute(`api/auth/user/displayname`, {
+        method: "PATCH",
+        body: JSON.stringify({ displayName }),
+        headers: {
+          "Hospital-Code": "A0013",
+          "x-ezcare-session-token": token,
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.ok) {
+        return Result.createSuccessUsingResponseMessage(response);
       } else {
         console.log(response);
         return await Result.createErrorUsingResponseMessage(response);

@@ -26,7 +26,7 @@ const ListPage: NextPage = observer(() => {
 
   useEffect(() => {
     (async () => {
-      await roomStore.getRoleWithSessionToken();
+      await roomStore.getUserDataWithSessionToken();
       if (roomStore.userRole != "N") {
         router.replace("/rooms");
         return <></>;

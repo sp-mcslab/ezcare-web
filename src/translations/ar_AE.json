@@ -49,5 +49,6 @@
   "mute_vid": "mute video",
   "kick_to_waiting_room": "kick to waiting room",
   "kick": "kick",
-  "server_health": "server health"
+  "server_health": "server health",
+  "change": "change"
 }

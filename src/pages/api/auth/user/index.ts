@@ -1,6 +1,6 @@
 //라우팅
 import { NextApiRequest, NextApiResponse } from "next";
-import { getUserId } from "@/controller/user.controller";
+import { getUserData } from "@/controller/user.controller";
 
 export default async function userHandler(
   req: NextApiRequest,
@@ -9,7 +9,7 @@ export default async function userHandler(
   const { method } = req;
   switch (method) {
     case "POST":
-      await getUserId(req, res);
+      await getUserData(req, res);
       break;
     default:
       res.status(405).end(`Method ${method} Not Allowed`);

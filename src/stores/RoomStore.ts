@@ -19,7 +19,7 @@ import { RoomSocketService } from "@/service/RoomSocketService";
 import { beep } from "@/service/SoundPlayer";
 import { RoomListService } from "@/service/roomListService";
 
-import { UserService } from "@/service/userService";
+import userService, { UserService } from "@/service/userService";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { uuidv4 } from "@firebase/util";
 
@@ -1414,34 +1414,42 @@ export class RoomStore implements RoomViewModel {
   //유저 권한, 호스트 여부 조회, 초대 인원 조회
   private _userRole: string = "";
   private _userName: string = "";
+  private _userDisplayName: string = "";
   private _isHost: boolean = false;
   private _isInvited: boolean = false;
 
-  public get userRole(): string | null {
+  public get userRole(): string {
     return this._userRole;
   }
-  public get userName(): string | null {
+
+  public get userName(): string {
     return this._userName;
   }
 
-  public get isHost(): boolean | null {
+  public get userDisplayName(): string {
+    return this._userDisplayName;
+  }
+
+  public get isHost(): boolean {
     return this._isHost;
   }
 
-  public get isInvited(): boolean | null {
+  public get isInvited(): boolean {
     return this._isInvited;
   }
 
-  public getUserIdWithSessionToken = async (): Promise<void> => {
+  public updateUserDisplayName = (newDisplayName: string) => {
+    this._userDisplayName = newDisplayName;
+  };
+
+  public patchUserDisplayName = async (): Promise<void> => {
     const sessionToken = getSessionTokenFromLocalStorage();
     if (sessionToken == null) {
       return;
     }
-    const idFromSession = await this._userService.findUserId(sessionToken);
-    if (idFromSession != null) {
-      this._uid = idFromSession;
-    } else {
-      console.log("find User from session error");
+    const patchResult = await userService.patchDisplayName(sessionToken, this._userDisplayName);
+    if (patchResult.isSuccess) {
+      console.log(patchResult.getOrNull()!);
     }
   };
 
@@ -1485,13 +1493,15 @@ export class RoomStore implements RoomViewModel {
   };
 
   // 호스트
-  public getRoleWithSessionToken = async (): Promise<void> => {
+  public getUserDataWithSessionToken = async (): Promise<void> => {
     const sessionToken = getSessionTokenFromLocalStorage();
     if (sessionToken == null) {
       return;
     }
-    const validResult = await this._userService.findUserRole(sessionToken);
+    const validResult = await this._userService.findUserData(sessionToken);
     if (validResult.isSuccess) {
+      this._uid = validResult.getOrNull()!.id;
+      this._userDisplayName = validResult.getOrNull()!.displayname;
       this._userRole = validResult.getOrNull()!.role;
       this._userName = validResult.getOrNull()!.name;
     }

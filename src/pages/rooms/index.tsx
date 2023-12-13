@@ -27,8 +27,7 @@ const ListPage: NextPage = observer(() => {
 
   useEffect(() => {
     (async () => {
-      await roomStore.getRoleWithSessionToken();
-      await roomStore.getUserIdWithSessionToken();
+      await roomStore.getUserDataWithSessionToken();
     })();
   }, [roomStore]);
 

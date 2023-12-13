@@ -4,8 +4,6 @@ import { RoomDto } from "@/dto/RoomDto";
 import { UserDto } from "@/dto/UserDto";
 import { Room, RoomFlag } from "@prisma/client";
 
-const HOSPITAL_CODE = "H001";
-const TENANT_CODE = "H0013";
 export const findAllRooms = async (): Promise<Room[] | undefined> => {
   try {
     return await client.room.findMany({
@@ -25,6 +23,8 @@ export const createRoom = async (
   openAt: Date,
   invitedUsers: string[],
   hostedUsers: string[],
+  hospitalCode: string,
+  tenantCode: string,
   flag: RoomFlag
 ): Promise<RoomDto> => {
   // 생성할 방의 고유 아이디 (기본키 id)
@@ -46,8 +46,8 @@ export const createRoom = async (
       Hospital: {
         connect: {
           code_tenantcode: {
-            code: HOSPITAL_CODE,
-            tenantcode: TENANT_CODE,
+            code: hospitalCode,
+            tenantcode: tenantCode,
           },
         },
       },
@@ -55,8 +55,8 @@ export const createRoom = async (
         createMany: {
           data: hostedUsers.map((userid) => ({
             userid: userid,
-            hospitalcode: HOSPITAL_CODE,
-            tenantcode: TENANT_CODE,
+            hospitalcode: hospitalCode,
+            tenantcode: tenantCode,
           })),
         },
       },
@@ -64,8 +64,8 @@ export const createRoom = async (
         createMany: {
           data: invitedUsers.map((userid) => ({
             userid: userid,
-            hospitalcode: HOSPITAL_CODE,
-            tenantcode: TENANT_CODE,
+            hospitalcode: hospitalCode,
+            tenantcode: tenantCode,
           })),
         },
       },

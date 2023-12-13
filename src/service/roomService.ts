@@ -1,6 +1,7 @@
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
 
 const HEADER = {
+  "Hospital-Code": "A0013",
   "Content-Type": "application/json",
 };
 
@@ -10,9 +11,7 @@ export class RoomService {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}/invite`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: HEADER,
       });
       const data = await response.json();
       return data.data.invitedUsers as string[];

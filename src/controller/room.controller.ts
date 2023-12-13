@@ -17,6 +17,7 @@ import {
   findInvitedUsersByRoomId,
 } from "@/repository/invite.repository";
 import roomListService from "@/service/roomListService";
+import { findTenant } from "@/repository/tenant.repository";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
@@ -48,6 +49,20 @@ export const postRoomNow = async (
     return;
   }
 
+  const hospital = req.headers["Hospital-Code"];
+  if (!hospital) {
+    res.status(401).end();
+    return;
+  }
+  const hospitalCode = hospital as string;
+
+  const tenant = await findTenant(hospitalCode);
+  if (tenant == null) {
+    res.status(401).end();
+    return;
+  }
+  const tenantCode = tenant.tenantcode;
+
   try {
     const room = await createRoom(
       creatorId,
@@ -56,6 +71,8 @@ export const postRoomNow = async (
       currentTime,
       invitedUserIds,
       hostUserIds,
+      hospitalCode,
+      tenantCode,
       RoomFlag.OPENED
     );
 
@@ -123,6 +140,20 @@ export const postRoomLater = async (
     res.json({ message: "openAt이 현재보다 과거일 수 없습니다." });
     return;
   }
+  
+  const hospital = req.headers["Hospital-Code"];
+  if (!hospital) {
+    res.status(401).end();
+    return;
+  }
+  const hospitalCode = hospital as string;
+
+  const tenant = await findTenant(hospitalCode);
+  if (tenant == null) {
+    res.status(401).end();
+    return;
+  }
+  const tenantCode = tenant.tenantcode;
 
   try {
     const room = await createRoom(
@@ -132,6 +163,8 @@ export const postRoomLater = async (
       openAt,
       invitedUserIds,
       hostUserIds,
+      hospitalCode,
+      tenantCode,
       flag
     );
 

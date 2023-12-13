@@ -4,6 +4,7 @@ import { HealthLogDto } from "@/dto/HealthLogDto";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
 
 const HEADER = {
+  "Hospital-Code": "A0013",
   "Content-Type": "application/json",
 };
 

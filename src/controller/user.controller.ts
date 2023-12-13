@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { getIdFromToken } from "@/utils/JwtUtil";
-import { findUserById } from "@/repository/user.repository";
+import { findUserById, patchDisplayName } from "@/repository/user.repository";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
@@ -32,8 +32,13 @@ export const getUserId = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     });
   } catch (e) {
-    console.log(e);
-    res.status(500).end();
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
     return;
   }
 };
@@ -62,8 +67,46 @@ export const getUserById = async (
       },
     });
   } catch (e) {
-    console.log(e);
-    res.status(500).end();
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};
+
+export const setDisplayName = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  const { displayName } = req.body;
+  try {
+    const userId = getIdFromToken(
+      req.headers["x-ezcare-session-token"] as string,
+      secretKey
+    ); // 사용자의 id get.
+    if (userId == null) {
+      res.status(401).end();
+      return;
+    }
+
+    patchDisplayName(userId, displayName);
+
+    res.status(200);
+    res.json({
+      message: "사용자의 display name을 설정했습니다.",
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
     return;
   }
 };

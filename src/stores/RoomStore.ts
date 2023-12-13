@@ -1531,4 +1531,29 @@ export class RoomStore implements RoomViewModel {
   public removeRemoteVideoStreamByPeerId = (peerId: string) => {
     this._remoteVideoStreamsByPeerId.delete(peerId);
   };
+
+  public getLocalResolution = () => {
+    if (this._localVideoStream !== undefined) {
+      const trackSettings = this._localVideoStream.getTracks()[0].getSettings();
+      return {
+        width: trackSettings.width,
+        height: trackSettings.height,
+      };
+    } else {
+      return undefined;
+    }
+  };
+
+  public getRemoteResolution = (userId: string) => {
+    const mediaStream = this._remoteVideoStreamsByPeerId.get(userId);
+    if (mediaStream !== undefined) {
+      const trackSettings = mediaStream.getTracks()[0].getSettings();
+      return {
+        width: trackSettings.width,
+        height: trackSettings.height,
+      };
+    } else {
+      return undefined;
+    }
+  };
 }

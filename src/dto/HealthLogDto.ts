@@ -1,10 +1,31 @@
 import si from "systeminformation";
 
 export class HealthLogDto {
-  public readonly cpu: si.Systeminformation.CpuData;
-  public readonly memory: si.Systeminformation.MemData;
-  public readonly disk: si.Systeminformation.FsSizeData[];
-  public readonly network: si.Systeminformation.NetworkStatsData[];
+  public readonly cpu: {
+    speed: string;
+    cores: string;
+    processors: string;
+    loadPercentage: string;
+  };
+  public readonly memory: {
+    totalByte: string;
+    usageByte: string;
+    availableByte: string;
+  };
+  public readonly disk: {
+    diskInfo: string;
+    totalByte: string;
+    usageByte: string;
+    availableByte: string;
+  }[];
+  public readonly network: {
+    sendBytes: string;
+    sendDropped: string;
+    sendErrors: string;
+    receiveBytes: string;
+    receiveDropped: string;
+    receiveErrors: string;
+  }[];
 
   constructor({
     cpu,
@@ -12,10 +33,27 @@ export class HealthLogDto {
     disk,
     network,
   }: {
-    cpu: si.Systeminformation.CpuData;
-    memory: si.Systeminformation.MemData;
-    disk: si.Systeminformation.FsSizeData[];
-    network: si.Systeminformation.NetworkStatsData[];
+    cpu: {
+      speed: string;
+      cores: string;
+      processors: string;
+      loadPercentage: string;
+    };
+    memory: { totalByte: string; usageByte: string; availableByte: string };
+    disk: {
+      diskInfo: string;
+      totalByte: string;
+      usageByte: string;
+      availableByte: string;
+    }[];
+    network: {
+      sendBytes: string;
+      sendDropped: string;
+      sendErrors: string;
+      receiveBytes: string;
+      receiveDropped: string;
+      receiveErrors: string;
+    }[];
   }) {
     this.cpu = cpu;
     this.memory = memory;
@@ -25,10 +63,27 @@ export class HealthLogDto {
 
   // RoomEntity -> CallLogDTO
   public static fromDataEntity = (
-    cpu: si.Systeminformation.CpuData,
-    memory: si.Systeminformation.MemData,
-    disk: si.Systeminformation.FsSizeData[],
-    network: si.Systeminformation.NetworkStatsData[]
+    cpu: {
+      speed: string;
+      cores: string;
+      processors: string;
+      loadPercentage: string;
+    },
+    memory: { totalByte: string; usageByte: string; availableByte: string },
+    disk: {
+      diskInfo: string;
+      totalByte: string;
+      usageByte: string;
+      availableByte: string;
+    }[],
+    network: {
+      sendBytes: string;
+      sendDropped: string;
+      sendErrors: string;
+      receiveBytes: string;
+      receiveDropped: string;
+      receiveErrors: string;
+    }[]
   ): HealthLogDto => {
     return new HealthLogDto({
       cpu: cpu,

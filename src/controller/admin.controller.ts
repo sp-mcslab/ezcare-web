@@ -8,6 +8,7 @@ import {
   findRecordAllRoom,
 } from "@/repository/callRecord.repository";
 import si from "systeminformation";
+import { Health } from "aws-sdk";
 
 export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -129,13 +130,57 @@ export const getServerHealth = async (
 ) => {
   try {
     // npm install os, npm install diskusage, npm install systeminformation,
+    var si = require("systeminformation");
 
     const cpuInfo = await si.cpu();
+    const cpuUsage = await si.currentLoad();
     const memoryInfo = await si.mem();
     const diskInfo = await si.fsSize();
     const networkInfo = await si.networkStats();
 
-    const healthLogs = await HealthLogDto.fromDataEntity(cpuInfo, memoryInfo, diskInfo, networkInfo);
+    const simplifiedDiskInfo = diskInfo.map(
+      (disk: { fs: any; size: number; used: number; available: number }) => ({
+        diskInfo: disk.fs,
+        totalByte: disk.size,
+        usageByte: disk.used,
+        availableByte: disk.available,
+      })
+    );
+
+    const simplifiedNetworkInfo = networkInfo.map(
+      (network: {
+        rx_bytes: number;
+        rx_dropped: number;
+        rx_errors: number;
+        tx_bytes: number;
+        tx_dropped: number;
+        tx_errors: number;
+      }) => ({
+        sendBytes: network.rx_bytes,
+        sendDropped: network.rx_dropped,
+        sendErrors: network.rx_errors,
+
+        receiveBytes: network.tx_bytes,
+        receiveDropped: network.tx_dropped,
+        receiveErrors: network.tx_errors,
+      })
+    );
+
+    const healthLogs = await HealthLogDto.fromDataEntity(
+      {
+        speed: cpuInfo.speed,
+        cores: cpuInfo.cores,
+        processors: cpuInfo.processors,
+        loadPercentage: cpuUsage.currentLoad,
+      },
+      {
+        totalByte: memoryInfo.total,
+        usageByte: memoryInfo.used,
+        availableByte: memoryInfo.free,
+      },
+      simplifiedDiskInfo,
+      simplifiedNetworkInfo
+    );
 
     res.status(200).json({
       message: "서버 헬스 체크 성공하였습니다.",

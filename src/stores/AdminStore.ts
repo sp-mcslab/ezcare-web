@@ -73,43 +73,53 @@ export class AdminStore {
         this._didCheck = true;
         this._initErrorMessage();
         const cpuResult = getServerHealthResult.getOrNull()!.cpu;
+
         this._cpuData =
-          cpuResult.manufacturer  +
-          " " +
-          cpuResult.brand +
-          " " +
-          cpuResult.vendor +
-          " " +
-          cpuResult.family +
-          " " +
-          cpuResult.model;
+          "speed : " +
+          cpuResult.speed +
+          " / cores : " +
+          cpuResult.cores +
+          " / processors : " +
+          cpuResult.processors +
+          " / load Percentage : " +
+          cpuResult.loadPercentage;
 
         const memoryResult = getServerHealthResult.getOrNull()!.memory;
         this._memoryData =
           "total : " +
-          memoryResult.total +
-          " used : " +
-          memoryResult.used +
-          " available : " +
-          memoryResult.available;
+          memoryResult.totalByte +
+          " / used : " +
+          memoryResult.usageByte +
+          " / available : " +
+          memoryResult.availableByte;
 
         const diskResult = getServerHealthResult.getOrNull()!.disk;
         for (let i = 0; i < diskResult.length; i++) {
-          this._diskData[i] = diskResult[i].fs;
+          this._diskData[i] = diskResult[i].diskInfo;
           this._diskData[i] += " ";
-          this._diskData[i] += diskResult[i].type;
-          this._diskData[i] += " size : ";
-          this._diskData[i] += diskResult[i].size;
-          this._diskData[i] += " used : ";
-          this._diskData[i] += diskResult[i].used;
+          this._diskData[i] += " / total : ";
+          this._diskData[i] += diskResult[i].totalByte;
+          this._diskData[i] += " / used : ";
+          this._diskData[i] += diskResult[i].usageByte;
+          this._diskData[i] += " / available : ";
+          this._diskData[i] += diskResult[i].availableByte;
         }
-        
+
         const networkResult = getServerHealthResult.getOrNull()!.network;
         for (let j = 0; j < networkResult.length; j++) {
-          this._networkData[j] = networkResult[j].iface;
-          this._networkData[j] += " ";
-          this._networkData[j] += networkResult[j].ms;
-          this._networkData[j] += "ms";
+          this._networkData[j] += "send : ";
+          this._networkData[j] = networkResult[j].sendBytes;
+          this._networkData[j] += " / send Dropped : ";
+          this._networkData[j] += networkResult[j].sendDropped;
+          this._networkData[j] += " / send Error : ";
+          this._networkData[j] += networkResult[j].sendErrors;
+
+          this._networkData[j] += " / receive : ";
+          this._networkData[j] += networkResult[j].receiveBytes;
+          this._networkData[j] += " / receive Dropped : ";
+          this._networkData[j] += networkResult[j].receiveDropped;
+          this._networkData[j] += " / receive Error : ";
+          this._networkData[j] += networkResult[j].receiveErrors;
         }
 
         console.log(cpuResult);

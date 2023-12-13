@@ -28,6 +28,7 @@ import { MediaUtil } from "@/utils/MediaUtil";
 import { getBaseURL } from "@/utils/getBaseURL";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
 import { makeAutoObservable, observable, runInAction } from "mobx";
+import { RtcStreamStat } from "@/models/room/RtcStreamStat";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -67,6 +68,7 @@ export interface RoomViewModel {
   onAudioProducerScore: (ssrc: number, score: number) => void;
   onVideoConsumerScore: (userId: string, score: number) => void;
   onAudioConsumerScore: (userId: string, score: number) => void;
+  onRtcStreamStat: (stat: RtcStreamStat) => void;
 }
 
 export class RoomStore implements RoomViewModel {
@@ -144,6 +146,15 @@ export class RoomStore implements RoomViewModel {
   public get remoteAudioConsumerScore(): [string, number][] {
     return [...this._remoteAudioConsumerScore.entries()];
   }
+
+  private _localRtcStreamStat: RtcStreamStat = {
+    recvBitrate: 0,
+    sendBitrate: 0,
+    rtpRecvBitrate: 0,
+    transportId: "null",
+    type: "webrtc-transport",
+    timestamp: 0,
+  };
 
   /**
    * 회원에게 알림을 보내기위한 메시지이다.
@@ -802,6 +813,13 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
+  public onRtcStreamStat = (stat: RtcStreamStat) => {
+    this._localRtcStreamStat = stat;
+    console.log(
+      `네트워크 통계 : timestamp ${this._localRtcStreamStat.timestamp}, 보내는대역폭: ${this._localRtcStreamStat.recvBitrate}, 받는대역폭: ${this._localRtcStreamStat.sendBitrate}, 보내는미디어대역폭: ${this._localRtcStreamStat.rtpRecvBitrate}, 트랜스포트id: ${this._localRtcStreamStat.transportId}, 타입: ${this._localRtcStreamStat.type}`
+    );
+  };
+
   public onAddedConsumer = (
     peerId: string,
     track: MediaStreamTrack,
@@ -811,6 +829,13 @@ export class RoomStore implements RoomViewModel {
     switch (kind) {
       case "audio":
         this._remoteAudioStreamsByPeerId.set(peerId, new MediaStream([track]));
+        this._remoteAudioConsumerScore.set(peerId, 10);
+        // 확인용 로그
+        for (let [userId, score] of this._remoteAudioConsumerScore) {
+          console.log(
+            `원격오디오 전송품질 초기화[userId: ${userId}, score: ${score}]`
+          );
+        }
         break;
       case "video":
         if (!appData.isScreenShare) {
@@ -820,16 +845,20 @@ export class RoomStore implements RoomViewModel {
             new MediaStream([track])
           );
           this._remoteVideoSwitchByPeerId.set(peerId, true);
-          console.log(
-            `화면공유 8-1: 캠화면 등록 appData: ${appData}, isScreenShare: ${appData.isScreenShare}`
-          );
+          this._remoteVideoConsumerScore.set(peerId, 10);
+          // 확인용 로그
+          for (let [userId, score] of this._remoteVideoConsumerScore) {
+            console.log(
+              `원격비디오 전송품질 초기화[userId: ${userId}, score: ${score}]`
+            );
+          }
           break;
         } else if (appData.isScreenShare) {
-          // 공유화면에서 받아온 video mdediastream
           this._remoteScreenVideoStreamsByPeerId.set(
             peerId,
             new MediaStream([track])
           );
+          // TODO: 공유화면 전송품질 필요한가?
           break;
         }
     }

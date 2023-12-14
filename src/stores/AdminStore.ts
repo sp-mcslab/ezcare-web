@@ -3,10 +3,12 @@ import adminService, { AdminService } from "@/service/adminService";
 import { CallLogDto } from "@/dto/CallLogDto";
 import si from "systeminformation";
 import { bool } from "aws-sdk/clients/signer";
+import { OperationLogDto } from "@/dto/OperationLogDto";
 
 export class AdminStore {
   private _errorMessage: string = "";
   private _roomRecord: CallLogDto[] = [];
+  private _operationRecord: OperationLogDto[] = [];
 
   private _cpuData: string = "";
   private _memoryData: string = "";
@@ -24,6 +26,10 @@ export class AdminStore {
 
   public get roomRecord(): CallLogDto[] {
     return this._roomRecord;
+  }
+
+  public get operationRecord(): OperationLogDto[] {
+    return this._operationRecord;
   }
 
   public get cpuData(): string {
@@ -57,6 +63,22 @@ export class AdminStore {
         this._initErrorMessage();
         this._roomRecord = getRecordResult.getOrNull()!!;
         console.log(this._roomRecord);
+      });
+    } else {
+      runInAction(() => {
+        this._errorMessage = getRecordResult.throwableOrNull()!!.message;
+        console.log(this._errorMessage);
+      });
+    }
+  };
+
+  public findOperationAllRoom = async (): Promise<void> => {
+    const getRecordResult = await this._adminService.findOperationAllRoom();
+    if (getRecordResult.isSuccess) {
+      runInAction(() => {
+        this._initErrorMessage();
+        this._operationRecord = getRecordResult.getOrNull()!!;
+        console.log(this._operationRecord);
       });
     } else {
       runInAction(() => {

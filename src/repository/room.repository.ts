@@ -1,4 +1,4 @@
-import client from "prisma/client";
+import client from "image/client";
 import { uuid } from "uuidv4";
 import { RoomDto } from "@/dto/RoomDto";
 import { UserDto } from "@/dto/UserDto";

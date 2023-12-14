@@ -5,10 +5,13 @@ import { CallLogDto } from "@/dto/CallLogDto";
 import { HealthLogDto } from "@/dto/HealthLogDto";
 import {
   createRecord,
+  findOperationLogByRoomId,
   findRecordAllRoom,
 } from "@/repository/callRecord.repository";
 import si from "systeminformation";
 import { Health } from "aws-sdk";
+import { createOperationLog } from "@/repository/operationLog.repository";
+import { OperationLogDto } from "@/dto/OperationLogDto";
 
 export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -64,7 +67,7 @@ export const postCallLog = async (
     }
 
     res.status(200).json({
-      message: "통화기록이 조회되었습니다.",
+      message: "통화기록이 저장되었습니다.",
       data: createdRecord,
     });
   } catch (e) {
@@ -111,6 +114,79 @@ export const getTotalCallTime = async (
     res.status(200).json({
       message: "전체 진료시간을 조회했습니다. (밀리초)",
       data: totalCallTime,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};
+
+export const postOperationLog = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const operationLog = req.body;
+
+    console.log(typeof operationLog);
+    const createdRecord = createOperationLog(
+      operationLog.roomId,
+      operationLog.operator,
+      operationLog.recipient,
+      operationLog.transaction,
+      operationLog.time as Date
+    );
+
+    if (createdRecord == undefined) {
+      res.status(404).json({
+        message: "오퍼레이션 기록 저장에 실패했습니다.",
+      });
+    }
+
+    res.status(200).json({
+      message: "오퍼레이션 기록이 저장되었습니다.",
+      data: createdRecord,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};
+
+export const getOperationLog = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const rooms = await findAllRooms();
+
+    if (!rooms || rooms.length === 0) {
+      res.status(400).json({ message: "No rooms found" });
+      return;
+    }
+
+    const operationLogPromises = rooms.map(async (room) => {
+      const operationLogs = await findOperationLogByRoomId(room.id);
+      return OperationLogDto.fromRoomEntity(room, operationLogs);
+    });
+
+    const operationLogs = await Promise.all(operationLogPromises);
+
+    res.status(200).json({
+      message: "오퍼레이션 기록이 조회되었습니다.",
+      data: operationLogs,
     });
   } catch (e) {
     if (typeof e === "string") {

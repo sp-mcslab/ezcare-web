@@ -1,4 +1,4 @@
-import client from "prisma/client";
+import client from "image/client";
 import { Host } from "@prisma/client";
 import { HostDto } from "@/dto/HostDto";
 

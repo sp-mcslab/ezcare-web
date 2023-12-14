@@ -1,4 +1,4 @@
-import client from "prisma/client";
+import client from "image/client";
 import { Invite } from "@prisma/client";
 import { InviteDto } from "@/dto/InviteDto";
 

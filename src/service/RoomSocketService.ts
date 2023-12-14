@@ -354,11 +354,11 @@ export class RoomSocketService {
       this._roomViewModel.onKickedToWaitingRoom(userId);
     });
     socket.on(REQUEST_TO_JOIN_ROOM, this._roomViewModel.onRequestToJoinRoom);
-    socket.on(CLOSE_AUDIO_BY_HOST, () => {
-      this._roomViewModel.onMuteMicrophone();
+    socket.on(CLOSE_AUDIO_BY_HOST, (roomId: string, operatorId: string) => {
+      this._roomViewModel.onMuteMicrophone(roomId, operatorId);
     });
-    socket.on(CLOSE_VIDEO_BY_HOST, () => {
-      this._roomViewModel.onHideVideo();
+    socket.on(CLOSE_VIDEO_BY_HOST, (roomId: string, operatorId: string) => {
+      this._roomViewModel.onHideVideo(roomId, operatorId);
     });
     socket.on(CANCEL_JOIN_REQUEST, this._roomViewModel.onCancelJoinRequest);
     socket.on(UPDATE_ROOM_JOINERS, (joinerId: string) => {
@@ -829,14 +829,23 @@ export class RoomSocketService {
     });
   };
 
-  public closeAudioByHost = (userIds: string[]) => {
+  public closeAudioByHost = (
+    roomId: string,
+    operatorId: string,
+    userIds: string[]
+  ) => {
     const socket = this._requireSocket();
-    socket.emit(CLOSE_AUDIO_BY_HOST, userIds);
+    socket.emit(CLOSE_AUDIO_BY_HOST, roomId, operatorId, userIds);
   };
 
-  public closeVideoByHost = (userIds: string[]) => {
+  public closeVideoByHost = (
+    roomId: string,
+    operatorId: string,
+    userIds: string[]
+  ) => {
+    // TODO OPERATION ===================
     const socket = this._requireSocket();
-    socket.emit(CLOSE_VIDEO_BY_HOST, userIds);
+    socket.emit(CLOSE_VIDEO_BY_HOST, roomId, operatorId, userIds);
   };
 
   public disConnectOtherScreenShare = async (userId: string) => {

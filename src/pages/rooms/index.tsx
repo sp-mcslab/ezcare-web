@@ -104,6 +104,14 @@ const ListPage: NextPage = observer(() => {
           >
             {t("call_log")}
           </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.replace("/admin/operation-log")}
+            style={{ marginLeft: "10px" }}
+          >
+            {t("operation_log")}
+          </Button>
         </div>
       )}
       <div>

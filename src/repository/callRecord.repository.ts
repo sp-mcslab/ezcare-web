@@ -1,11 +1,12 @@
-import client from "prisma/client";
+import client from "image/client";
 import { uuid } from "uuidv4";
 import { CallLogItemDto } from "@/dto/CallLogItemDto";
+import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
 
 const HOSPITAL_CODE = "H001";
 const TENANT_CODE = "H0013";
 
-// 모든 진료실의 이력 조회
+// 모든 진료실의 입퇴장 이력 조회
 export const findRecordAllRoom = async (
   roomId: string
 ): Promise<CallLogItemDto[] | null> => {
@@ -51,4 +52,26 @@ export const createRecord = async (
   });
 
   return CallLogItemDto.fromEntity(recordEntity);
+};
+
+// 모든 진료실의 오퍼레이션 조회
+export const findOperationLogByRoomId = async (
+  roomId: string
+): Promise<OperationLogItemDto[] | null> => {
+  try {
+    const operationLogs = await client.operationLog.findMany({
+      where: {
+        roomid: roomId,
+      },
+    });
+
+    const operationLogDtos = operationLogs.map((operationLog) =>
+      OperationLogItemDto.fromEntity(operationLog)
+    );
+
+    return operationLogDtos;
+  } catch (error) {
+    console.error("Error finding operation logs:", error);
+    return null;
+  }
 };

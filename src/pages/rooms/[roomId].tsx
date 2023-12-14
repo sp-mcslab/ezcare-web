@@ -85,6 +85,21 @@ const WaitingRoom: NextPage<{
 }> = observer(({ roomStore }) => {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+
+  const handleAudioToggleClick = () => {
+    const roomId = router.query.roomId as string;
+    roomStore.enabledMuteAudio()
+      ? roomStore.muteMicrophone(false, roomId)
+      : roomStore.unmuteMicrophone(false, roomId);
+  };
+
+  const handleVideoToggleClick = () => {
+    const roomId = router.query.roomId as string;
+    roomStore.enabledOffVideo()
+      ? roomStore.hideVideo(false, roomId)
+      : roomStore.showVideo(false, roomId);
+  };
+
   return (
     <>
       <div style={{ textAlign: "center", paddingTop: "50px" }}>
@@ -103,11 +118,7 @@ const WaitingRoom: NextPage<{
               variant="contained"
               color="primary"
               style={{ margin: "8px" }}
-              onClick={() =>
-                roomStore.enabledOffVideo()
-                  ? roomStore.hideVideo()
-                  : roomStore.showVideo()
-              }
+              onClick={handleVideoToggleClick}
             >
               {roomStore.enabledLocalVideo ? "Hide Video" : "Show Video"}
             </Button>
@@ -116,11 +127,7 @@ const WaitingRoom: NextPage<{
               variant="contained"
               color="primary"
               style={{ margin: "8px" }}
-              onClick={() =>
-                roomStore.enabledMuteAudio()
-                  ? roomStore.muteMicrophone()
-                  : roomStore.unmuteMicrophone()
-              }
+              onClick={handleAudioToggleClick}
             >
               {roomStore.enabledLocalAudio ? "Mute Audio" : "Unmute Audio"}
             </Button>
@@ -245,6 +252,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
 
     const isCurrentUserMaster = roomStore.isCurrentUserMaster;
     const router = useRouter();
+    const roomId = router.query.roomId as string;
     const [openSettingDialog, setOpenSettingDialog] = React.useState(false);
     const { t, i18n } = useTranslation();
 
@@ -314,6 +322,20 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     //     roomStore.blockUser(userId);
     //   }
     // };
+
+    const handleAudioToggleClick = () => {
+      const roomId = router.query.roomId as string;
+      roomStore.enabledMuteAudio()
+        ? roomStore.muteMicrophone(true, roomId)
+        : roomStore.unmuteMicrophone(true, roomId);
+    };
+
+    const handleVideoToggleClick = () => {
+      const roomId = router.query.roomId as string;
+      roomStore.enabledOffVideo()
+        ? roomStore.hideVideo(true, roomId)
+        : roomStore.showVideo(true, roomId);
+    };
 
     return (
       <div className={styles.main}>
@@ -428,9 +450,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             id="videoToggle"
             variant="contained"
             color="primary"
-            onClick={() =>
-              enabledOffVideo ? roomStore.hideVideo() : roomStore.showVideo()
-            }
+            onClick={handleVideoToggleClick}
           >
             {enabledOffVideo ? "Hide Video" : "Show Video"}
           </Button>
@@ -438,11 +458,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             id="microphoneToggle"
             variant="contained"
             color="primary"
-            onClick={() =>
-              enabledMuteAudio
-                ? roomStore.muteMicrophone()
-                : roomStore.unmuteMicrophone()
-            }
+            onClick={handleAudioToggleClick}
           >
             {enabledMuteAudio ? "Mute Mic" : "Unmute Mic"}
           </Button>
@@ -507,14 +523,14 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
               <Button
                 variant="contained"
                 color="secondary"
-                onClick={() => roomStore.muteAllAudio()}
+                onClick={() => roomStore.muteAllAudio(roomId)}
               >
                 {t("mute_all")}
               </Button>
               <Button
                 variant="contained"
                 color="secondary"
-                onClick={() => roomStore.closeAllVideo()}
+                onClick={() => roomStore.closeAllVideo(roomId)}
               >
                 {t("close_all_vids")}
               </Button>
@@ -563,6 +579,8 @@ const RemoteMediaGroup: NextPage<{
   }) => {
     const { t, i18n } = useTranslation();
     const viewMode = roomStore.viewMode;
+    const router = useRouter();
+    const roomId = router.query.roomId;
     if (viewMode) {
       return (
         <>
@@ -611,8 +629,12 @@ const RemoteMediaGroup: NextPage<{
                       </div>
                       <div className={styles.nameContainer}>
                         {peerId}
-                        <div>Video : {roomStore.remoteVideoConsumerScore[index][1]}</div>
-                        <div>Audio : {roomStore.remoteAudioConsumerScore[index][1]}</div>
+                        <div>
+                          Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                        </div>
+                        <div>
+                          Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                        </div>
                       </div>
                       <Video
                         id={peerId}
@@ -627,14 +649,18 @@ const RemoteMediaGroup: NextPage<{
                           <Button
                             variant="contained"
                             color="secondary"
-                            onClick={() => roomStore.muteOneAudio(peerId)}
+                            onClick={() =>
+                              roomStore.muteOneAudio(roomId as string, peerId)
+                            }
                           >
                             {t("mute_mic")}
                           </Button>
                           <Button
                             variant="contained"
                             color="secondary"
-                            onClick={() => roomStore.closeOneVideo(peerId)}
+                            onClick={() =>
+                              roomStore.closeOneVideo(roomId as string, peerId)
+                            }
                           >
                             {t("mute_vid")}
                           </Button>
@@ -802,8 +828,12 @@ const RemoteMediaGroup: NextPage<{
                     </div>
                     <div className={styles.nameContainer}>
                       {peerId}
-                      <div>Video : {roomStore.remoteVideoConsumerScore[index][1]}</div>
-                      <div>Audio : {roomStore.remoteAudioConsumerScore[index][1]}</div>
+                      <div>
+                        Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                      </div>
+                      <div>
+                        Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                      </div>
                     </div>
                     <Video
                       id={peerId}
@@ -818,14 +848,18 @@ const RemoteMediaGroup: NextPage<{
                         <Button
                           variant="contained"
                           color="secondary"
-                          onClick={() => roomStore.muteOneAudio(peerId)}
+                          onClick={() =>
+                            roomStore.muteOneAudio(roomId as string, peerId)
+                          }
                         >
                           {t("mute_mic")}
                         </Button>
                         <Button
                           variant="contained"
                           color="secondary"
-                          onClick={() => roomStore.closeOneVideo(peerId)}
+                          onClick={() =>
+                            roomStore.closeOneVideo(roomId as string, peerId)
+                          }
                         >
                           {t("mute_vid")}
                         </Button>
@@ -1053,6 +1087,8 @@ const Video: NextPage<{
   height: string;
 }> = ({ id, videoStream, roomStore, width, height }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  // TODO 오퍼레이션 로그 - 비디오 audio state 변화 감지
+  // console.log(id + " => video state " + roomStore.enabledLocalVideo);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -1110,6 +1146,8 @@ const Audio: NextPage<{
   roomStore: RoomStore;
 }> = ({ id, audioStream, roomStore }) => {
   const audioRef = useRef<HTMLMediaElement>(null);
+  // TODO 오퍼레이션 로그 - 오디오 audio state 변화 감지
+  // console.log(id + " => audio state : " + roomStore.enabledLocalAudio);
 
   // 컴포넌트가 마운트 될 때만 실행
   useEffect(() => {
@@ -1121,6 +1159,7 @@ const Audio: NextPage<{
   }, []);
 
   useEffect(() => {
+    console.log(id + " => audio state : " + roomStore.enabledLocalAudio);
     const audio = audioRef.current;
     if (audio != null) {
       audio.srcObject = audioStream === undefined ? null : audioStream;

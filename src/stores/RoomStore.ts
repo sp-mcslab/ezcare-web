@@ -20,6 +20,7 @@ import { beep } from "@/service/SoundPlayer";
 import { RoomListService } from "@/service/roomListService";
 
 import userService, { UserService } from "@/service/userService";
+import { AdminService } from "@/service/adminService";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { uuidv4 } from "@firebase/util";
 
@@ -29,6 +30,8 @@ import { getBaseURL } from "@/utils/getBaseURL";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
 import { makeAutoObservable, observable, runInAction } from "mobx";
 import { RtpStreamStat } from "@/models/room/RtpStreamStat";
+import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
+import { Transaction } from "@prisma/client";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -54,8 +57,8 @@ export interface RoomViewModel {
   onKicked: (userId: string) => void;
   onKickedToWaitingRoom: (userId: string) => void;
   onRequestToJoinRoom: (userId: string) => void;
-  onMuteMicrophone: () => void;
-  onHideVideo: () => void;
+  onMuteMicrophone: (roomId: string, operatorId: string) => void;
+  onHideVideo: (roomId: string, operatorId: string) => void;
   onCancelJoinRequest: (userId: string) => void;
   onApproveJoinRequest: (userId: string) => void;
   onRejectJoinRequest: (userId: string) => void;
@@ -76,6 +79,7 @@ export class RoomStore implements RoomViewModel {
   private readonly _roomListService;
   private readonly _roomService;
   private readonly _userService;
+  private readonly _adminService;
   private _failedToSignIn: boolean = false;
 
   private _state: RoomState = RoomState.CREATED;
@@ -182,13 +186,15 @@ export class RoomStore implements RoomViewModel {
     roomSocketService?: RoomSocketService,
     roomListService?: RoomListService,
     roomService?: RoomService,
-    userServie?: UserService
+    userService?: UserService,
+    adminService?: AdminService
   ) {
     makeAutoObservable(this);
     this._roomSocketService = roomSocketService ?? new RoomSocketService(this);
     this._roomListService = roomListService ?? new RoomListService();
     this._roomService = roomService ?? new RoomService();
-    this._userService = userServie ?? new UserService();
+    this._userService = userService ?? new UserService();
+    this._adminService = adminService ?? new AdminService();
   }
 
   public get videoDeviceList() {
@@ -672,7 +678,11 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
-  public showVideo = async () => {
+  public showVideo = async (flag: Boolean, roomId: string) => {
+    if (roomId == undefined) {
+      console.error("올바르지 않은 진료실 정보입니다.");
+      return;
+    }
     if (this._localVideoStream !== undefined) {
       console.error(
         `비디오 스트림이 이미 있는 상태에서 새로운 스트림을 생성하려 했습니다.`
@@ -696,9 +706,19 @@ export class RoomStore implements RoomViewModel {
       await this._roomSocketService.produceVideoTrack(track);
       this._enabledOffVideo = true;
     });
+    if (flag)
+      this.createOperationLog(roomId, this.uid, this.uid, Transaction.V1);
   };
 
-  public hideVideo = () => {
+  public hideVideo = (
+    flag: Boolean,
+    roomId: string,
+    operatorId: string = this.uid
+  ) => {
+    if (roomId == undefined) {
+      console.error("올바르지 않은 진료실 정보입니다.");
+      return;
+    }
     if (this._localVideoStream === undefined) {
       console.error("로컬 비디오가 없는 상태에서 비디오를 끄려 했습니다.");
       this._roomSocketService.closeVideoProducer();
@@ -708,10 +728,17 @@ export class RoomStore implements RoomViewModel {
       this._localVideoStream.getTracks().forEach((track) => track.stop());
       this._localVideoStream = undefined;
       this._enabledOffVideo = false;
+
+      if (flag)
+        this.createOperationLog(roomId, operatorId, this.uid, Transaction.V0);
     }
   };
 
-  public unmuteMicrophone = async () => {
+  public unmuteMicrophone = async (flag: Boolean, roomId: string) => {
+    if (roomId == undefined) {
+      console.error("올바르지 않은 진료실 정보입니다.");
+      return;
+    }
     if (this._localAudioStream !== undefined) {
       console.error("로컬 오디오가 있는 상태에서 오디오를 생성하려 했습니다.");
       this._localAudioStream = undefined;
@@ -736,9 +763,20 @@ export class RoomStore implements RoomViewModel {
       await this._roomSocketService.produceAudioTrack(track);
       this._enabledMuteAudio = true;
     });
+
+    if (flag)
+      this.createOperationLog(roomId, this.uid, this.uid, Transaction.M1);
   };
 
-  public muteMicrophone = () => {
+  public muteMicrophone = (
+    flag: Boolean,
+    roomId: string,
+    operatorId: string = this.uid
+  ) => {
+    if (roomId == undefined) {
+      console.error("올바르지 않은 진료실 정보입니다.");
+      return;
+    }
     if (this._localAudioStream === undefined) {
       console.error("로컬 오디오가 없는 상태에서 오디오를 끄려 했습니다.");
       this._roomSocketService.closeAudioProducer();
@@ -748,7 +786,40 @@ export class RoomStore implements RoomViewModel {
       this._localAudioStream.getTracks().forEach((track) => track.stop());
       this._localAudioStream = undefined;
       this._enabledMuteAudio = false;
+
+      if (flag)
+        this.createOperationLog(roomId, operatorId, this.uid, Transaction.M0);
     }
+  };
+
+  public createOperationLog = (
+    roomId: string,
+    operator: string,
+    recipient: string,
+    type: Transaction
+  ) => {
+    // operation 생성자 id, operation 당사자 id, operation 종류, 병원/테넌트 코드
+    // 방 id
+    console.log(
+      roomId +
+        " : " +
+        operator +
+        " 가 " +
+        recipient +
+        " 에게 " +
+        type +
+        " 동작 "
+    );
+
+    const operationLogDto = new OperationLogItemDto({
+      roomId: roomId,
+      operator: operator,
+      recipient: recipient,
+      transaction: type,
+      time: new Date(),
+    });
+
+    this._adminService.postOperationLog(operationLogDto);
   };
 
   public unmuteHeadset = () => {
@@ -758,7 +829,7 @@ export class RoomStore implements RoomViewModel {
 
   public muteHeadset = () => {
     if (this.enabledLocalAudio) {
-      this.muteMicrophone();
+      // this.muteMicrophone();
     }
     for (const remoteAudioStream of this._remoteAudioStreamsByPeerId.values()) {
       remoteAudioStream.getAudioTracks().forEach((audio) => audio.stop());
@@ -1003,7 +1074,11 @@ export class RoomStore implements RoomViewModel {
     this._audioComponentRefs.delete(id);
   };
 
-  public muteAllAudio = () => {
+  public muteAllAudio = (roomId: string | undefined) => {
+    if (roomId == undefined) {
+      console.error("진료실 정보가 올바르지 않습니다.");
+      return;
+    }
     // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
@@ -1012,19 +1087,23 @@ export class RoomStore implements RoomViewModel {
       (ps) => ps.uid !== this.uid
     );
     const userIds = peerStatesExceptMe.map((ps) => ps.uid);
-    this._roomSocketService.closeAudioByHost(userIds);
+    this._roomSocketService.closeAudioByHost(roomId, this.uid, userIds);
   };
 
-  public muteOneAudio = (peerId: string) => {
+  public muteOneAudio = (roomId: string | undefined, peerId: string) => {
     // TODO: 호스트가 맞는지 검증하기
+    if (roomId == undefined) {
+      console.error("진료실 정보가 올바르지 않습니다.");
+      return;
+    }
     if (!this._isHost) {
       return;
     }
     const userIds: string[] = [peerId];
-    this._roomSocketService.closeAudioByHost(userIds);
+    this._roomSocketService.closeAudioByHost(roomId, this.uid, userIds);
   };
 
-  public closeAllVideo = () => {
+  public closeAllVideo = (roomId: string) => {
     // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
@@ -1033,27 +1112,27 @@ export class RoomStore implements RoomViewModel {
       (ps) => ps.uid !== this.uid
     );
     const userIds = peerStatesExceptMe.map((ps) => ps.uid);
-    this._roomSocketService.closeVideoByHost(userIds);
+    this._roomSocketService.closeVideoByHost(roomId, this.uid, userIds);
   };
 
-  public closeOneVideo = (peerId: string) => {
+  public closeOneVideo = (roomId: string, peerId: string) => {
     // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
     }
     const userIds: string[] = [peerId];
-    this._roomSocketService.closeVideoByHost(userIds);
+    this._roomSocketService.closeVideoByHost(roomId, this.uid, userIds);
   };
 
-  public onMuteMicrophone = () => {
+  public onMuteMicrophone = (roomId: string, operatorId: string) => {
     if (this._localAudioStream !== undefined) {
-      this.muteMicrophone();
+      this.muteMicrophone(true, roomId, operatorId);
     }
   };
 
-  public onHideVideo = () => {
+  public onHideVideo = (roomId: string, operatorId: string) => {
     if (this._localVideoStream !== undefined) {
-      this.hideVideo();
+      this.hideVideo(true, roomId, operatorId);
     }
   };
 
@@ -1447,7 +1526,10 @@ export class RoomStore implements RoomViewModel {
     if (sessionToken == null) {
       return;
     }
-    const patchResult = await userService.patchDisplayName(sessionToken, this._userDisplayName);
+    const patchResult = await this._userService.patchDisplayName(
+      sessionToken,
+      this._userDisplayName
+    );
     if (patchResult.isSuccess) {
       console.log(patchResult.getOrNull()!);
     }

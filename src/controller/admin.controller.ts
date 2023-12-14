@@ -5,6 +5,7 @@ import { CallLogDto } from "@/dto/CallLogDto";
 import { HealthLogDto } from "@/dto/HealthLogDto";
 import {
   createRecord,
+  findOnlineUsers,
   findOperationLogByRoomId,
   findRecordAllRoom,
 } from "@/repository/callRecord.repository";
@@ -187,6 +188,37 @@ export const getOperationLog = async (
     res.status(200).json({
       message: "오퍼레이션 기록이 조회되었습니다.",
       data: operationLogs,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};
+
+export const getOnlineUsers = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    const onlineUsers = await findOnlineUsers();
+    console.log("result of online ?? " + onlineUsers);
+
+    if (onlineUsers == null) {
+      res.status(404).json({
+        message: "접속 중인 사용자를 찾지 못했습니다.",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: "접속 중인 사용자를 조회했습니다.",
+      data: onlineUsers,
     });
   } catch (e) {
     if (typeof e === "string") {

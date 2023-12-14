@@ -75,3 +75,30 @@ export const findOperationLogByRoomId = async (
     return null;
   }
 };
+
+// 접속중인 유저들 찾기
+export const findOnlineUsers = async (): Promise<{
+  [roomId: string]: string[];
+} | null> => {
+  const onlineUsers = await client.callRecord.findMany({
+    where: { exitat: null },
+  });
+
+  if (!onlineUsers || onlineUsers.length === 0) {
+    return null;
+  }
+
+  const groupedUsers = onlineUsers.reduce((result, user) => {
+    const roomId = user.roomid;
+
+    if (!result[roomId]) {
+      result[roomId] = [];
+    }
+
+    result[roomId].push(user.userid);
+    return result;
+  }, {} as { [roomId: string]: string[] });
+
+  console.log("online :: ", groupedUsers);
+  return groupedUsers;
+};

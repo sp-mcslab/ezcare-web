@@ -3,5 +3,4 @@ export interface PeerState {
   readonly uid: string;
   readonly name: string;
   readonly enabledMicrophone: boolean;
-  readonly enabledHeadset: boolean;
 }

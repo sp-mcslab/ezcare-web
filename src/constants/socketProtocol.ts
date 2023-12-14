@@ -147,18 +147,6 @@ const CLOSE_VIDEO_PRODUCER = "close-video-producer";
 const CLOSE_AUDIO_PRODUCER = "close-audio-producer";
 
 /**
- * 오디오를 수신하지 않기 위해 모든 오디오 생산자를 끊는 프로토콜이다.
- *
- * 클라이언트가 서버에게 전달한다.
- */
-const MUTE_HEADSET = "mute-headset";
-
-/**
- * 헤드셋 음소거 해제를 위한 프로토콜이다.
- */
-const UNMUTE_HEADSET = "unmute-headset";
-
-/**
  * 특정 피어의 상태가 변경되었다고 서버가 클라이언트에게 알린다.
  */
 const PEER_STATE_CHANGED = "peer-state-changed";
@@ -273,8 +261,6 @@ export {
   PEER_STATE_CHANGED,
   CLOSE_VIDEO_PRODUCER,
   CLOSE_AUDIO_PRODUCER,
-  MUTE_HEADSET,
-  UNMUTE_HEADSET,
   OTHER_PEER_DISCONNECTED,
   SEND_CHAT,
   KICK_USER,

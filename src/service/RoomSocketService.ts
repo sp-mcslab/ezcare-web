@@ -14,7 +14,6 @@ import {
   JOIN_ROOM,
   JOIN_WAITING_ROOM,
   KICK_USER,
-  MUTE_HEADSET,
   NEW_PRODUCER,
   OTHER_PEER_DISCONNECTED,
   OTHER_PEER_EXITED_ROOM,
@@ -28,7 +27,6 @@ import {
   TRANSPORT_PRODUCER_CONNECT,
   TRANSPORT_RECEIVER_CONNECT,
   UNBLOCK_USER,
-  UNMUTE_HEADSET,
   CLOSE_AUDIO_BY_HOST,
   CLOSE_VIDEO_BY_HOST,
   KICK_USER_TO_WAITINGR_ROOM,
@@ -87,7 +85,7 @@ interface ConsumeParams {
   readonly kind: MediaKind;
   readonly rtpParameters: RtpParameters;
   readonly serverConsumerId: string;
-  readonly appData: Record<string, unknown>; // 테스트 중
+  readonly appData: Record<string, unknown>;
 }
 
 interface ReceiveTransportWrapper {
@@ -123,7 +121,6 @@ export class RoomSocketService {
 
   private _receiveTransportWrappers: ReceiveTransportWrapper[] = [];
 
-  private _mutedHeadset: boolean = false;
   private _device?: Device;
 
   constructor(private readonly _roomViewModel: RoomViewModel) {}
@@ -206,7 +203,6 @@ export class RoomSocketService {
     const socket = this._requireSocket();
     const args: RequestToJoinRoomArgs = {
       userId: uid,
-      mutedHeadset: this._mutedHeadset,
     };
     return new Promise((resolve) => {
       socket.emit(REQUEST_TO_JOIN_ROOM, args, (existsRoom: boolean) => {
@@ -263,7 +259,6 @@ export class RoomSocketService {
       JOIN_ROOM,
       {
         userId: uid,
-        mutedHeadset: this._mutedHeadset,
         roomPasswordInput: password,
       },
       async (
@@ -647,10 +642,6 @@ export class RoomSocketService {
         }
         params = params as ConsumeParams;
 
-        if (params.kind === "audio" && this._mutedHeadset) {
-          return;
-        }
-
         // then consume with the local consumer transport
         // which creates a consumer
         const consumer = await receiveTransport.consume(params);
@@ -755,46 +746,6 @@ export class RoomSocketService {
     producer.close();
     this._screenVideoProducer = undefined;
   };
-
-  public muteHeadset = () => {
-    this._mutedHeadset = true;
-    this._receiveTransportWrappers = this._receiveTransportWrappers.filter(
-      (wrapper) => {
-        if (wrapper.consumer.kind === "audio") {
-          wrapper.consumer.close();
-          return false;
-        }
-        return true;
-      }
-    );
-    this._requireSocket().emit(MUTE_HEADSET);
-  };
-
-  public unmuteHeadset = () => {
-    const socket = this._requireSocket();
-
-    this._mutedHeadset = false;
-
-    socket.emit(
-      UNMUTE_HEADSET,
-      async (userAndProducerIds: UserAndProducerId[]) => {
-        if (this._device === undefined) {
-          return;
-        }
-        for (const userAndProducerId of userAndProducerIds) {
-          await this._createReceiveTransport(
-            userAndProducerId.producerId,
-            userAndProducerId.userId,
-            this._device
-          );
-        }
-      }
-    );
-  };
-
-  // public getUsersInfo = (roomId: string) => {
-  //   this._requireSocket().emit(GET_USERS_INFO, roomId);
-  // };
 
   public sendChat = (message: string) => {
     this._requireSocket().emit(SEND_CHAT, message);

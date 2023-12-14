@@ -89,7 +89,6 @@ export class RoomStore implements RoomViewModel {
   private _localAudioStream?: MediaStream = undefined;
   private _enabledMuteAudio: boolean = false;
   private _localScreenVideoStream?: MediaStream = undefined;
-  private _enabledHeadset: boolean = true;
   private _enabledMultipleScreenShare: boolean = false;
 
   // ======================= 대기실 관련 =======================
@@ -263,10 +262,6 @@ export class RoomStore implements RoomViewModel {
 
   public get enabledMultipleScreenShare(): boolean {
     return this._enabledMultipleScreenShare;
-  }
-
-  public get enabledHeadset(): boolean {
-    return this._enabledHeadset;
   }
 
   public get awaitingPeerIds(): string[] {
@@ -743,9 +738,6 @@ export class RoomStore implements RoomViewModel {
       console.error("로컬 오디오가 있는 상태에서 오디오를 생성하려 했습니다.");
       this._localAudioStream = undefined;
     }
-    if (!this.enabledHeadset) {
-      this.unmuteHeadset();
-    }
     let media: MediaStream;
     if (this._currentAudioDeviceId == null) {
       media = await this._mediaUtil.fetchLocalMedia({ audio: true });
@@ -820,23 +812,6 @@ export class RoomStore implements RoomViewModel {
     });
 
     this._adminService.postOperationLog(operationLogDto);
-  };
-
-  public unmuteHeadset = () => {
-    this._roomSocketService.unmuteHeadset();
-    this._enabledHeadset = true;
-  };
-
-  public muteHeadset = () => {
-    if (this.enabledLocalAudio) {
-      // this.muteMicrophone();
-    }
-    for (const remoteAudioStream of this._remoteAudioStreamsByPeerId.values()) {
-      remoteAudioStream.getAudioTracks().forEach((audio) => audio.stop());
-    }
-    // TODO(민성): 헤드셋 뮤트하고 _remoteAudioStreamsByPeerId 클리어 해야하는지 확인하기
-    this._roomSocketService.muteHeadset();
-    this._enabledHeadset = false;
   };
 
   public onChangePeerState = (state: PeerState) => {

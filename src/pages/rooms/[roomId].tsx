@@ -8,7 +8,6 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { BsCameraVideoOffFill, BsMicMuteFill } from "react-icons/bs";
-import { MdHeadsetOff } from "react-icons/md";
 import styles from "../../styles/room.module.scss";
 import { useTranslation } from "react-i18next";
 
@@ -131,19 +130,6 @@ const WaitingRoom: NextPage<{
             >
               {roomStore.enabledLocalAudio ? "Mute Audio" : "Unmute Audio"}
             </Button>
-            <Button
-              id="headphoneToggle"
-              variant="contained"
-              color="primary"
-              style={{ margin: "8px" }}
-              onClick={() =>
-                roomStore.enabledHeadset
-                  ? roomStore.muteHeadset()
-                  : roomStore.unmuteHeadset()
-              }
-            >
-              {roomStore.enabledHeadset ? "Mute Headset" : "Unmute Headset"}
-            </Button>
           </div>
         </ThemeProvider>
         <div style={{ padding: "16px" }}>
@@ -211,7 +197,9 @@ const WaitingRoom: NextPage<{
             <div>
               <input
                 value={roomStore.userDisplayName}
-                onChange={(e) => roomStore.updateUserDisplayName(e.target.value)}
+                onChange={(e) =>
+                  roomStore.updateUserDisplayName(e.target.value)
+                }
                 dir="rtl"
               />
               <Button
@@ -226,7 +214,9 @@ const WaitingRoom: NextPage<{
             <div>
               <input
                 value={roomStore.userDisplayName}
-                onChange={(e) => roomStore.updateUserDisplayName(e.target.value)}
+                onChange={(e) =>
+                  roomStore.updateUserDisplayName(e.target.value)
+                }
               />
               <Button
                 variant="contained"
@@ -247,7 +237,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
   ({ roomStore }) => {
     const enabledOffVideo = roomStore.enabledOffVideo();
     const enabledMuteAudio = roomStore.enabledMuteAudio();
-    const enabledHeadset = roomStore.enabledHeadset;
     const enabledScreenVideo = roomStore.enabledLocalScreenVideo;
 
     const isCurrentUserMaster = roomStore.isCurrentUserMaster;
@@ -314,14 +303,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
         roomStore.kickUserToWaitingRoom(userId);
       }
     };
-
-    // const handleBlockButtonClick = (userId: string) => {
-    //   const targetUserName = roomStore.requireUserNameBy(userId);
-    //   const confirmed = confirm(`정말로 ${targetUserName}님을 차단할까요?`);
-    //   if (confirmed) {
-    //     roomStore.blockUser(userId);
-    //   }
-    // };
 
     const handleAudioToggleClick = () => {
       const roomId = router.query.roomId as string;
@@ -463,18 +444,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             {enabledMuteAudio ? "Mute Mic" : "Unmute Mic"}
           </Button>
           <Button
-            id="headphoneToggle"
-            variant="contained"
-            color="primary"
-            onClick={() =>
-              enabledHeadset
-                ? roomStore.muteHeadset()
-                : roomStore.unmuteHeadset()
-            }
-          >
-            {enabledHeadset ? "Mute Headset" : "Unmute Headset"}
-          </Button>
-          <Button
             id="screenShareToggle"
             variant="contained"
             color="primary"
@@ -565,7 +534,6 @@ const RemoteMediaGroup: NextPage<{
   remoteAudioConsumerScore: [string, number][];
   onKickClick: (userId: string) => void;
   onKickToWaitingRoomClick: (userId: string) => void;
-  // onBlockClick: (userId: string) => void;
 }> = observer(
   ({
     roomStore,
@@ -575,7 +543,6 @@ const RemoteMediaGroup: NextPage<{
     remoteScreenVideoStreamByPeerIdEntries,
     onKickClick,
     onKickToWaitingRoomClick,
-    // onBlockClick,
   }) => {
     const { t, i18n } = useTranslation();
     const viewMode = roomStore.viewMode;
@@ -588,7 +555,6 @@ const RemoteMediaGroup: NextPage<{
             <div>
               <div className={styles.localCameraListContainer}>
                 <div className={styles.stateContainer}>
-                  {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
                 <div className={styles.nameContainer}>
@@ -625,7 +591,6 @@ const RemoteMediaGroup: NextPage<{
                     <div key={peerId} className={styles.cameraListElement}>
                       <div className={styles.stateContainer}>
                         {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
-                        {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
                       </div>
                       <div className={styles.nameContainer}>
                         {peerId}
@@ -643,7 +608,6 @@ const RemoteMediaGroup: NextPage<{
                         width="100%"
                         height="100%"
                       />
-                      {/* 캠화면입니다!!!!!!!!!!!!!! */}
                       {roomStore.isHost && (
                         <div>
                           <Button
@@ -699,7 +663,6 @@ const RemoteMediaGroup: NextPage<{
                         width="100%"
                         height="100%"
                       ></ScreenShareVideo>
-                      {/* 공유화면입니다!!!!!!!!!!!!!! */}
                     </div>
                   );
                 })}
@@ -736,7 +699,6 @@ const RemoteMediaGroup: NextPage<{
                 style={{ width: containerWidth + "%" }}
               >
                 <div className={styles.stateContainer}>
-                  {!roomStore.enabledHeadset ? <MdHeadsetOff /> : ""}
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
                 <div className={styles.nameContainer}>
@@ -824,7 +786,6 @@ const RemoteMediaGroup: NextPage<{
                   >
                     <div className={styles.stateContainer}>
                       {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
-                      {peerState.enabledHeadset ? "" : <MdHeadsetOff />}
                     </div>
                     <div className={styles.nameContainer}>
                       {peerId}
@@ -842,7 +803,6 @@ const RemoteMediaGroup: NextPage<{
                       width="100%"
                       height="100%"
                     />
-                    {/* 캠화면입니다!!!!!!!!!!!!!! */}
                     {roomStore.isHost && (
                       <div>
                         <Button
@@ -899,7 +859,6 @@ const RemoteMediaGroup: NextPage<{
                       width="100%"
                       height="100%"
                     ></ScreenShareVideo>
-                    {/* 공유화면입니다!!!!!!!!!!!!!! */}
                   </div>
                 );
               })}

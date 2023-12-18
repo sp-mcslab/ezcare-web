@@ -3,7 +3,7 @@ import { RoomDto } from "@/dto/RoomDto";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
 
 const HEADER = {
-  "Hospital-Code": "A0013",
+  "hospital-code": "A0013",
   "Content-Type": "application/json",
 };
 
@@ -13,7 +13,7 @@ export class RoomListService {
       const response = await fetchAbsolute(`api/rooms`, {
         method: "GET",
         headers: {
-          "Hospital-Code": "A0013",
+          "hospital-code": "A0013",
           "Content-Type": "application/json",
           "x-ezcare-session-token": token,
         },
@@ -46,9 +46,9 @@ export class RoomListService {
           baseUrl,
         }),
         headers: {
-          "Hospital-Code": "A0013",
           "Content-Type": "application/json",
           "x-ezcare-session-token": token,
+          "hospital-code": "A0013",
         },
       });
       if (response.ok) {
@@ -80,9 +80,9 @@ export class RoomListService {
           baseUrl,
         }),
         headers: {
-          "Hospital-Code": "A0013",
           "Content-Type": "application/json",
           "x-ezcare-session-token": token,
+          "hospital-code": "A0013",
         },
       });
       if (response.ok) {

@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { findTenant } from "@/repository/tenant.repository";
 
 export const tenant = async (req: NextApiRequest, res: NextApiResponse) => {
-  const hospital = "Hospital-Code";
+  const hospital = "hospital-code";
   const hospitalCode = req.headers[hospital];
 
   try {

@@ -3,7 +3,7 @@ import { fetchAbsolute } from "@/utils/fetchAbsolute";
 import { UserSearchDto } from "@/dto/UserSearchDto";
 
 const HEADER = {
-  "Hospital-Code": "A0013",
+  "hospital-code": "A0013",
   "Content-Type": "application/json",
 };
 
@@ -14,7 +14,7 @@ export class UserService {
         method: "POST",
         headers: {
           "x-ezcare-session-token": token,
-          "Hospital-Code": "A0013",
+          "hospital-code": "A0013",
           "Content-Type": "application/json",
         },
       });
@@ -35,7 +35,7 @@ export class UserService {
         method: "GET",
         headers: {
           "x-ezcare-session-token": token,
-          "Hospital-Code": "A0013",
+          "hospital-code": "A0013",
           "Content-Type": "application/json",
         },
       });
@@ -70,7 +70,7 @@ export class UserService {
         method: "PATCH",
         body: JSON.stringify({ displayName }),
         headers: {
-          "Hospital-Code": "A0013",
+          "hospital-code": "A0013",
           "x-ezcare-session-token": token,
           "Content-Type": "application/json",
         },

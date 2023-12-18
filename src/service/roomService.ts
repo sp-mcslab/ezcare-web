@@ -1,7 +1,7 @@
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
 
 const HEADER = {
-  "Hospital-Code": "A0013",
+  "hospital-code": "A0013",
   "Content-Type": "application/json",
 };
 

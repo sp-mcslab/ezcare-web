@@ -49,12 +49,11 @@ export const postRoomNow = async (
     return;
   }
 
-  const hospital = req.headers["Hospital-Code"];
-  if (!hospital) {
+  const hospitalCode = req.headers["hospital-code"] as string;
+  if (!hospitalCode) {
     res.status(401).end();
     return;
   }
-  const hospitalCode = hospital as string;
 
   const tenant = await findTenant(hospitalCode);
   if (tenant == null) {
@@ -141,12 +140,11 @@ export const postRoomLater = async (
     return;
   }
   
-  const hospital = req.headers["Hospital-Code"];
-  if (!hospital) {
+  const hospitalCode = req.headers["hospital-code"] as string;
+  if (!hospitalCode) {
     res.status(401).end();
     return;
   }
-  const hospitalCode = hospital as string;
 
   const tenant = await findTenant(hospitalCode);
   if (tenant == null) {

@@ -3,7 +3,7 @@ import { fetchAbsolute } from "@/utils/fetchAbsolute";
 import { SessionTokenDto } from "@/dto/SessionTokenDto";
 
 const HEADER = {
-  "Hospital-Code": "A0013",
+  "hospital-code": "A0013",
   "Content-Type": "application/json",
 };
 
@@ -33,7 +33,7 @@ export class LoginService {
         method: "POST",
         headers: {
           "x-ezcare-session-token": token,
-          "Hospital-Code": "A0013",
+          "hospital-code": "A0013",
           "Content-Type": "application/json",
         },
       });

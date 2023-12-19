@@ -1,13 +1,20 @@
 import { ChatMessage } from "@/models/room/ChatMessage";
 import { PeerState } from "@/models/room/PeerState";
 import { RoomState } from "@/models/room/RoomState";
-import { RoomStore } from "@/stores/RoomStore";
+import { RemoteVideoStreamWrapper, RoomStore } from "@/stores/RoomStore";
 import { Button, ThemeProvider, createTheme } from "@mui/material";
 import { observer } from "mobx-react";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { BsCameraVideoOffFill, BsMicMuteFill } from "react-icons/bs";
+import {
+  MdSignalCellular0Bar,
+  MdSignalCellular1Bar,
+  MdSignalCellular2Bar,
+  MdSignalCellular3Bar,
+  MdSignalCellular4Bar,
+} from "react-icons/md";
 import styles from "../../styles/room.module.scss";
 import { useTranslation } from "react-i18next";
 
@@ -58,6 +65,27 @@ const theme = createTheme({
   },
 });
 
+const signalCellularBar = (score:number) => {
+  switch (score) {
+    case 0:
+    case 1:
+    case 2:
+      return <MdSignalCellular0Bar />;
+    case 3:
+    case 4:
+        return <MdSignalCellular1Bar />;
+    case 5:
+    case 6:
+        return <MdSignalCellular2Bar />;
+    case 7:
+    case 8:
+        return <MdSignalCellular3Bar />;
+   case 9:
+   case 10:
+        return <MdSignalCellular4Bar />;
+  }
+};
+
 const NotExistsPage: NextPage = () => {
   const router = useRouter();
   const { t, i18n } = useTranslation();
@@ -103,6 +131,11 @@ const WaitingRoom: NextPage<{
     <>
       <div style={{ textAlign: "center", paddingTop: "50px" }}>
         <div style={{ fontSize: "20px" }}>{roomStore.roomTitle}</div>
+        <div className={styles.nameContainer}>
+          {roomStore.getLocalResolution()?.width +
+            "x" +
+            roomStore.getLocalResolution()?.height}
+        </div>
         <Video
           id="localVideo"
           videoStream={roomStore.localVideoStream}
@@ -527,7 +560,7 @@ const RemoteMediaGroup: NextPage<{
   roomStore: RoomStore;
   isCurrentUserMaster: boolean;
   peerStates: PeerState[];
-  remoteVideoStreamByPeerIdEntries: [string, MediaStream][];
+  remoteVideoStreamByPeerIdEntries: [string, RemoteVideoStreamWrapper][];
   remoteAudioStreamByPeerIdEntries: [string, MediaStream][];
   remoteScreenVideoStreamByPeerIdEntries: [string, MediaStream][];
   remoteVideoConsumerScore: [string, number][];
@@ -558,8 +591,15 @@ const RemoteMediaGroup: NextPage<{
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
                 <div className={styles.nameContainer}>
-                  <div>Video : {roomStore.localVideoProducerScore.score}</div>
-                  <div>Audio : {roomStore.localAudioProducerScore.score}</div>
+                  <div>
+                    Video : {signalCellularBar(roomStore.localVideoProducerScore.score)}
+                    Audio : {signalCellularBar(roomStore.localAudioProducerScore.score)}
+                  </div>
+                  <div>
+                    {roomStore.getLocalResolution()?.width +
+                      "x" +
+                      roomStore.getLocalResolution()?.height}
+                  </div>
                 </div>
                 {roomStore.enabledOffVideo() ? (
                   <div>
@@ -580,7 +620,7 @@ const RemoteMediaGroup: NextPage<{
 
               <div className={styles.cameraListContainer}>
                 {remoteVideoStreamByPeerIdEntries.map((entry, index) => {
-                  const [peerId, mediaStream] = entry;
+                  const [peerId, mediaStreamWrapper] = entry;
                   const peerState = peerStates.find((p) => p.uid === peerId);
                   if (peerState === undefined) {
                     console.error(t("error_peerstate"));
@@ -595,15 +635,18 @@ const RemoteMediaGroup: NextPage<{
                       <div className={styles.nameContainer}>
                         {peerId}
                         <div>
-                          Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                          Video : {signalCellularBar(roomStore.remoteVideoConsumerScore[index][1])}
+                          Audio : {signalCellularBar(roomStore.remoteAudioConsumerScore[index][1])}
                         </div>
                         <div>
-                          Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                          {mediaStreamWrapper.width +
+                            "x" +
+                            mediaStreamWrapper.height}
                         </div>
                       </div>
                       <Video
                         id={peerId}
-                        videoStream={mediaStream}
+                        videoStream={mediaStreamWrapper.mediaStream}
                         roomStore={roomStore}
                         width="100%"
                         height="100%"
@@ -702,8 +745,15 @@ const RemoteMediaGroup: NextPage<{
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
                 <div className={styles.nameContainer}>
-                  <div>Video : {roomStore.localVideoProducerScore.score}</div>
-                  <div>Audio : {roomStore.localAudioProducerScore.score}</div>
+                  <div>
+                    Video : {signalCellularBar(roomStore.localVideoProducerScore.score)}
+                    Audio : {signalCellularBar(roomStore.localAudioProducerScore.score)}
+                  </div>
+                  <div>
+                    {roomStore.getLocalResolution()?.width +
+                      "x" +
+                      roomStore.getLocalResolution()?.height}
+                  </div>
                 </div>
                 {roomStore.enabledOffVideo() ? (
                   <div>
@@ -771,7 +821,7 @@ const RemoteMediaGroup: NextPage<{
               </div>
 
               {remoteVideoStreamByPeerIdEntries.map((entry, index) => {
-                const [peerId, mediaStream] = entry;
+                const [peerId, mediaStreamWrapper] = entry;
                 const peerState = peerStates.find((p) => p.uid === peerId);
                 if (peerState === undefined) {
                   console.error(t("error_peerstate"));
@@ -790,15 +840,18 @@ const RemoteMediaGroup: NextPage<{
                     <div className={styles.nameContainer}>
                       {peerId}
                       <div>
-                        Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                        Video : {signalCellularBar(roomStore.remoteVideoConsumerScore[index][1])}
+                        Audio : {signalCellularBar(roomStore.remoteAudioConsumerScore[index][1])}
                       </div>
                       <div>
-                        Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                        {mediaStreamWrapper.width +
+                          "x" +
+                          mediaStreamWrapper.height}
                       </div>
                     </div>
                     <Video
                       id={peerId}
-                      videoStream={mediaStream}
+                      videoStream={mediaStreamWrapper.mediaStream}
                       roomStore={roomStore}
                       width="100%"
                       height="100%"
@@ -1048,6 +1101,26 @@ const Video: NextPage<{
   const videoRef = useRef<HTMLVideoElement>(null);
   // TODO 오퍼레이션 로그 - 비디오 audio state 변화 감지
   // console.log(id + " => video state " + roomStore.enabledLocalVideo);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video != null) {
+      if (id !== "localVideo") {
+        const resizeEventHandler = () => {
+          const width = video.videoWidth;
+          const height = video.videoHeight;
+          roomStore.changeRemoteVideoStreamSize(id, width, height);
+          console.log(
+            `Video size changed | width: ${width}, height: ${height}`
+          );
+        };
+        video.addEventListener("resize", resizeEventHandler);
+        return () => {
+          video.removeEventListener("resize", resizeEventHandler);
+        };
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;

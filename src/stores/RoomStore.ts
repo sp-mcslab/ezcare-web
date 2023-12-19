@@ -74,6 +74,12 @@ export interface RoomViewModel {
   onRtcStreamStat: (stat: RtpStreamStat) => void;
 }
 
+export interface RemoteVideoStreamWrapper {
+  readonly mediaStream: MediaStream;
+  readonly width: number;
+  readonly height: number;
+}
+
 export class RoomStore implements RoomViewModel {
   private readonly _roomSocketService;
   private readonly _roomListService;
@@ -98,8 +104,10 @@ export class RoomStore implements RoomViewModel {
   private _failedToJoinMessage?: string = undefined;
   // ========================================================
 
-  private readonly _remoteVideoStreamsByPeerId: Map<string, MediaStream> =
-    observable.map(new Map());
+  private readonly _remoteVideoStreamsByPeerId: Map<
+    string,
+    RemoteVideoStreamWrapper
+  > = observable.map(new Map());
   private readonly _remoteVideoSwitchByPeerId: Map<string, boolean> =
     observable.map(new Map());
   private readonly _remoteAudioStreamsByPeerId: Map<string, MediaStream> =
@@ -360,7 +368,10 @@ export class RoomStore implements RoomViewModel {
     return this._peerStates;
   }
 
-  public get remoteVideoStreamByPeerIdEntries(): [string, MediaStream][] {
+  public get remoteVideoStreamByPeerIdEntries(): [
+    string,
+    RemoteVideoStreamWrapper
+  ][] {
     return [...this._remoteVideoStreamsByPeerId.entries()];
   }
 
@@ -885,7 +896,7 @@ export class RoomStore implements RoomViewModel {
     );
   };
 
-  public onAddedConsumer = (
+  public onAddedConsumer = async (
     peerId: string,
     track: MediaStreamTrack,
     appData: Record<string, unknown>,
@@ -905,16 +916,35 @@ export class RoomStore implements RoomViewModel {
       case "video":
         if (!appData.isScreenShare) {
           // 카메라에서 받아온 video mediastream
-          this._remoteVideoStreamsByPeerId.set(
-            peerId,
-            new MediaStream([track])
-          );
-          this._remoteVideoSwitchByPeerId.set(peerId, true);
-          this._remoteVideoConsumerScore.set(peerId, 10);
-          // 확인용 로그
-          for (let [userId, score] of this._remoteVideoConsumerScore) {
-            console.log(
-              `원격비디오 전송품질 초기화[userId: ${userId}, score: ${score}]`
+          const waitForTrackSettings = (track: MediaStreamTrack) => {
+            return new Promise<MediaTrackSettings>((res, rej) => {
+              const checkSettings = () => {
+                const settings = track.getSettings();
+                if (settings.width && settings.height) {
+                  res(settings);
+                } else {
+                  setTimeout(checkSettings, 100);
+                }
+              };
+              checkSettings();
+            });
+          };
+          try {
+            const checkedSettings = await waitForTrackSettings(track);
+            const mediaStream = new MediaStream([track]);
+            const width = checkedSettings.width!;
+            const height = checkedSettings.height!;
+            const videoStreamWrapper: RemoteVideoStreamWrapper = {
+              mediaStream,
+              width,
+              height,
+            };
+            this._remoteVideoStreamsByPeerId.set(peerId, videoStreamWrapper);
+            this._remoteVideoSwitchByPeerId.set(peerId, true);
+            this._remoteVideoConsumerScore.set(peerId, 10);
+          } catch (error) {
+            console.error(
+              `There are some issues with obtaining remote tracks : ${error}`
             );
           }
           break;
@@ -1622,16 +1652,21 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
-  public getRemoteResolution = (userId: string) => {
-    const mediaStream = this._remoteVideoStreamsByPeerId.get(userId);
-    if (mediaStream !== undefined) {
-      const trackSettings = mediaStream.getTracks()[0].getSettings();
-      return {
-        width: trackSettings.width,
-        height: trackSettings.height,
-      };
+  public changeRemoteVideoStreamSize = (
+    peerId: string,
+    width: number,
+    height: number
+  ) => {
+    const remoteVideoStream = this._remoteVideoStreamsByPeerId.get(peerId);
+    if (remoteVideoStream === undefined) {
+      console.error("원격 비디오 스트림 찾기 실패!");
     } else {
-      return undefined;
+      const wrapper: RemoteVideoStreamWrapper = {
+        mediaStream: remoteVideoStream.mediaStream,
+        width: width,
+        height: height,
+      };
+      this._remoteVideoStreamsByPeerId.set(peerId, wrapper);
     }
   };
 }

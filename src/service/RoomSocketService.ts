@@ -270,24 +270,22 @@ export class RoomSocketService {
         }
         console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`);
         this._removeWaitingRoomEventsListener();
-        this._roomViewModel.onJoined(
-          uid,
-          data.roomId,
-          data.peerStates,
-          data.awaitingUserIds,
-          data.joiningUserIds
-        );
         try {
           // once we have rtpCapabilities from the Router, create Device
           this._device = new Device();
           await this._device.load({
             routerRtpCapabilities: data.rtpCapabilities,
           });
-
-          this._createSendTransport(this._device, localMediaStream);
-
-          this._listenRoomEvents(this._device);
-          this._getRemoteProducersAndCreateReceiveTransport(this._device);
+          await this._createSendTransport(this._device, localMediaStream);
+          await this._listenRoomEvents(this._device);
+          await this._getRemoteProducersAndCreateReceiveTransport(this._device);
+          this._roomViewModel.onJoined(
+            uid,
+            data.roomId,
+            data.peerStates,
+            data.awaitingUserIds,
+            data.joiningUserIds
+          );
         } catch (e) {
           // TODO: 예외 처리 더 필요한 지 확인
           console.error(`JOIN_ROOM 에러 : ${e}`);
@@ -296,7 +294,7 @@ export class RoomSocketService {
     );
   };
 
-  private _listenRoomEvents = (device: Device) => {
+  private _listenRoomEvents = async (device: Device) => {
     const socket = this._requireSocket();
     socket.on(
       NEW_PRODUCER,
@@ -383,7 +381,7 @@ export class RoomSocketService {
     });
   };
 
-  private _createSendTransport = (
+  private _createSendTransport = async (
     device: Device,
     localMediaStream: MediaStream
   ) => {
@@ -522,7 +520,9 @@ export class RoomSocketService {
     }
   };
 
-  private _getRemoteProducersAndCreateReceiveTransport = (device: Device) => {
+  private _getRemoteProducersAndCreateReceiveTransport = async (
+    device: Device
+  ) => {
     this._requireSocket().emit(
       GET_PRODUCER_IDS,
       (idsAndAppData: ProducerIdAndAppData[]) => {

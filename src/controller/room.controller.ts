@@ -139,7 +139,7 @@ export const postRoomLater = async (
     res.json({ message: "openAt이 현재보다 과거일 수 없습니다." });
     return;
   }
-  
+
   const hospitalCode = req.headers["hospital-code"] as string;
   if (!hospitalCode) {
     res.status(401).end();
@@ -367,21 +367,17 @@ export const getInvitedUsersByRoomId = async (
   res: NextApiResponse
 ) => {
   try {
-    const userId = getIdFromToken(
-      req.headers["x-ezcare-session-token"] as string,
-      secretKey
-    ); // 사용자의 id get.
-
     const roomId = req.query.roomId;
 
     if (roomId == null) {
-      res.status(401).end();
+      res.status(404);
+      res.json({ message: "존재하지 않는 진료실입니다." });
       return;
     }
 
     const invitedUsers = await findInvitedUsersByRoomId(roomId as string);
     if (invitedUsers == null) {
-      res.status(401).end();
+      res.status(404).end();
       return;
     }
 
@@ -406,7 +402,8 @@ export const postInvitation = async (
   try {
     const roomId = req.query.roomId;
     if (roomId == null) {
-      res.status(400).end();
+      res.status(404);
+      res.json({ message: "존재하지 않는 진료실입니다." });
       return;
     }
 
@@ -431,13 +428,13 @@ export const postInvitation = async (
 
     res.status(200);
     res.json({
-      message: "초대 목록에 추가되었습니다..",
+      message: "초대 목록에 추가되었습니다.",
       // data: { invitedUsers: invitedUsers },
     });
     return;
   } catch (e) {
     res.status(404);
-    res.json({ message: "초대 목록애 추가되지 않았습니다." });
+    res.json({ message: "초대 목록에 추가되지 않았습니다." });
     return;
   }
 };

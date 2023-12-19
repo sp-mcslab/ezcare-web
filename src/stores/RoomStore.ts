@@ -32,6 +32,7 @@ import { makeAutoObservable, observable, runInAction } from "mobx";
 import { RtpStreamStat } from "@/models/room/RtpStreamStat";
 import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
 import { Transaction } from "@prisma/client";
+import { findTenant } from "@/repository/tenant.repository";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -643,6 +644,11 @@ export class RoomStore implements RoomViewModel {
     this._awaitingPeerIds = awaitingPeerIds;
     this._joiningPeerIds = joiningPeerIds;
 
+    const headers = {
+      "hospital-code": "A0013",
+      "Content-Type": "application/json",
+    };
+
     //record 저장
     const record = {
       userId: userId,
@@ -651,9 +657,10 @@ export class RoomStore implements RoomViewModel {
       exitAt: null,
     };
 
+    //TODO :: HEADER 추가.
     const axios = require("axios");
     axios
-      .post("/api/admin/call-log", record)
+      .post("/api/admin/call-log", record, { headers })
       .then((response: { data: any }) => {
         console.log("Record saved:", response.data);
       })

@@ -6,7 +6,7 @@ import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
 import { OperationLogDto } from "@/dto/OperationLogDto";
 
 const HEADER = {
-  "Hospital-Code": "A0013",
+  "hospital-code": "A0013",
   "Content-Type": "application/json",
 };
 

@@ -7,13 +7,15 @@ const TENANT_CODE = "H0013";
 
 export const findInvitedUsersByRoomId = async (
   roomid: string
-): Promise<Invite[] | null> => {
+): Promise<InviteDto[] | null> => {
   try {
-    return await client.invite.findMany({
+    const inviteEntity = await client.invite.findMany({
       where: {
         roomid: roomid,
       },
     });
+
+    return inviteEntity.map((invitedUser) => InviteDto.fromEntity(invitedUser));
   } catch (e) {
     console.log(e);
     return null;

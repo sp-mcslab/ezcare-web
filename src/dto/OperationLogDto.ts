@@ -1,6 +1,7 @@
 import { Room } from "@prisma/client";
 import { CallLogItemDto } from "@/dto/CallLogItemDto";
 import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
+import { RoomDto } from "@/dto/RoomDto";
 
 export class OperationLogDto {
   public readonly roomId: string;
@@ -29,16 +30,16 @@ export class OperationLogDto {
     this.operations = operations;
   }
 
-  // RoomEntity -> OperationLogDto
-  public static fromRoomEntity = (
-    roomEntity: Room,
+  // RoomDto -> OperationLogDto
+  public static fromRoomDto = (
+    room: RoomDto,
     operations: OperationLogItemDto[] | null
   ): OperationLogDto => {
     return new OperationLogDto({
-      roomId: roomEntity.id,
-      openAt: roomEntity.createdat,
-      deletedAt: roomEntity.deletedat,
-      creatorId: roomEntity.creatorid,
+      roomId: room.id,
+      openAt: room.openAt,
+      deletedAt: room.deletedAt,
+      creatorId: room.creatorId,
       operations: operations,
     });
   };

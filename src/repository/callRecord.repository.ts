@@ -2,10 +2,6 @@ import client from "image/client";
 import { uuid } from "uuidv4";
 import { CallLogItemDto } from "@/dto/CallLogItemDto";
 import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
-
-const HOSPITAL_CODE = "H001";
-const TENANT_CODE = "H0013";
-
 // 모든 진료실의 입퇴장 이력 조회
 export const findRecordAllRoom = async (
   roomId: string
@@ -34,7 +30,9 @@ export const createRecord = async (
   userId: string,
   roomId: string,
   joinAt: Date,
-  exitAt: Date
+  exitAt: Date,
+  hospitalCode: string,
+  tenantCode: string
 ): Promise<CallLogItemDto> => {
   // 생성할 record의 고유 아이디 (기본키 id)
   const recordUniqueId = uuid();
@@ -46,8 +44,8 @@ export const createRecord = async (
       roomid: roomId,
       joinat: joinAt,
       exitat: exitAt,
-      hospitalcode: HOSPITAL_CODE,
-      tenantcode: TENANT_CODE,
+      hospitalcode: hospitalCode,
+      tenantcode: tenantCode,
     },
   });
 

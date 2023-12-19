@@ -75,7 +75,7 @@ export const postRoomNow = async (
       RoomFlag.OPENED
     );
 
-    await createHost(room.id, creatorId);
+    await createHost(room.id, creatorId, hospitalCode, tenantCode);
 
     const roomUrl = (baseUrl as string) + room.id;
 
@@ -166,7 +166,7 @@ export const postRoomLater = async (
       flag
     );
 
-    await createHost(room.id, creatorId);
+    await createHost(room.id, creatorId, hospitalCode, tenantCode);
 
     const roomUrl = (baseUrl as string) + room.id;
 

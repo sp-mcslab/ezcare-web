@@ -22,15 +22,17 @@ export const findUserHostByRoomId = async (
 
 export const createHost = async (
   roomId: string,
-  userId: string
+  userId: string,
+  hospitalCode: string,
+  tenantCode: string
 ): Promise<HostDto | null> => {
   try {
     const hostEntity = await client.host.create({
       data: {
         roomid: roomId,
         userid: userId,
-        hospitalcode: HOSPITAL_CODE,
-        tenantcode: TENANT_CODE,
+        hospitalcode: hospitalCode,
+        tenantcode: tenantCode,
       },
     });
     return HostDto.fromEntity(hostEntity);

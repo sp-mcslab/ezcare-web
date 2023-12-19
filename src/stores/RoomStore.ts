@@ -179,6 +179,13 @@ export class RoomStore implements RoomViewModel {
   public get localAudioProducerScore(): { ssrc: number; score: number } {
     return this._localAudioProducerScore;
   }
+  
+  public get localVideoPacketsLost(): string {
+    const packetsLost = this._localVideoRtpStreamStat.packetsLost / this._localVideoRtpStreamStat.packetCount * 100;
+    if(isNaN(packetsLost))
+      return "Loading...";
+    return packetsLost.toString() + "%";
+  }
 
   /**
    * 회원에게 알림을 보내기위한 메시지이다.

@@ -140,9 +140,11 @@ const WaitingRoom: NextPage<{
       <div style={{ textAlign: "center", paddingTop: "50px" }}>
         <div style={{ fontSize: "20px" }}>{roomStore.roomTitle}</div>
         <div className={styles.nameContainer}>
-          {roomStore.getLocalResolution()?.width +
+          <div>
+            {roomStore.getLocalResolution()?.width +
             "x" +
             roomStore.getLocalResolution()?.height}
+          </div>
         </div>
         <Video
           id="localVideo"
@@ -585,6 +587,9 @@ const RemoteMediaGroup: NextPage<{
                       "x" +
                       roomStore.getLocalResolution()?.height}
                   </div>
+                  <div>
+                    패킷손실률: {roomStore.localVideoPacketsLost}
+                  </div>
                 </div>
                 {roomStore.enabledOffVideo() ? (
                   <div>
@@ -746,6 +751,9 @@ const RemoteMediaGroup: NextPage<{
                     {roomStore.getLocalResolution()?.width +
                       "x" +
                       roomStore.getLocalResolution()?.height}
+                  </div>
+                  <div>
+                    패킷손실률: {roomStore.localVideoPacketsLost}
                   </div>
                 </div>
                 {roomStore.enabledOffVideo() ? (

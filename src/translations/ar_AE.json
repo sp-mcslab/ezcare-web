@@ -31,6 +31,8 @@
   "request_transfer_failed": "Entrance request sending failed.",
   "not_open": "The room hasn't opened yet.",
   "user_id": "user ID",
+  "other_peer_kicked": "Other peer kicked.",
+  "other_peer_kicked_to_waiting_room": "Other peer kicked to waiting room.",
   "kicked": "You were kicked out by the host.",
   "kicked_to_waiting_room": "You were forced back into the waiting room by the host.",
   "message_kick": "Do you really want to kick this participant out?",
@@ -51,5 +53,15 @@
   "kick_to_waiting_room": "kick to waiting room",
   "kick": "kick",
   "server_health": "server health",
-  "change": "change"
+  "change": "change",
+  "media_request": "Both the camera and microphone must be connected.",
+  "message_stop_share_my_screen": "Another user starts screen sharing, ending my screen share.",
+  "no_awaiting_peer": "This is a non-existent participant on the waiting list.",
+  "invite_success": "The invitation has been completed.",
+  "invite_failure": "The invitation has failed.",
+  "room_create_success": "Room creation has been completed.",
+  "room_create_failure": "Room creation has failed.",
+  "room_delete_success": "Room deletion has been completed.",
+  "room_delete_failure": "Room deletion has failed.",
+  "exit_check": "Do you really want to leave the room?"
 }

@@ -25,6 +25,13 @@ const ListPage: NextPage = observer(() => {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
+    if (roomStore.roomCreateMessage != null) {
+      alert(t(roomStore.roomCreateMessage));
+      roomStore.clearRoomCreateMessage();
+    }
+  }, [roomStore.roomCreateMessage]);
+
+  useEffect(() => {
     (async () => {
       await roomStore.getUserDataWithSessionToken();
       if (roomStore.userRole != "N") {

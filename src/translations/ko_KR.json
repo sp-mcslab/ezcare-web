@@ -31,6 +31,8 @@
   "request_transfer_failed": "입장 요청 전송을 실패했습니다.",
   "not_open": "아직 방이 열리지 않았습니다.",
   "user_id": "회원 ID",
+  "other_peer_kicked": "다른 참여자가 강퇴되었습니다.",
+  "other_peer_kicked_to_waiting_room": "다른 참여자가 로비로 강퇴되었습니다.",
   "kicked": "방장에 의해 강퇴되었습니다.",
   "kicked_to_waiting_room": "방장에 의해 대기실로 강퇴되었습니다.",
   "message_kick": "정말로 강퇴할까요?",
@@ -51,5 +53,15 @@
   "kick_to_waiting_room": "대기실로 강퇴",
   "kick": "강퇴",
   "server_health": "서버 상태",
-  "change": "변경"
+  "change": "변경",
+  "media_request": "카메라와 마이크가 모두 연결되어야 합니다.",
+  "message_stop_share_my_screen": "다른 사용자가 화면공유를 시작하여 내 화면공유를 종료합니다.",
+  "no_awaiting_peer": "존재하지 않는 대기자입니다.",
+  "invite_success": "초대가 완료되었습니다.",
+  "invite_failure": "초대에 실패했습니다.",
+  "room_create_success": "방 생성이 완료되었습니다.",
+  "room_create_failure": "방 생성에 실패했습니다.",
+  "room_delete_success": "방 삭제가 완료되었습니다.",
+  "room_delete_failure": "방 삭제에 실패했습니다.",
+  "exit_check": "정말 방을 나가시겠습니까?"
 }

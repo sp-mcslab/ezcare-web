@@ -114,6 +114,13 @@ const WaitingRoom: NextPage<{
   const router = useRouter();
   const { t, i18n } = useTranslation();
 
+  useEffect(() => {
+    if (roomStore.waitingRoomUserMessage != null) {
+      alert(t(roomStore.waitingRoomUserMessage));
+      roomStore.clearWaitingRoomUserMessage();
+    }
+  }, [roomStore.waitingRoomUserMessage]);
+
   const handleAudioToggleClick = () => {
     const roomId = router.query.roomId as string;
     roomStore.enabledMuteAudio()
@@ -247,8 +254,16 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
 
     useEffect(() => {
       if (roomStore.userMessage != null) {
-        alert(roomStore.userMessage);
-        roomStore.clearUserMessage();
+        const userMessages = roomStore.userMessage.split(":");
+        const message = userMessages[0];
+        if (userMessages.length < 2) {
+          alert(t(message));
+          roomStore.clearUserMessage();
+        } else {
+          const kickedUser = userMessages[1];
+          alert(`${t(message)}: ${kickedUser}`);
+          roomStore.clearUserMessage();
+        }
       }
     }, [roomStore.userMessage]);
 
@@ -276,8 +291,9 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     useEffect(() => {
       const browserExitHandler = (event: BeforeUnloadEvent) => {
         event.preventDefault();
-        roomStore.exitRoom();
-        // event.returnValue = true;
+        if (confirm(t("exit_check"))) {
+          roomStore.exitRoom();
+        }
       };
       window.addEventListener("beforeunload", browserExitHandler);
       return () =>
@@ -481,7 +497,9 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             variant="contained"
             color="primary"
             onClick={() => {
-              roomStore.exitRoom();
+              if (confirm(t("exit_check"))) {
+                roomStore.exitRoom();
+              }
             }}
           >
             {t("exit")}

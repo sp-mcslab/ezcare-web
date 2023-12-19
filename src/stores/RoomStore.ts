@@ -183,6 +183,9 @@ export class RoomStore implements RoomViewModel {
    * 회원에게 알림을 보내기위한 메시지이다.
    */
   private _userMessage?: string = undefined;
+  private _waitingRoomUserMessage?: string = undefined;
+  private _roomCreateMessage?: string = undefined;
+  private _indexPageMessage?: string = undefined;
 
   // <Audio> 마다 audioOutput을 연결하기 위한 Ref들
   private _audioComponentRefs: Map<string, React.RefObject<HTMLMediaElement>> =
@@ -411,6 +414,18 @@ export class RoomStore implements RoomViewModel {
     return this._userMessage;
   }
 
+  public get waitingRoomUserMessage(): string | undefined {
+    return this._waitingRoomUserMessage;
+  }
+
+  public get roomCreateMessage(): string | undefined {
+    return this._roomCreateMessage;
+  }
+
+  public get indexPageMessage(): string | undefined {
+    return this._indexPageMessage;
+  }
+
   public connectSocket = (roomId: string) => {
     this._roomSocketService.connect(roomId);
   };
@@ -443,7 +458,7 @@ export class RoomStore implements RoomViewModel {
         // 카메라 or 마이크가 없으면 mediaStream 불러오지 못해서 error 출력 -> 로비에서 연결 중... 무한 출력
         .catch((error) => {
           console.error(`${error}: mediastream 받아오기 실패`);
-          alert("카메라와 마이크가 모두 연결되어있어야 합니다.");
+          this._waitingRoomUserMessage = "media_request";
         });
     }
   };
@@ -846,7 +861,7 @@ export class RoomStore implements RoomViewModel {
 
   public onDisConnectScreenShare = () => {
     this.stopShareMyScreen();
-    alert("다른 사용자가 화면공유를 시작하여 내 화면공유를 종료합니다.");
+    this._userMessage = "message_stop_share_my_screen";
   };
 
   public onBroadcastStopShareScreen = (userId: string) => {
@@ -979,19 +994,6 @@ export class RoomStore implements RoomViewModel {
     this._roomSocketService.kickUserToWaitingRoom(userId);
   };
 
-  public blockUser = (userId: string) => {
-    this._roomSocketService.blockUser(userId);
-  };
-
-  public unblockUser = async (userId: string) => {
-    try {
-      await this._roomSocketService.unblockUser(userId);
-    } catch (e) {
-      this._userMessage =
-        typeof e === "string" ? e : "회원 차단 해제를 실패했습니다.";
-    }
-  };
-
   public onKicked = (userId: string) => {
     const isMe = userId === this._uid;
     if (isMe) {
@@ -1005,7 +1007,7 @@ export class RoomStore implements RoomViewModel {
       if (kickedPeerState == null) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
-      this._userMessage = `${kickedPeerState.name}님이 강퇴되었습니다.`;
+      this._userMessage = `other_peer_kicked:${kickedPeerState.name}`;
     }
   };
 
@@ -1024,12 +1026,24 @@ export class RoomStore implements RoomViewModel {
       if (kickedPeerState == null) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
-      this._userMessage = `${kickedPeerState.name}님이 대기실로 강퇴되었습니다.`;
+      this._userMessage = `other_peer_kicked_to_waiting_room:${kickedPeerState.name}`;
     }
   };
 
   public clearUserMessage = () => {
     this._userMessage = undefined;
+  };
+
+  public clearWaitingRoomUserMessage = () => {
+    this._waitingRoomUserMessage = undefined;
+  };
+
+  public clearRoomCreateMessage = () => {
+    this._roomCreateMessage = undefined;
+  };
+
+  public clearIndexPageMessage = () => {
+    this._indexPageMessage = undefined;
   };
 
   public onDisposedPeer = (peerId: string): void => {
@@ -1241,12 +1255,12 @@ export class RoomStore implements RoomViewModel {
       });
       this._inviteUserId = "";
       runInAction(() => {
-        alert("초대가 완료되었습니다.");
+        this._roomCreateMessage = "invite_success";
       });
       return;
     }
     runInAction(() => {
-      alert("초대에 실패했습니다.");
+      this._roomCreateMessage = "invite_failure";
     });
   };
 
@@ -1324,12 +1338,12 @@ export class RoomStore implements RoomViewModel {
 
       if (roomResult.isSuccess) {
         runInAction(() => {
-          alert("방 생성이 완료되었습니다.");
+          this._roomCreateMessage = "room_create_success";
           console.log(roomResult);
         });
       } else {
         runInAction(() => {
-          alert("방 생성에 실패했습니다.");
+          this._roomCreateMessage = "room_create_failure";
           console.log(roomResult.throwableOrNull()!!.message);
         });
       }
@@ -1345,12 +1359,12 @@ export class RoomStore implements RoomViewModel {
 
       if (roomResult.isSuccess) {
         runInAction(() => {
-          alert("방 생성이 완료되었습니다.");
+          this._roomCreateMessage = "room_create_success";
           console.log(roomResult);
         });
       } else {
         runInAction(() => {
-          alert("방 생성에 실패했습니다.");
+          this._roomCreateMessage = "room_create_failure";
           console.log(roomResult.throwableOrNull()!!.message);
         });
       }
@@ -1483,12 +1497,12 @@ export class RoomStore implements RoomViewModel {
     if (!roomResult.isSuccess) {
       console.log(roomResult.throwableOrNull()!!.message);
       runInAction(() => {
-        alert("방을 삭제하는 데에 실패했습니다.");
+        this._indexPageMessage = "room_delete_failure";
         console.log(roomResult);
       });
     } else {
       runInAction(() => {
-        alert("방을 삭제했습니다.");
+        this._indexPageMessage = "room_delete_success";
         console.log(roomResult);
       });
     }
@@ -1617,10 +1631,8 @@ export class RoomStore implements RoomViewModel {
   };
 
   public exitRoom = () => {
-    if (confirm("정말 방을 나가시겠습니까?")) {
-      this._roomSocketService.exitRoom();
-      this._exited = true;
-    }
+    this._roomSocketService.exitRoom();
+    this._exited = true;
   };
 
   private _roomTitle: string = "";

@@ -22,6 +22,13 @@ const ListPage: NextPage = observer(() => {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
+    if (roomStore.indexPageMessage != null) {
+      alert(t(roomStore.indexPageMessage));
+      roomStore.clearIndexPageMessage();
+    }
+  }, [roomStore.indexPageMessage]);
+
+  useEffect(() => {
     roomStore.loadRoomList();
   }, [roomStore.loadRoomList]);
 

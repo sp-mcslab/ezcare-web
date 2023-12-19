@@ -183,7 +183,7 @@ export class RoomStore implements RoomViewModel {
   public get localVideoPacketsLost(): string {
     const packetsLost = this._localVideoRtpStreamStat.packetsLost / this._localVideoRtpStreamStat.packetCount * 100;
     if(isNaN(packetsLost))
-      return "Loading...";
+      return "-";
     return packetsLost.toString() + "%";
   }
 

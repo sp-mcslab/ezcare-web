@@ -233,6 +233,11 @@ const AUDIO_CONSUMER_SCORE = "audio-consumer-score";
  */
 const RTP_STREAM_STAT = "rtc-stream-stat";
 
+/**
+ * 클라이언트가 DisplayName 을 변경했을 때 다른 참여자들에게 알리기 위한 프로토콜이다.
+ */
+const BROADCAST_DISPLAYNAME = "broadcast-displayname";
+
 export {
   IP_ADDRESS,
   NAME_SPACE,
@@ -277,4 +282,5 @@ export {
   VIDEO_CONSUMER_SCORE,
   AUDIO_CONSUMER_SCORE,
   RTP_STREAM_STAT,
+  BROADCAST_DISPLAYNAME,
 };

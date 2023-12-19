@@ -40,6 +40,7 @@ import {
   VIDEO_CONSUMER_SCORE,
   AUDIO_CONSUMER_SCORE,
   RTP_STREAM_STAT,
+  BROADCAST_DISPLAYNAME,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -251,15 +252,15 @@ export class RoomSocketService {
 
   public join = (
     localMediaStream: MediaStream,
-    password: string,
-    uid: string
+    uid: string,
+    displayName: string
   ) => {
     const socket = this._requireSocket();
     socket.emit(
       JOIN_ROOM,
       {
         userId: uid,
-        roomPasswordInput: password,
+        displayName: displayName,
       },
       async (
         data: JoinRoomSuccessCallbackProperty | JoinRoomFailureCallbackProperty
@@ -812,5 +813,10 @@ export class RoomSocketService {
   public exitRoom = () => {
     const socket = this._requireSocket();
     socket.disconnect();
+  };
+
+  public broadcastDisplayName = (displayName: string) => {
+    const socket = this._requireSocket();
+    socket.emit(BROADCAST_DISPLAYNAME, displayName);
   };
 }

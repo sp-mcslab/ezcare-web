@@ -607,7 +607,7 @@ export class RoomStore implements RoomViewModel {
     if (this.kickedToWaitingRoom) {
       this._kickedToWaitingRoom = false;
     }
-    this._roomSocketService.join(mediaStream, this._passwordInput, this._uid);
+    this._roomSocketService.join(mediaStream, this._uid, this._userDisplayName);
   };
 
   public onFailedToJoin = (message: string) => {
@@ -1537,6 +1537,7 @@ export class RoomStore implements RoomViewModel {
     );
     if (patchResult.isSuccess) {
       console.log(patchResult.getOrNull()!);
+      this.broadcastDisplayName();
     }
   };
 
@@ -1668,5 +1669,9 @@ export class RoomStore implements RoomViewModel {
       };
       this._remoteVideoStreamsByPeerId.set(peerId, wrapper);
     }
+  };
+
+  public broadcastDisplayName = () => {
+    this._roomSocketService.broadcastDisplayName(this._userDisplayName);
   };
 }

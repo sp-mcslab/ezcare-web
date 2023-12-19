@@ -17,6 +17,7 @@ import {
 } from "react-icons/md";
 import styles from "../../styles/room.module.scss";
 import { useTranslation } from "react-i18next";
+import { DisplayNameChanger } from "@/components/DisplayNameChanger";
 
 const RoomScaffold: NextPage = observer(() => {
   const [roomStore] = useState(new RoomStore());
@@ -224,43 +225,7 @@ const WaitingRoom: NextPage<{
         </div>
         <div>{roomStore.waitingRoomMessage}</div>
         {/* TODO: 회원 기능 구현되면 삭제하기. 임시용 회원 ID 입력 필드임. */}
-        <div>
-          <div>{t("user_id")}</div>
-          {i18n.language == "ar_AE" ? (
-            <div>
-              <input
-                value={roomStore.userDisplayName}
-                onChange={(e) =>
-                  roomStore.updateUserDisplayName(e.target.value)
-                }
-                dir="rtl"
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => roomStore.patchUserDisplayName()}
-              >
-                {t("change")}
-              </Button>
-            </div>
-          ) : (
-            <div>
-              <input
-                value={roomStore.userDisplayName}
-                onChange={(e) =>
-                  roomStore.updateUserDisplayName(e.target.value)
-                }
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => roomStore.patchUserDisplayName()}
-              >
-                {t("change")}
-              </Button>
-            </div>
-          )}
-        </div>
+        {DisplayNameChanger(roomStore)}
       </div>
     </>
   );
@@ -458,6 +423,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
               );
             })}
           </div>
+          {DisplayNameChanger(roomStore)}
         </div>
         <div className={styles.footer}>
           <Button
@@ -581,6 +547,7 @@ const RemoteMediaGroup: NextPage<{
     const viewMode = roomStore.viewMode;
     const router = useRouter();
     const roomId = router.query.roomId;
+    const localState = peerStates.find((p) => p.uid === roomStore.uid);
     if (viewMode) {
       return (
         <>
@@ -633,7 +600,7 @@ const RemoteMediaGroup: NextPage<{
                         {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                       </div>
                       <div className={styles.nameContainer}>
-                        {peerId}
+                        {peerState.displayName}
                         <div>
                           Video : {signalCellularBar(roomStore.remoteVideoConsumerScore[index][1])}
                           Audio : {signalCellularBar(roomStore.remoteAudioConsumerScore[index][1])}
@@ -693,12 +660,20 @@ const RemoteMediaGroup: NextPage<{
 
                 {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
                   const [peerId, mediaStream] = entry;
+                  const peerState = peerStates.find((p) => p.uid === peerId);
+                  if (peerState === undefined) {
+                    console.error(t("error_peerstate"));
+                    roomStore.removeRemoteVideoStreamByPeerId(peerId);
+                    return;
+                  }
                   return (
                     <div
                       key={`${peerId}-screen`}
                       className={styles.cameraListElement}
                     >
-                      <div className={styles.nameContainer}>{peerId}</div>
+                      <div className={styles.nameContainer}>
+                        {peerState.displayName}
+                      </div>
                       <ScreenShareVideo
                         id={`${peerId}-screen`}
                         videoStream={mediaStream}
@@ -838,7 +813,7 @@ const RemoteMediaGroup: NextPage<{
                       {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                     </div>
                     <div className={styles.nameContainer}>
-                      {peerId}
+                      {peerState.displayName}
                       <div>
                         Video : {signalCellularBar(roomStore.remoteVideoConsumerScore[index][1])}
                         Audio : {signalCellularBar(roomStore.remoteAudioConsumerScore[index][1])}
@@ -898,13 +873,21 @@ const RemoteMediaGroup: NextPage<{
 
               {remoteScreenVideoStreamByPeerIdEntries.map((entry) => {
                 const [peerId, mediaStream] = entry;
+                const peerState = peerStates.find((p) => p.uid === peerId);
+                if (peerState === undefined) {
+                  console.error(t("error_peerstate"));
+                  roomStore.removeRemoteVideoStreamByPeerId(peerId);
+                  return;
+                }
                 return (
                   <div
                     key={`${peerId}-screen`}
                     className={styles.cameraTileElement}
                     style={{ width: containerWidth + "%" }}
                   >
-                    <div className={styles.nameContainer}>{peerId}</div>
+                    <div className={styles.nameContainer}>
+                      {peerState.displayName}
+                    </div>
                     <ScreenShareVideo
                       id={`${peerId}-screen`}
                       videoStream={mediaStream}

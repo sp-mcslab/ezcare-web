@@ -433,10 +433,10 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
           )}
           <div className={styles.sideElement}>
             <div className={styles.sideTitle}>{t("room_participant_list")}</div>
-            {roomStore.joiningPeerIds.map((joiner) => {
+            {roomStore.peerStates.map((joiner) => {
               return (
                 <>
-                  <div>{joiner}</div>
+                  <div>{joiner.displayName}</div>
                 </>
               );
             })}
@@ -578,6 +578,7 @@ const RemoteMediaGroup: NextPage<{
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
                 <div className={styles.nameContainer}>
+                  {roomStore.userDisplayName}
                   <div>
                     Video : {signalCellularBar(roomStore.localVideoProducerScore.score)}
                     Audio : {signalCellularBar(roomStore.localAudioProducerScore.score)}
@@ -743,6 +744,7 @@ const RemoteMediaGroup: NextPage<{
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
                 <div className={styles.nameContainer}>
+                  {roomStore.userDisplayName}
                   <div>
                     Video : {signalCellularBar(roomStore.localVideoProducerScore.score)}
                     Audio : {signalCellularBar(roomStore.localAudioProducerScore.score)}

@@ -1554,6 +1554,28 @@ export class RoomStore implements RoomViewModel {
     this._userDisplayName = newDisplayName;
   };
 
+  private updateMyPeerStateDisplayName = () => {
+    const myPeerState = this.peerStates.find((ps) => ps.uid === this._uid);
+    let newPeerState: PeerState;
+    if (myPeerState === undefined) {
+      newPeerState = {
+        uid: this._uid,
+        name: this._userName,
+        displayName: this._userDisplayName,
+        enabledMicrophone: this.enabledMuteAudio(),
+      };
+    } else {
+      newPeerState = {
+        uid: myPeerState.uid,
+        name: myPeerState.name,
+        displayName: this._userDisplayName,
+        enabledMicrophone: myPeerState.enabledMicrophone,
+      };
+    }
+    this._peerStates = this.peerStates.filter((ps) => ps.uid !== this._uid);
+    this._peerStates.push(newPeerState);
+  };
+
   public patchUserDisplayName = async (): Promise<void> => {
     const sessionToken = getSessionTokenFromLocalStorage();
     if (sessionToken == null) {
@@ -1565,6 +1587,7 @@ export class RoomStore implements RoomViewModel {
     );
     if (patchResult.isSuccess) {
       console.log(patchResult.getOrNull()!);
+      this.updateMyPeerStateDisplayName();
       this.broadcastDisplayName();
     }
   };

@@ -66,27 +66,6 @@ const theme = createTheme({
   },
 });
 
-const signalCellularBar = (score:number) => {
-  switch (score) {
-    case 0:
-    case 1:
-    case 2:
-      return <MdSignalCellular0Bar />;
-    case 3:
-    case 4:
-        return <MdSignalCellular1Bar />;
-    case 5:
-    case 6:
-        return <MdSignalCellular2Bar />;
-    case 7:
-    case 8:
-        return <MdSignalCellular3Bar />;
-   case 9:
-   case 10:
-        return <MdSignalCellular4Bar />;
-  }
-};
-
 const NotExistsPage: NextPage = () => {
   const router = useRouter();
   const { t, i18n } = useTranslation();
@@ -580,8 +559,8 @@ const RemoteMediaGroup: NextPage<{
                 <div className={styles.nameContainer}>
                   {roomStore.userDisplayName}
                   <div>
-                    Video : {signalCellularBar(roomStore.localVideoProducerScore.score)}
-                    Audio : {signalCellularBar(roomStore.localAudioProducerScore.score)}
+                    Video : {roomStore.localVideoProducerScore.score}
+                    Audio : {roomStore.localAudioProducerScore.score}
                   </div>
                   <div>
                     {roomStore.getLocalResolution()?.width +
@@ -626,8 +605,8 @@ const RemoteMediaGroup: NextPage<{
                       <div className={styles.nameContainer}>
                         {peerState.displayName}
                         <div>
-                          Video : {signalCellularBar(roomStore.remoteVideoConsumerScore[index][1])}
-                          Audio : {signalCellularBar(roomStore.remoteAudioConsumerScore[index][1])}
+                          Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                          Audio : {roomStore.remoteAudioConsumerScore[index][1]}
                         </div>
                         <div>
                           {mediaStreamWrapper.width +
@@ -746,8 +725,8 @@ const RemoteMediaGroup: NextPage<{
                 <div className={styles.nameContainer}>
                   {roomStore.userDisplayName}
                   <div>
-                    Video : {signalCellularBar(roomStore.localVideoProducerScore.score)}
-                    Audio : {signalCellularBar(roomStore.localAudioProducerScore.score)}
+                    Video : {roomStore.localVideoProducerScore.score}
+                    Audio : {roomStore.localAudioProducerScore.score}
                   </div>
                   <div>
                     {roomStore.getLocalResolution()?.width +
@@ -843,8 +822,8 @@ const RemoteMediaGroup: NextPage<{
                     <div className={styles.nameContainer}>
                       {peerState.displayName}
                       <div>
-                        Video : {signalCellularBar(roomStore.remoteVideoConsumerScore[index][1])}
-                        Audio : {signalCellularBar(roomStore.remoteAudioConsumerScore[index][1])}
+                        Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                        Audio : {roomStore.remoteAudioConsumerScore[index][1]}
                       </div>
                       <div>
                         {mediaStreamWrapper.width +

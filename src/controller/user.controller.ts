@@ -5,7 +5,10 @@ import { findUserById, patchDisplayName } from "@/repository/user.repository";
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
 // 사용자 아이디 조회
-export const getUserData = async (req: NextApiRequest, res: NextApiResponse) => {
+export const getUserData = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
   try {
     const userId = getIdFromToken(
       req.headers["x-ezcare-session-token"] as string,
@@ -15,6 +18,15 @@ export const getUserData = async (req: NextApiRequest, res: NextApiResponse) => 
       res.status(401).end();
       return;
     }
+
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
 
     const user = await findUserById(userId);
     if (user == null) {

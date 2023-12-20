@@ -12,6 +12,15 @@ export const login = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
+
     const user = await findUser(id, password);
 
     // 로그인 실패 ; 사용자 정보 불일치

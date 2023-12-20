@@ -30,6 +30,15 @@ export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
+
     const callLogPromises = rooms.map(async (room) => {
       const callRecords = await findRecordAllRoom(room.id);
       return CallLogDto.fromRoomDto(room, callRecords);
@@ -109,15 +118,7 @@ export const getTotalCallTime = async (
       return;
     }
 
-    const tenant = await findTenant(hospitalCode);
-    if (tenant == null) {
-      res.status(401).end();
-      return;
-    }
-    const tenantCode = tenant.tenantcode;
-
     console.log("hospital Code :: " + hospitalCode);
-    console.log("tenant Code :: " + tenantCode);
 
     // 전체 진료 시간 조회 -> 테넌트 별..
     const rooms = await findAllRooms();
@@ -219,15 +220,7 @@ export const getOperationLog = async (
       return;
     }
 
-    const tenant = await findTenant(hospitalCode);
-    if (tenant == null) {
-      res.status(401).end();
-      return;
-    }
-    const tenantCode = tenant.tenantcode;
-
     console.log("hospital Code :: " + hospitalCode);
-    console.log("tenant Code :: " + tenantCode);
 
     // operation log 조회
     const rooms = await findAllRooms();
@@ -272,15 +265,7 @@ export const getOnlineUsers = async (
       return;
     }
 
-    const tenant = await findTenant(hospitalCode);
-    if (tenant == null) {
-      res.status(401).end();
-      return;
-    }
-    const tenantCode = tenant.tenantcode;
-
     console.log("hospital Code :: " + hospitalCode);
-    console.log("tenant Code :: " + tenantCode);
 
     // 접속 중인 사용자 조회
     const onlineUsers = await findOnlineUsers();
@@ -320,15 +305,7 @@ export const getPeriodUsage = async (
       return;
     }
 
-    const tenant = await findTenant(hospitalCode);
-    if (tenant == null) {
-      res.status(401).end();
-      return;
-    }
-    const tenantCode = tenant.tenantcode;
-
     console.log("hospital Code :: " + hospitalCode);
-    console.log("tenant Code :: " + tenantCode);
 
     // 일별 월별 년별 사용량 통계 조회
     const currentdate = req.query.currentdate;

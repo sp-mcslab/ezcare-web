@@ -180,6 +180,15 @@ export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
     if ((await deleteRoomReq(req.query.roomId as string)) == undefined)
       throw "존재하지 않는 진료실입니다.";
 
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
+
     // 진료실에 남아있던 사용자들 exitat 모두 갱신
     const result = updateAllCallRecordOfRoom(req.query.roomId as string);
 
@@ -227,6 +236,15 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
+
     const user = await findUserById(userId);
     if (user == null) {
       res.status(401).end();
@@ -257,6 +275,16 @@ export const getRoomById = async (
   res: NextApiResponse
 ) => {
   try {
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
+
+    // room 조회
     const room = await findRoomById(req.query.roomId as string);
 
     if (room == null) {
@@ -314,6 +342,21 @@ export const getHostById = async (
       secretKey
     ); // 사용자의 id get.
 
+    if (!userId) {
+      res.status(401).end();
+      return;
+    }
+
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
+
+    //호스트 조회
     const roomId = req.query.roomId;
 
     if (roomId == null) {
@@ -358,6 +401,15 @@ export const getInvitedUsersByRoomId = async (
       res.json({ message: "존재하지 않는 진료실입니다." });
       return;
     }
+
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
 
     const invitedUsers = await findInvitedUsersByRoomId(roomId as string);
     if (invitedUsers == null) {

@@ -33,7 +33,6 @@ const RoomScaffold: NextPage = observer(() => {
       await roomStore.getUserDataWithSessionToken();
       if (typeof roomId === "string") {
         await roomStore.getIsHostWithSessionToken(roomId);
-        await roomStore.setInvitation(roomId, roomStore.uid);
         await roomStore.getRoomById(roomId);
       }
     })();
@@ -562,12 +561,8 @@ const RemoteMediaGroup: NextPage<{
                 {roomStore.networkViewMode ? (
                   <div className={styles.nameContainer}>
                     {roomStore.userDisplayName}
-                    <div>
-                      Video : {roomStore.localVideoProducerScore.score}
-                    </div>
-                    <div>
-                      Audio : {roomStore.localAudioProducerScore.score}
-                    </div>
+                    <div>Video : {roomStore.localVideoProducerScore.score}</div>
+                    <div>Audio : {roomStore.localAudioProducerScore.score}</div>
                     <div>
                       {roomStore.getLocalResolution()?.width +
                         "x" +
@@ -617,10 +612,12 @@ const RemoteMediaGroup: NextPage<{
                         <div className={styles.nameContainer}>
                           {peerState.displayName}
                           <div>
-                            Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                            Video :{" "}
+                            {roomStore.remoteVideoConsumerScore[index][1]}
                           </div>
                           <div>
-                            Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                            Audio :{" "}
+                            {roomStore.remoteAudioConsumerScore[index][1]}
                           </div>
                           <div>
                             {mediaStreamWrapper.width +
@@ -744,12 +741,8 @@ const RemoteMediaGroup: NextPage<{
                 {roomStore.networkViewMode ? (
                   <div className={styles.nameContainer}>
                     {roomStore.userDisplayName}
-                    <div>
-                      Video : {roomStore.localVideoProducerScore.score}
-                    </div>
-                    <div>
-                      Audio : {roomStore.localAudioProducerScore.score}
-                    </div>
+                    <div>Video : {roomStore.localVideoProducerScore.score}</div>
+                    <div>Audio : {roomStore.localAudioProducerScore.score}</div>
                     <div>
                       {roomStore.getLocalResolution()?.width +
                         "x" +

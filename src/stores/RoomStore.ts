@@ -24,7 +24,6 @@ import { AdminService } from "@/service/adminService";
 import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
 import { uuidv4 } from "@firebase/util";
 
-import { RoomService } from "@/service/roomService";
 import { MediaUtil } from "@/utils/MediaUtil";
 import { getBaseURL } from "@/utils/getBaseURL";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
@@ -84,7 +83,6 @@ export interface RemoteVideoStreamWrapper {
 export class RoomStore implements RoomViewModel {
   private readonly _roomSocketService;
   private readonly _roomListService;
-  private readonly _roomService;
   private readonly _userService;
   private readonly _adminService;
   private _failedToSignIn: boolean = false;
@@ -179,11 +177,13 @@ export class RoomStore implements RoomViewModel {
   public get localAudioProducerScore(): { ssrc: number; score: number } {
     return this._localAudioProducerScore;
   }
-  
+
   public get localVideoPacketsLost(): string {
-    const packetsLost = this._localVideoRtpStreamStat.packetsLost / this._localVideoRtpStreamStat.packetCount * 100;
-    if(isNaN(packetsLost))
-      return "-";
+    const packetsLost =
+      (this._localVideoRtpStreamStat.packetsLost /
+        this._localVideoRtpStreamStat.packetCount) *
+      100;
+    if (isNaN(packetsLost)) return "-";
     return packetsLost.toString() + "%";
   }
 
@@ -203,14 +203,12 @@ export class RoomStore implements RoomViewModel {
     private _mediaUtil: MediaUtil = new MediaUtil(),
     roomSocketService?: RoomSocketService,
     roomListService?: RoomListService,
-    roomService?: RoomService,
     userService?: UserService,
     adminService?: AdminService
   ) {
     makeAutoObservable(this);
     this._roomSocketService = roomSocketService ?? new RoomSocketService(this);
     this._roomListService = roomListService ?? new RoomListService();
-    this._roomService = roomService ?? new RoomService();
     this._userService = userService ?? new UserService();
     this._adminService = adminService ?? new AdminService();
   }
@@ -1592,45 +1590,6 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
-  // 초대
-  public setInvitation = async (
-    roomId: string,
-    userId: string
-  ): Promise<void> => {
-    await this.getIsInvitedUser(roomId, userId);
-
-    if (!this.isHost && !this.isInvited) {
-      await this._roomService.postInvitation(roomId, userId);
-    }
-  };
-
-  public getIsInvitedUser = async (
-    roomId: string,
-    userId: string
-  ): Promise<void> => {
-    const invitedUsers = await this.getInvitedUsersByRoomId(roomId);
-
-    if (invitedUsers == null) return;
-
-    this._isInvited = invitedUsers.some((user) => user === userId);
-  };
-
-  public getInvitedUsersByRoomId = async (
-    roomId: string
-  ): Promise<string[] | undefined> => {
-    const sessionToken = getSessionTokenFromLocalStorage();
-    if (sessionToken == null) {
-      return;
-    }
-    const invitedUsers = await this._roomService.getInvitedUsers(roomId);
-    if (invitedUsers == null) {
-      return;
-    }
-
-    this._inviteUserIdList = invitedUsers;
-    return invitedUsers;
-  };
-
   // 호스트
   public getUserDataWithSessionToken = async (): Promise<void> => {
     const sessionToken = getSessionTokenFromLocalStorage();
@@ -1723,13 +1682,13 @@ export class RoomStore implements RoomViewModel {
   public broadcastDisplayName = () => {
     this._roomSocketService.broadcastDisplayName(this._userDisplayName);
   };
-  
+
   private _networkViewMode: boolean = false;
 
   public get networkViewMode(): boolean {
     return this._networkViewMode;
   }
-  
+
   public changeNetworkViewMode = () => {
     this._networkViewMode = !this._networkViewMode;
   };

@@ -114,8 +114,8 @@ const WaitingRoom: NextPage<{
         <div className={styles.nameContainer}>
           <div>
             {roomStore.getLocalResolution()?.width +
-            "x" +
-            roomStore.getLocalResolution()?.height}
+              "x" +
+              roomStore.getLocalResolution()?.height}
           </div>
         </div>
         <Video
@@ -496,6 +496,17 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
               </Button>
             </div>
           )}
+          {roomStore.userRole == "S" && (
+            <div style={{ display: "inline-block" }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => roomStore.changeNetworkViewMode()}
+              >
+                {t("on_network_view_mode")}
+              </Button>
+            </div>
+          )}
           <DeviceSelector roomStore={roomStore}></DeviceSelector>
 
           {isCurrentUserMaster && (
@@ -548,21 +559,29 @@ const RemoteMediaGroup: NextPage<{
                 <div className={styles.stateContainer}>
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
-                <div className={styles.nameContainer}>
-                  {roomStore.userDisplayName}
-                  <div>
-                    Video : {roomStore.localVideoProducerScore.score}
-                    Audio : {roomStore.localAudioProducerScore.score}
+                {roomStore.networkViewMode ? (
+                  <div className={styles.nameContainer}>
+                    {roomStore.userDisplayName}
+                    <div>
+                      Video : {roomStore.localVideoProducerScore.score}
+                    </div>
+                    <div>
+                      Audio : {roomStore.localAudioProducerScore.score}
+                    </div>
+                    <div>
+                      {roomStore.getLocalResolution()?.width +
+                        "x" +
+                        roomStore.getLocalResolution()?.height}
+                    </div>
+                    <div>
+                      {t("packets_lost")} : {roomStore.localVideoPacketsLost}
+                    </div>
                   </div>
-                  <div>
-                    {roomStore.getLocalResolution()?.width +
-                      "x" +
-                      roomStore.getLocalResolution()?.height}
+                ) : (
+                  <div className={styles.nameContainer}>
+                    {roomStore.userDisplayName}
                   </div>
-                  <div>
-                    {t("packets_lost")} : {roomStore.localVideoPacketsLost}
-                  </div>
-                </div>
+                )}
                 {roomStore.enabledOffVideo() ? (
                   <div>
                     <Video
@@ -594,18 +613,26 @@ const RemoteMediaGroup: NextPage<{
                       <div className={styles.stateContainer}>
                         {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                       </div>
-                      <div className={styles.nameContainer}>
-                        {peerState.displayName}
-                        <div>
-                          Video : {roomStore.remoteVideoConsumerScore[index][1]}
-                          Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                      {roomStore.networkViewMode ? (
+                        <div className={styles.nameContainer}>
+                          {peerState.displayName}
+                          <div>
+                            Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                          </div>
+                          <div>
+                            Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                          </div>
+                          <div>
+                            {mediaStreamWrapper.width +
+                              "x" +
+                              mediaStreamWrapper.height}
+                          </div>
                         </div>
-                        <div>
-                          {mediaStreamWrapper.width +
-                            "x" +
-                            mediaStreamWrapper.height}
+                      ) : (
+                        <div className={styles.nameContainer}>
+                          {peerState.displayName}
                         </div>
-                      </div>
+                      )}
                       <Video
                         id={peerId}
                         videoStream={mediaStreamWrapper.mediaStream}
@@ -714,21 +741,29 @@ const RemoteMediaGroup: NextPage<{
                 <div className={styles.stateContainer}>
                   {!roomStore.enabledMuteAudio() ? <BsMicMuteFill /> : ""}
                 </div>
-                <div className={styles.nameContainer}>
-                  {roomStore.userDisplayName}
-                  <div>
-                    Video : {roomStore.localVideoProducerScore.score}
-                    Audio : {roomStore.localAudioProducerScore.score}
+                {roomStore.networkViewMode ? (
+                  <div className={styles.nameContainer}>
+                    {roomStore.userDisplayName}
+                    <div>
+                      Video : {roomStore.localVideoProducerScore.score}
+                    </div>
+                    <div>
+                      Audio : {roomStore.localAudioProducerScore.score}
+                    </div>
+                    <div>
+                      {roomStore.getLocalResolution()?.width +
+                        "x" +
+                        roomStore.getLocalResolution()?.height}
+                    </div>
+                    <div>
+                      {t("packets_lost")} : {roomStore.localVideoPacketsLost}
+                    </div>
                   </div>
-                  <div>
-                    {roomStore.getLocalResolution()?.width +
-                      "x" +
-                      roomStore.getLocalResolution()?.height}
+                ) : (
+                  <div className={styles.nameContainer}>
+                    {roomStore.userDisplayName}
                   </div>
-                  <div>
-                    패킷손실률: {roomStore.localVideoPacketsLost}
-                  </div>
-                </div>
+                )}
                 {roomStore.enabledOffVideo() ? (
                   <div>
                     <Video
@@ -811,18 +846,26 @@ const RemoteMediaGroup: NextPage<{
                     <div className={styles.stateContainer}>
                       {peerState.enabledMicrophone ? "" : <BsMicMuteFill />}
                     </div>
-                    <div className={styles.nameContainer}>
-                      {peerState.displayName}
-                      <div>
-                        Video : {roomStore.remoteVideoConsumerScore[index][1]}
-                        Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                    {roomStore.networkViewMode ? (
+                      <div className={styles.nameContainer}>
+                        {peerState.displayName}
+                        <div>
+                          Video : {roomStore.remoteVideoConsumerScore[index][1]}
+                        </div>
+                        <div>
+                          Audio : {roomStore.remoteAudioConsumerScore[index][1]}
+                        </div>
+                        <div>
+                          {mediaStreamWrapper.width +
+                            "x" +
+                            mediaStreamWrapper.height}
+                        </div>
                       </div>
-                      <div>
-                        {mediaStreamWrapper.width +
-                          "x" +
-                          mediaStreamWrapper.height}
+                    ) : (
+                      <div className={styles.nameContainer}>
+                        {peerState.displayName}
                       </div>
-                    </div>
+                    )}
                     <Video
                       id={peerId}
                       videoStream={mediaStreamWrapper.mediaStream}

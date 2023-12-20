@@ -22,7 +22,7 @@ model CallRecord {
 }
 
 model Hospital {
-  code         String         @db.VarChar(100)
+  code         String         @id(map: "PK_HOSPITAL") @db.VarChar(100)
   tenantcode   String         @db.VarChar(100)
   CallRecord   CallRecord[]
   Tenant       Tenant         @relation(fields: [tenantcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Tenant_TO_Hospital_1")
@@ -31,8 +31,6 @@ model Hospital {
   OperationLog OperationLog[]
   Room         Room[]
   User         User[]
-
-  @@id([code], map: "PK_HOSPITAL")
 }
 
 model Host {

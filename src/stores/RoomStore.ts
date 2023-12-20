@@ -1723,4 +1723,14 @@ export class RoomStore implements RoomViewModel {
   public broadcastDisplayName = () => {
     this._roomSocketService.broadcastDisplayName(this._userDisplayName);
   };
+  
+  private _networkViewMode: boolean = false;
+
+  public get networkViewMode(): boolean {
+    return this._networkViewMode;
+  }
+  
+  public changeNetworkViewMode = () => {
+    this._networkViewMode = !this._networkViewMode;
+  };
 }

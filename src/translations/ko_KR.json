@@ -64,5 +64,6 @@
   "room_delete_success": "방 삭제가 완료되었습니다.",
   "room_delete_failure": "방 삭제에 실패했습니다.",
   "exit_check": "정말 방을 나가시겠습니까?",
-  "packets_lost": "패킷 손실률"
+  "packets_lost": "패킷 손실률",
+  "on_network_view_mode": "미디오 전송 통계 표시"
 }

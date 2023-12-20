@@ -18,6 +18,7 @@ import {
 } from "@/repository/invite.repository";
 import roomListService from "@/service/roomListService";
 import { findTenant } from "@/repository/tenant.repository";
+import { UserDto } from "@/dto/UserDto";
 
 const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
@@ -251,7 +252,7 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
-    const rooms = await findRooms(user);
+    const rooms = await findRooms(UserDto.fromEntity(user));
     res.status(200);
     res.json({
       message: "진료실 목록이 조회되었습니다.",

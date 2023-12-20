@@ -7,7 +7,7 @@ export const DisplayNameChanger = (roomStore:RoomStore) => {
   var displayName = roomStore.userDisplayName;
   return (
     <div>
-          <div>{t("user_id")}</div>
+          <div>{t("display_name")}</div>
           {i18n.language == "ar_AE" ? (
             <div>
               <input

@@ -30,7 +30,7 @@
   "refuse_enter": "입장이 거절되었습니다.",
   "request_transfer_failed": "입장 요청 전송을 실패했습니다.",
   "not_open": "아직 방이 열리지 않았습니다.",
-  "user_id": "회원 ID",
+  "display_name": "디스플레이 네임",
   "other_peer_kicked": "다른 참여자가 강퇴되었습니다.",
   "other_peer_kicked_to_waiting_room": "다른 참여자가 로비로 강퇴되었습니다.",
   "kicked": "방장에 의해 강퇴되었습니다.",
@@ -63,5 +63,6 @@
   "room_create_failure": "방 생성에 실패했습니다.",
   "room_delete_success": "방 삭제가 완료되었습니다.",
   "room_delete_failure": "방 삭제에 실패했습니다.",
-  "exit_check": "정말 방을 나가시겠습니까?"
+  "exit_check": "정말 방을 나가시겠습니까?",
+  "packets_lost": "패킷 손실률"
 }

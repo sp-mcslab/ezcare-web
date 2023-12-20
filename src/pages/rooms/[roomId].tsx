@@ -8,13 +8,6 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 import { BsCameraVideoOffFill, BsMicMuteFill } from "react-icons/bs";
-import {
-  MdSignalCellular0Bar,
-  MdSignalCellular1Bar,
-  MdSignalCellular2Bar,
-  MdSignalCellular3Bar,
-  MdSignalCellular4Bar,
-} from "react-icons/md";
 import styles from "../../styles/room.module.scss";
 import { useTranslation } from "react-i18next";
 import { DisplayNameChanger } from "@/components/DisplayNameChanger";
@@ -546,7 +539,6 @@ const RemoteMediaGroup: NextPage<{
     const viewMode = roomStore.viewMode;
     const router = useRouter();
     const roomId = router.query.roomId;
-    const localState = peerStates.find((p) => p.uid === roomStore.uid);
     if (viewMode) {
       return (
         <>
@@ -568,7 +560,7 @@ const RemoteMediaGroup: NextPage<{
                       roomStore.getLocalResolution()?.height}
                   </div>
                   <div>
-                    패킷손실률: {roomStore.localVideoPacketsLost}
+                    {t("packets_lost")} : {roomStore.localVideoPacketsLost}
                   </div>
                 </div>
                 {roomStore.enabledOffVideo() ? (

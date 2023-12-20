@@ -30,7 +30,7 @@
   "refuse_enter": "You've been denied enter.",
   "request_transfer_failed": "Entrance request sending failed.",
   "not_open": "The room hasn't opened yet.",
-  "user_id": "user ID",
+  "display_name": "Display Name",
   "other_peer_kicked": "Other peer kicked.",
   "other_peer_kicked_to_waiting_room": "Other peer kicked to waiting room.",
   "kicked": "You were kicked out by the host.",

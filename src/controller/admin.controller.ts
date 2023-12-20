@@ -67,20 +67,12 @@ export const postCallLog = async (
       return;
     }
 
-    const tenant = await findTenant(hospitalCode);
-    if (tenant == null) {
-      res.status(401).end();
-      return;
-    }
-    const tenantCode = tenant.tenantcode;
-
     const createdRecord = createRecord(
       record.userId,
       record.roomId,
       record.joinAt,
       record.exitAt,
-      hospitalCode,
-      tenantCode
+      hospitalCode
     );
 
     if (createdRecord == undefined) {
@@ -183,13 +175,6 @@ export const postOperationLog = async (
       return;
     }
 
-    const tenant = await findTenant(hospitalCode);
-    if (tenant == null) {
-      res.status(401).end();
-      return;
-    }
-    const tenantCode = tenant.tenantcode;
-
     console.log(typeof operationLog);
     const createdRecord = createOperationLog(
       operationLog.roomId,
@@ -197,8 +182,7 @@ export const postOperationLog = async (
       operationLog.recipient,
       operationLog.transaction,
       operationLog.time as Date,
-      hospitalCode,
-      tenantCode
+      hospitalCode
     );
 
     if (createdRecord == undefined) {

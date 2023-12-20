@@ -1,4 +1,4 @@
-import client from "image/client";
+import client from "prisma/client";
 import { uuid } from "uuidv4";
 import { Transaction, OperationLog } from "@prisma/client";
 import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
@@ -10,8 +10,7 @@ export const createOperationLog = async (
   recipient: string,
   transaction: Transaction,
   time: Date,
-  hospitalCode: string,
-  tenantCode: string
+  hospitalCode: string
 ): Promise<OperationLogItemDto> => {
   // 생성할 record의 고유 아이디 (기본키 id)
   const recordUniqueId = uuid();
@@ -37,7 +36,6 @@ export const createOperationLog = async (
       transaction: transaction,
       time: time,
       hospitalcode: hospitalCode,
-      tenantcode: tenantCode,
     },
   });
 

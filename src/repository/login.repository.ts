@@ -1,4 +1,4 @@
-import prisma from "../../image/client";
+import prisma from "../../prisma/client";
 import { UserDto } from "@/dto/UserDto";
 
 export const findUser = async (

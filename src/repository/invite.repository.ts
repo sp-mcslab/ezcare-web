@@ -1,4 +1,4 @@
-import client from "image/client";
+import client from "prisma/client";
 import { Invite } from "@prisma/client";
 import { InviteDto } from "@/dto/InviteDto";
 
@@ -24,15 +24,15 @@ export const findInvitedUsersByRoomId = async (
 
 export const createInvitation = async (
   roomId: string,
-  userId: string
+  userId: string,
+  hospitalCode: string
 ): Promise<InviteDto | null> => {
   try {
     const inviteEntity = await client.invite.create({
       data: {
         roomid: roomId,
         userid: userId,
-        hospitalcode: HOSPITAL_CODE,
-        tenantcode: TENANT_CODE,
+        hospitalcode: hospitalCode,
       },
     });
     return InviteDto.fromEntity(inviteEntity);

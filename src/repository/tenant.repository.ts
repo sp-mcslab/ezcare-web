@@ -1,4 +1,4 @@
-import client from "image/client";
+import client from "prisma/client";
 import { Hospital } from "@prisma/client";
 export const findTenant = async (code: string): Promise<Hospital | null> => {
   try {

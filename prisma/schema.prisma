@@ -13,9 +13,8 @@ model CallRecord {
   roomid       String    @db.VarChar(100)
   joinat       DateTime  @db.Timestamptz(6)
   exitat       DateTime? @db.Timestamptz(6)
-  tenantcode   String    @db.VarChar(100)
   hospitalcode String    @db.VarChar(100)
-  Hospital     Hospital  @relation(fields: [hospitalcode, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_CallRecord_1")
+  Hospital     Hospital  @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_CallRecord_1")
   Room         Room      @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_CallRecord_1")
   User         User      @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_CallRecord_1")
 
@@ -33,15 +32,14 @@ model Hospital {
   Room         Room[]
   User         User[]
 
-  @@id([code, tenantcode], map: "PK_HOSPITAL")
+  @@id([code], map: "PK_HOSPITAL")
 }
 
 model Host {
   roomid       String   @db.VarChar(100)
   userid       String   @db.VarChar(100)
-  tenantcode   String   @db.VarChar(100)
   hospitalcode String   @db.VarChar(100)
-  Hospital     Hospital @relation(fields: [hospitalcode, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Host_1")
+  Hospital     Hospital @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Host_1")
   Room         Room     @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_Host_1")
   User         User     @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Host_1")
 
@@ -51,9 +49,8 @@ model Host {
 model Invite {
   userid       String   @db.VarChar(100)
   roomid       String   @db.VarChar(100)
-  tenantcode   String
   hospitalcode String
-  Hospital     Hospital @relation(fields: [hospitalcode, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Invite_1")
+  Hospital     Hospital @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Invite_1")
   Room         Room     @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_Invite_1")
   User         User     @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Invite_1")
 
@@ -68,8 +65,7 @@ model OperationLog {
   transaction                       Transaction
   time                              DateTime    @db.Timestamptz(6)
   hospitalcode                      String      @db.VarChar(100)
-  tenantcode                        String      @db.VarChar(100)
-  Hospital                          Hospital    @relation(fields: [hospitalcode, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_OperationLog_1")
+  Hospital                          Hospital    @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_OperationLog_1")
   User_OperationLog_operatorToUser  User        @relation("OperationLog_operatorToUser", fields: [operator], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Operator_TO_OperationLog_1")
   User_OperationLog_recipientToUser User        @relation("OperationLog_recipientToUser", fields: [recipient], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Recipient_TO_OperationLog_1")
   Room                              Room        @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_OperationLog_1")
@@ -85,13 +81,12 @@ model Room {
   openat       DateTime       @db.Timestamptz(6)
   deletedat    DateTime?      @db.Timestamptz(6)
   hospitalcode String         @db.VarChar(100)
-  tenantcode   String         @db.VarChar(100)
   flag         RoomFlag       @default(CLOSED)
   CallRecord   CallRecord[]
   Host         Host[]
   Invite       Invite[]
   OperationLog OperationLog[]
-  Hospital     Hospital       @relation(fields: [hospitalcode, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Room_1")
+  Hospital     Hospital       @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Room_1")
   User         User           @relation(fields: [creatorid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Room_1")
 }
 
@@ -107,7 +102,6 @@ model User {
   name                                      String         @db.VarChar(100)
   displayname                               String         @db.VarChar(100)
   hospitalcode                              String         @db.VarChar(100)
-  tenantcode                                String         @db.VarChar(100)
   role                                      UserRole
   CallRecord                                CallRecord[]
   Host                                      Host[]
@@ -115,7 +109,7 @@ model User {
   OperationLog_OperationLog_operatorToUser  OperationLog[] @relation("OperationLog_operatorToUser")
   OperationLog_OperationLog_recipientToUser OperationLog[] @relation("OperationLog_recipientToUser")
   Room                                      Room[]
-  Hospital                                  Hospital       @relation(fields: [hospitalcode, tenantcode], references: [code, tenantcode], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_User_1")
+  Hospital                                  Hospital       @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_User_1")
 }
 
 enum RoomFlag {

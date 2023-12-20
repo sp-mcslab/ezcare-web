@@ -55,13 +55,6 @@ export const postRoomNow = async (
     return;
   }
 
-  const tenant = await findTenant(hospitalCode);
-  if (tenant == null) {
-    res.status(401).end();
-    return;
-  }
-  const tenantCode = tenant.tenantcode;
-
   try {
     const room = await createRoom(
       creatorId,
@@ -71,11 +64,10 @@ export const postRoomNow = async (
       invitedUserIds,
       hostUserIds,
       hospitalCode,
-      tenantCode,
       RoomFlag.OPENED
     );
 
-    await createHost(room.id, creatorId, hospitalCode, tenantCode);
+    await createHost(room.id, creatorId, hospitalCode);
 
     const roomUrl = (baseUrl as string) + room.id;
 
@@ -146,13 +138,6 @@ export const postRoomLater = async (
     return;
   }
 
-  const tenant = await findTenant(hospitalCode);
-  if (tenant == null) {
-    res.status(401).end();
-    return;
-  }
-  const tenantCode = tenant.tenantcode;
-
   try {
     const room = await createRoom(
       creatorId,
@@ -162,11 +147,10 @@ export const postRoomLater = async (
       invitedUserIds,
       hostUserIds,
       hospitalCode,
-      tenantCode,
       flag
     );
 
-    await createHost(room.id, creatorId, hospitalCode, tenantCode);
+    await createHost(room.id, creatorId, hospitalCode);
 
     const roomUrl = (baseUrl as string) + room.id;
 
@@ -413,13 +397,20 @@ export const postInvitation = async (
       return;
     }
 
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
     console.log(
       roomId + " 번 방에 회원번호 " + userId + " 님이 초대되었습니다."
     );
 
     const invitedUsers = await createInvitation(
       roomId as string,
-      userId as string
+      userId as string,
+      hospitalCode
     );
     if (invitedUsers == null) {
       res.status(400).end();

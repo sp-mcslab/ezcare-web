@@ -1,4 +1,4 @@
-import client from "image/client";
+import client from "prisma/client";
 import { Host } from "@prisma/client";
 import { HostDto } from "@/dto/HostDto";
 
@@ -23,8 +23,7 @@ export const findUserHostByRoomId = async (
 export const createHost = async (
   roomId: string,
   userId: string,
-  hospitalCode: string,
-  tenantCode: string
+  hospitalCode: string
 ): Promise<HostDto | null> => {
   try {
     const hostEntity = await client.host.create({
@@ -32,7 +31,6 @@ export const createHost = async (
         roomid: roomId,
         userid: userId,
         hospitalcode: hospitalCode,
-        tenantcode: tenantCode,
       },
     });
     return HostDto.fromEntity(hostEntity);

@@ -1,4 +1,4 @@
-import prisma from "../../image/client";
+import prisma from "../../prisma/client";
 import { User } from "@prisma/client";
 
 export const findUserById = async (id: string): Promise<User | null> => {

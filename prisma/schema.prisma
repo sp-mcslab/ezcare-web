@@ -24,6 +24,8 @@ model CallRecord {
 model Hospital {
   code         String         @id(map: "PK_HOSPITAL") @db.VarChar(100)
   tenantcode   String         @db.VarChar(100)
+  joinopt      Option         @default(A)
+  shareopt     Option         @default(A)
   CallRecord   CallRecord[]
   Tenant       Tenant         @relation(fields: [tenantcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Tenant_TO_Hospital_1")
   Host         Host[]
@@ -108,6 +110,11 @@ model User {
   OperationLog_OperationLog_recipientToUser OperationLog[] @relation("OperationLog_recipientToUser")
   Room                                      Room[]
   Hospital                                  Hospital       @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_User_1")
+}
+
+enum Option {
+  A
+  B
 }
 
 enum RoomFlag {

@@ -278,7 +278,9 @@ export const findDayUsage = async (
   let dayUsage = 0;
   data.map((r) => {
     if (!isToday) today.setHours(23, 59, 59, 599);
+    if (isToday) today.setTime(new Date().getTime());
 
+    console.log(dayUsage);
     dayUsage += getUsageOfDay(
       today,
       todayStart,

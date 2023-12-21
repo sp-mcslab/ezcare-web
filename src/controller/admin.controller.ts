@@ -341,8 +341,27 @@ export const getPeriodUsage = async (
       return;
     }
 
+    const dateArr = (currentdate as string).split("-");
+
+    let hasYear = false;
+    let hasMonth = false;
+    let hasDate = false;
+    console.log(dateArr);
+    if (dateArr.length > 0) {
+      hasYear = true;
+      if (dateArr.length > 1) {
+        hasMonth = true;
+        if (dateArr.length > 2) {
+          hasDate = true;
+        }
+      }
+    }
+
+    console.log(hasYear + " // " + hasMonth + " // " + hasDate);
+
     // 보내려는 값이 오늘/이번 달/이번 년 보다 미래면 보낼 수 없도록 예외처리
     const date = new Date(currentdate as string);
+
     console.log(date + " // " + new Date());
     if (date > new Date()) {
       res
@@ -351,9 +370,13 @@ export const getPeriodUsage = async (
       return;
     }
 
-    const dayResult = await findDayUsage(date); // 일별 누적 사용량
-    const monthResult = await findMonthUsage(date); // 월별 누적 사용량
-    const yearResult = await findYearUsage(date); // 년별 누적 사용량
+    let dayResult = null;
+    let monthResult = null;
+    let yearResult = null;
+
+    if (hasDate) dayResult = await findDayUsage(date); // 일별 누적 사용량
+    if (hasMonth) monthResult = await findMonthUsage(date); // 월별 누적 사용량
+    if (hasYear) yearResult = await findYearUsage(date); // 년별 누적 사용량
 
     const { dayCount, dayUsage } = dayResult || { dayCount: 0, dayUsage: 0 };
     const { monthCount, monthUsage } = monthResult || {
@@ -364,6 +387,20 @@ export const getPeriodUsage = async (
       yearCount: 0,
       yearUsage: 0,
     };
+
+    if (
+      dayCount < 0 ||
+      dayUsage < 0 ||
+      monthCount < 0 ||
+      monthUsage < 0 ||
+      yearCount < 0 ||
+      yearUsage < 0
+    ) {
+      res
+        .status(400)
+        .json({ message: "일별 월별 년별 누적 사용량 조회에 실패했습니다." });
+      return;
+    }
 
     console.log("============= 일별 누적 사용량 ============");
     console.log(

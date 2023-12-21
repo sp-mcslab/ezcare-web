@@ -7,6 +7,7 @@ export class OperationLogItemDto {
   public readonly recipient: string;
   public readonly transaction: Transaction;
   public readonly time: Date;
+  public readonly success: boolean;
 
   constructor({
     roomId,
@@ -14,21 +15,24 @@ export class OperationLogItemDto {
     recipient,
     transaction,
     time,
+    success,
   }: {
     roomId: string;
     operator: string;
     recipient: string;
     transaction: Transaction;
     time: Date;
+    success: boolean;
   }) {
     this.roomId = roomId;
     this.operator = operator;
     this.recipient = recipient;
     this.transaction = transaction;
     this.time = time;
+    this.success = success;
   }
 
-  // OperationLogEntity -> CallLogDTO
+  // OperationLogEntity -> OperationLogDTO
   public static fromEntity = (
     operationLogEntity: OperationLog
   ): OperationLogItemDto => {
@@ -38,6 +42,7 @@ export class OperationLogItemDto {
       recipient: operationLogEntity.recipient,
       transaction: operationLogEntity.transaction,
       time: operationLogEntity.time,
+      success: operationLogEntity.success,
     });
   };
 }

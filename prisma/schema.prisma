@@ -64,6 +64,7 @@ model OperationLog {
   recipient                         String      @db.VarChar(100)
   transaction                       Transaction
   time                              DateTime    @db.Timestamptz(6)
+  success                           Boolean     @db.Boolean
   hospitalcode                      String      @db.VarChar(100)
   Hospital                          Hospital    @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_OperationLog_1")
   User_OperationLog_operatorToUser  User        @relation("OperationLog_operatorToUser", fields: [operator], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Operator_TO_OperationLog_1")

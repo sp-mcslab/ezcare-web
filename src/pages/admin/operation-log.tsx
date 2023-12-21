@@ -77,7 +77,10 @@ const OperationPage: NextPage = observer(() => {
                 <TableCell>creatorId</TableCell>
                 <TableCell>
                   <div>operations</div>
-                  <div>operator(FROM) / recipient(TO) / transaction / time</div>
+                  <div>
+                    operator(FROM) / recipient(TO) / transaction / time /
+                    success
+                  </div>
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -98,7 +101,8 @@ const OperationPage: NextPage = observer(() => {
                           {" "}
                           {part.operator} / {part.recipient} /{" "}
                           {getTransactionText(part.transaction)} /{" "}
-                          {part.time.toString()}
+                          {part.time.toString()} /{" "}
+                          {part.success ? "SUCCESS" : "FAIL"}
                         </div>
                       ))}
                   </TableCell>

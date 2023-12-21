@@ -10,6 +10,7 @@ export const createOperationLog = async (
   recipient: string,
   transaction: Transaction,
   time: Date,
+  success: boolean,
   hospitalCode: string
 ): Promise<OperationLogItemDto> => {
   // 생성할 record의 고유 아이디 (기본키 id)
@@ -24,7 +25,9 @@ export const createOperationLog = async (
       " // " +
       transaction +
       " // " +
-      time
+      time +
+      " => 성공 ? : " +
+      success
   );
 
   const operationEntity = await client.operationLog.create({
@@ -35,6 +38,7 @@ export const createOperationLog = async (
       recipient: recipient,
       transaction: transaction,
       time: time,
+      success: success,
       hospitalcode: hospitalCode,
     },
   });

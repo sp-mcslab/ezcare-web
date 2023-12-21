@@ -727,10 +727,26 @@ export class RoomStore implements RoomViewModel {
 
   public showVideo = async (flag: Boolean, roomId: string) => {
     if (roomId == undefined) {
+      console.error("본인 : 비디오 unmute 를 실패했습니다.");
+      this.createOperationLog(
+        roomId,
+        this.uid,
+        this.uid,
+        Transaction.V1,
+        false
+      );
       console.error("올바르지 않은 진료실 정보입니다.");
       return;
     }
     if (this._localVideoStream !== undefined) {
+      console.error("본인 : 비디오 unmute 를 실패했습니다.");
+      this.createOperationLog(
+        roomId,
+        this.uid,
+        this.uid,
+        Transaction.V1,
+        false
+      );
       console.error(
         `비디오 스트림이 이미 있는 상태에서 새로운 스트림을 생성하려 했습니다.`
       );
@@ -753,8 +769,9 @@ export class RoomStore implements RoomViewModel {
       await this._roomSocketService.produceVideoTrack(track);
       this._enabledOffVideo = true;
     });
+    console.log("본인 : 비디오 unmute 를 성공했습니다.");
     if (flag)
-      this.createOperationLog(roomId, this.uid, this.uid, Transaction.V1);
+      this.createOperationLog(roomId, this.uid, this.uid, Transaction.V1, true);
   };
 
   public hideVideo = (
@@ -763,10 +780,26 @@ export class RoomStore implements RoomViewModel {
     operatorId: string = this.uid
   ) => {
     if (roomId == undefined) {
+      console.error("본인 : 비디오 unmute 를 실패했습니다.");
+      this.createOperationLog(
+        roomId,
+        operatorId,
+        this.uid,
+        Transaction.V0,
+        false
+      );
       console.error("올바르지 않은 진료실 정보입니다.");
       return;
     }
     if (this._localVideoStream === undefined) {
+      console.error("본인 : 비디오 unmute 를 실패했습니다.");
+      this.createOperationLog(
+        roomId,
+        operatorId,
+        this.uid,
+        Transaction.V0,
+        false
+      );
       console.error("로컬 비디오가 없는 상태에서 비디오를 끄려 했습니다.");
       this._roomSocketService.closeVideoProducer();
       this._enabledOffVideo = false;
@@ -777,16 +810,38 @@ export class RoomStore implements RoomViewModel {
       this._enabledOffVideo = false;
 
       if (flag)
-        this.createOperationLog(roomId, operatorId, this.uid, Transaction.V0);
+        this.createOperationLog(
+          roomId,
+          operatorId,
+          this.uid,
+          Transaction.V0,
+          true
+        );
     }
   };
 
   public unmuteMicrophone = async (flag: Boolean, roomId: string) => {
     if (roomId == undefined) {
+      console.error("본인 : 마이크 unmute 를 실패했습니다.");
+      this.createOperationLog(
+        roomId,
+        this.uid,
+        this.uid,
+        Transaction.M1,
+        false
+      );
       console.error("올바르지 않은 진료실 정보입니다.");
       return;
     }
     if (this._localAudioStream !== undefined) {
+      console.error("본인 : 마이크 unmute 를 실패했습니다.");
+      this.createOperationLog(
+        roomId,
+        this.uid,
+        this.uid,
+        Transaction.M1,
+        false
+      );
       console.error("로컬 오디오가 있는 상태에서 오디오를 생성하려 했습니다.");
       this._localAudioStream = undefined;
     }
@@ -807,9 +862,9 @@ export class RoomStore implements RoomViewModel {
       await this._roomSocketService.produceAudioTrack(track);
       this._enabledMuteAudio = true;
     });
-
+    console.log("본인 : 마이크 unmute 를 성공했습니다.");
     if (flag)
-      this.createOperationLog(roomId, this.uid, this.uid, Transaction.M1);
+      this.createOperationLog(roomId, this.uid, this.uid, Transaction.M1, true);
   };
 
   public muteMicrophone = (
@@ -818,10 +873,26 @@ export class RoomStore implements RoomViewModel {
     operatorId: string = this.uid
   ) => {
     if (roomId == undefined) {
+      console.error("호스트/본인 : 마이크 mute 를 실패했습니다.");
+      this.createOperationLog(
+        roomId,
+        operatorId,
+        this.uid,
+        Transaction.M0,
+        false
+      );
       console.error("올바르지 않은 진료실 정보입니다.");
       return;
     }
     if (this._localAudioStream === undefined) {
+      console.error("호스트/본인 : 마이크 mute 를 실패했습니다.");
+      this.createOperationLog(
+        roomId,
+        operatorId,
+        this.uid,
+        Transaction.M0,
+        false
+      );
       console.error("로컬 오디오가 없는 상태에서 오디오를 끄려 했습니다.");
       this._roomSocketService.closeAudioProducer();
       this._enabledMuteAudio = false;
@@ -831,8 +902,15 @@ export class RoomStore implements RoomViewModel {
       this._localAudioStream = undefined;
       this._enabledMuteAudio = false;
 
+      console.log("호스트/본인 : 마이크 mute 를 성공했습니다.");
       if (flag)
-        this.createOperationLog(roomId, operatorId, this.uid, Transaction.M0);
+        this.createOperationLog(
+          roomId,
+          operatorId,
+          this.uid,
+          Transaction.M0,
+          true
+        );
     }
   };
 
@@ -840,7 +918,8 @@ export class RoomStore implements RoomViewModel {
     roomId: string,
     operator: string,
     recipient: string,
-    type: Transaction
+    type: Transaction,
+    success: boolean
   ) => {
     // operation 생성자 id, operation 당사자 id, operation 종류, 병원/테넌트 코드
     // 방 id
@@ -852,7 +931,8 @@ export class RoomStore implements RoomViewModel {
         recipient +
         " 에게 " +
         type +
-        " 동작 "
+        " 동작 => 성공 ? : " +
+        success
     );
 
     const operationLogDto = new OperationLogItemDto({
@@ -861,6 +941,7 @@ export class RoomStore implements RoomViewModel {
       recipient: recipient,
       transaction: type,
       time: new Date(),
+      success: success,
     });
 
     this._adminService.postOperationLog(operationLogDto);
@@ -1170,14 +1251,41 @@ export class RoomStore implements RoomViewModel {
   };
 
   public onMuteMicrophone = (roomId: string, operatorId: string) => {
+    // 호스트가 다른 참여자 마이크 mute
     if (this._localAudioStream !== undefined) {
       this.muteMicrophone(true, roomId, operatorId);
+    } else {
+      console.error("마이크 mute를 실패했습니다.");
+      console.error(
+        "이미 마이크가 mute 상태이거나, audio stream을 찾지 못했습니다."
+      );
+      this.createOperationLog(
+        roomId,
+        operatorId,
+        this.uid,
+        Transaction.M0,
+        false
+      );
     }
   };
 
   public onHideVideo = (roomId: string, operatorId: string) => {
+    // 호스트가 다른 참여자 비디오 mute
     if (this._localVideoStream !== undefined) {
+      console.log("비디오 mute 를 성공했습니다.");
       this.hideVideo(true, roomId, operatorId);
+    } else {
+      console.error("비디오 mute를 실패했습니다.");
+      console.error(
+        "이미 비디오가 mute 상태이거나, video stream 을 찾지 못했습니다."
+      );
+      this.createOperationLog(
+        roomId,
+        operatorId,
+        this.uid,
+        Transaction.V0,
+        false
+      );
     }
   };
 

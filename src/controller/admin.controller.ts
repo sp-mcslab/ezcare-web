@@ -185,6 +185,7 @@ export const postOperationLog = async (
       operationLog.recipient,
       operationLog.transaction,
       operationLog.time as Date,
+      operationLog.success,
       hospitalCode
     );
 

@@ -292,6 +292,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     };
 
     const handleAudioToggleClick = () => {
+      console.log("본인의 마이크를 동작하였습니다.");
       const roomId = router.query.roomId as string;
       roomStore.enabledMuteAudio()
         ? roomStore.muteMicrophone(true, roomId)
@@ -299,6 +300,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
     };
 
     const handleVideoToggleClick = () => {
+      console.log("본인의 비디오를 동작하였습니다.");
       const roomId = router.query.roomId as string;
       roomStore.enabledOffVideo()
         ? roomStore.hideVideo(true, roomId)

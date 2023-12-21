@@ -379,21 +379,21 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 {t("waiting_list_for_enter")}
               </div>
               <br />
-              {roomStore.awaitingPeerIds.map((userId) => {
+              {roomStore.awaitingPeerInfos.map((peerInfo) => {
                 return (
                   <>
-                    {userId}
+                    {peerInfo.displayName}
                     <Button
                       variant="contained"
                       color="secondary"
-                      onClick={() => roomStore.approveJoiningRoom(userId)}
+                      onClick={() => roomStore.approveJoiningRoom(peerInfo)}
                     >
                       {t("accept")}
                     </Button>
                     <Button
                       variant="contained"
                       color="secondary"
-                      onClick={() => roomStore.rejectJoiningRoom(userId)}
+                      onClick={() => roomStore.rejectJoiningRoom(peerInfo)}
                     >
                       {t("refuse")}
                     </Button>

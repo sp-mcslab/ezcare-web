@@ -32,6 +32,7 @@ import { RtpStreamStat } from "@/models/room/RtpStreamStat";
 import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
 import { Transaction } from "@prisma/client";
 import { findTenant } from "@/repository/tenant.repository";
+import AwaitingPeerInfo from "@/models/room/AwaitingPeerInfo";
 
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
@@ -42,7 +43,7 @@ export interface RoomViewModel {
     userId: string,
     roomId: string,
     peerStates: PeerState[],
-    awaitingPeerIds: string[],
+    awaitingPeerInfos: AwaitingPeerInfo[],
     joiningPeerIds: string[]
   ) => void;
   onChangePeerState: (state: PeerState) => void;
@@ -56,7 +57,7 @@ export interface RoomViewModel {
   onDisposedPeer: (disposedPeerId: string) => void;
   onKicked: (userId: string) => void;
   onKickedToWaitingRoom: (userId: string) => void;
-  onRequestToJoinRoom: (userId: string) => void;
+  onRequestToJoinRoom: (awaitingPeerInfo: AwaitingPeerInfo) => void;
   onMuteMicrophone: (roomId: string, operatorId: string) => void;
   onHideVideo: (roomId: string, operatorId: string) => void;
   onCancelJoinRequest: (userId: string) => void;
@@ -118,7 +119,7 @@ export class RoomStore implements RoomViewModel {
   private _masterId?: string = undefined;
   private _peerStates: PeerState[] = [];
   private _chatInput: string = "";
-  private _awaitingPeerIds: string[] = [];
+  private _awaitingPeerInfos: AwaitingPeerInfo[] = [];
   private _joiningPeerIds: string[] = [];
   private readonly _chatMessages: ChatMessage[] = observable.array([]);
   private _kicked: boolean = false;
@@ -281,8 +282,8 @@ export class RoomStore implements RoomViewModel {
     return this._enabledMultipleScreenShare;
   }
 
-  public get awaitingPeerIds(): string[] {
-    return this._awaitingPeerIds;
+  public get awaitingPeerInfos(): AwaitingPeerInfo[] {
+    return this._awaitingPeerInfos;
   }
 
   public get joiningPeerIds(): string[] {
@@ -506,8 +507,10 @@ export class RoomStore implements RoomViewModel {
     this._failedToJoinMessage = "refuse_enter";
   };
 
-  public onRequestToJoinRoom = (requesterId: string) => {
-    console.log("onRequestToJoinRoom: ", requesterId);
+  public onRequestToJoinRoom = (awaitingPeerInfo: AwaitingPeerInfo) => {
+    console.log(
+      `onRequestToJoinRoom: ${awaitingPeerInfo.userId}, ${awaitingPeerInfo.displayName}`
+    );
     // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
@@ -515,7 +518,7 @@ export class RoomStore implements RoomViewModel {
     if (this._state !== RoomState.JOINED) {
       return;
     }
-    this._awaitingPeerIds = [...this._awaitingPeerIds, requesterId];
+    this._awaitingPeerInfos = [...this._awaitingPeerInfos, awaitingPeerInfo];
   };
 
   public onCancelJoinRequest = (userId: string) => {
@@ -527,7 +530,9 @@ export class RoomStore implements RoomViewModel {
     if (this._state !== RoomState.JOINED) {
       return;
     }
-    this._awaitingPeerIds = this._awaitingPeerIds.filter((p) => p !== userId);
+    this._awaitingPeerInfos = this._awaitingPeerInfos.filter(
+      (p) => p.userId !== userId
+    );
   };
 
   public onApproveJoinRequest = (userId: string) => {
@@ -539,7 +544,9 @@ export class RoomStore implements RoomViewModel {
     if (this._state !== RoomState.JOINED) {
       return;
     }
-    this._awaitingPeerIds = this._awaitingPeerIds.filter((p) => p !== userId);
+    this._awaitingPeerInfos = this._awaitingPeerInfos.filter(
+      (p) => p.userId !== userId
+    );
   };
 
   public onRejectJoinRequest = (userId: string) => {
@@ -551,7 +558,9 @@ export class RoomStore implements RoomViewModel {
     if (this._state !== RoomState.JOINED) {
       return;
     }
-    this._awaitingPeerIds = this._awaitingPeerIds.filter((p) => p !== userId);
+    this._awaitingPeerInfos = this._awaitingPeerInfos.filter(
+      (p) => p.userId !== userId
+    );
   };
 
   public onChangeJoinerList = (userId: string) => {
@@ -580,7 +589,10 @@ export class RoomStore implements RoomViewModel {
 
   public requestToJoinRoom = async () => {
     this._awaitConfirmToJoin = true;
-    const result = await this._roomSocketService.requestToJoin(this._uid);
+    const result = await this._roomSocketService.requestToJoin(
+      this._uid,
+      this._userDisplayName
+    );
     if (result.isFailure) {
       this._failedToJoinMessage = "request_transfer_failed";
       this._awaitConfirmToJoin = false;
@@ -593,28 +605,32 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
-  public approveJoiningRoom = async (userId: string) => {
+  public approveJoiningRoom = async (peerInfo: AwaitingPeerInfo) => {
     // TODO: 호스트인지 검증하기
     if (!this._isHost) {
       return;
     }
-    const result = await this._roomSocketService.approveJoiningRoom(userId);
+    const result = await this._roomSocketService.approveJoiningRoom(peerInfo);
     if (result.isFailure) {
       this._userMessage = result.throwableOrNull()!.message;
     }
-    this._awaitingPeerIds = this._awaitingPeerIds.filter((id) => id !== userId);
+    this._awaitingPeerInfos = this._awaitingPeerInfos.filter(
+      (p) => p.userId !== peerInfo.userId
+    );
   };
 
-  public rejectJoiningRoom = async (userId: string) => {
+  public rejectJoiningRoom = async (peerInfo: AwaitingPeerInfo) => {
     // TODO: 호스트인지 검증하기
     if (!this._isHost) {
       return;
     }
-    const result = await this._roomSocketService.rejectJoiningRoom(userId);
+    const result = await this._roomSocketService.rejectJoiningRoom(peerInfo);
     if (result.isFailure) {
       this._userMessage = result.throwableOrNull()!.message;
     }
-    this._awaitingPeerIds = this._awaitingPeerIds.filter((id) => id !== userId);
+    this._awaitingPeerInfos = this._awaitingPeerInfos.filter(
+      (p) => p.userId !== peerInfo.userId
+    );
   };
 
   public joinRoom = () => {
@@ -640,13 +656,13 @@ export class RoomStore implements RoomViewModel {
     userId: string,
     roomId: string,
     peerStates: PeerState[],
-    awaitingPeerIds: string[],
+    awaitingPeerInfos: AwaitingPeerInfo[],
     joiningPeerIds: string[]
   ): void => {
     this._peerStates = peerStates;
     this._state = RoomState.JOINED;
     this._waitingRoomData = undefined;
-    this._awaitingPeerIds = awaitingPeerIds;
+    this._awaitingPeerInfos = awaitingPeerInfos;
     this._joiningPeerIds = joiningPeerIds;
 
     const headers = {

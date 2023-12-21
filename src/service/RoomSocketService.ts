@@ -66,7 +66,7 @@ import { JoinRoomSuccessCallbackProperty } from "@/models/room/JoinRoomSuccessCa
 import { JoinRoomFailureCallbackProperty } from "@/models/room/JoinRoomFailureCallbackProperty";
 import { PeerState } from "@/models/room/PeerState";
 import process from "process";
-import RequestToJoinRoomArgs from "@/models/room/RequestToJoinRoomArgs";
+import AwaitingPeerInfo from "@/models/room/AwaitingPeerInfo";
 import { Result } from "@/models/common/Result";
 import { EventResult } from "@/models/common/EventResult";
 import { RtpStreamStat } from "@/models/room/RtpStreamStat";
@@ -200,10 +200,14 @@ export class RoomSocketService {
     socket.removeListener(OTHER_PEER_EXITED_ROOM);
   };
 
-  public requestToJoin = async (uid: string): Promise<Result<boolean>> => {
+  public requestToJoin = async (
+    uid: string,
+    displayName: string
+  ): Promise<Result<boolean>> => {
     const socket = this._requireSocket();
-    const args: RequestToJoinRoomArgs = {
+    const args: AwaitingPeerInfo = {
       userId: uid,
+      displayName: displayName,
     };
     return new Promise((resolve) => {
       socket.emit(REQUEST_TO_JOIN_ROOM, args, (existsRoom: boolean) => {
@@ -217,36 +221,48 @@ export class RoomSocketService {
     });
   };
 
-  public approveJoiningRoom = async (userId: string): Promise<Result<void>> => {
+  public approveJoiningRoom = async (
+    peerInfo: AwaitingPeerInfo
+  ): Promise<Result<void>> => {
     const socket = this._requireSocket();
     return new Promise((resolve) => {
-      socket.emit(APPROVE_JOINING_ROOM, userId, (result: EventResult<void>) => {
-        switch (result.type) {
-          case "success":
-            resolve(Result.success(undefined));
-            break;
-          case "failure":
-            resolve(Result.error(Error(result.message)));
-            break;
+      socket.emit(
+        APPROVE_JOINING_ROOM,
+        peerInfo,
+        (result: EventResult<void>) => {
+          switch (result.type) {
+            case "success":
+              resolve(Result.success(undefined));
+              break;
+            case "failure":
+              resolve(Result.error(Error(result.message)));
+              break;
+          }
         }
-      });
+      );
     });
   };
 
-  public rejectJoiningRoom = async (userId: string): Promise<Result<void>> => {
+  public rejectJoiningRoom = async (
+    peerInfo: AwaitingPeerInfo
+  ): Promise<Result<void>> => {
     const socket = this._requireSocket();
     return new Promise((resolve) => {
-      socket.emit(REJECT_JOINING_ROOM, userId, (result: EventResult<void>) => {
-        switch (result.type) {
-          case "success":
-            resolve(Result.success(undefined));
-            this._roomViewModel.onRejectJoinRequest(userId);
-            break;
-          case "failure":
-            resolve(Result.error(Error(result.message)));
-            break;
+      socket.emit(
+        REJECT_JOINING_ROOM,
+        peerInfo,
+        (result: EventResult<void>) => {
+          switch (result.type) {
+            case "success":
+              resolve(Result.success(undefined));
+              this._roomViewModel.onRejectJoinRequest(peerInfo.userId);
+              break;
+            case "failure":
+              resolve(Result.error(Error(result.message)));
+              break;
+          }
         }
-      });
+      );
     });
   };
 
@@ -256,6 +272,7 @@ export class RoomSocketService {
     displayName: string
   ) => {
     const socket = this._requireSocket();
+    // TODO: JOIN_ROOM 포로토콜 콜백함수 인자 변경 -> AwaitingPeerInfo
     socket.emit(
       JOIN_ROOM,
       {
@@ -284,7 +301,7 @@ export class RoomSocketService {
             uid,
             data.roomId,
             data.peerStates,
-            data.awaitingUserIds,
+            data.awaitingPeerInfos,
             data.joiningUserIds
           );
         } catch (e) {

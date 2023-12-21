@@ -152,8 +152,6 @@ export class RoomStore implements RoomViewModel {
 
   private _localVideoRtpStreamStat: RtpStreamStat = {
     type: "null",
-    ssrc: 0,
-    timestamp: 0,
     kind: "null",
     packetCount: 0,
     packetsLost: 0,
@@ -928,7 +926,7 @@ export class RoomStore implements RoomViewModel {
   public onRtcStreamStat = (stat: RtpStreamStat) => {
     this._localVideoRtpStreamStat = stat;
     console.log(
-      `미디어전송통계 : timestamp ${this._localVideoRtpStreamStat.timestamp}, type: ${this._localVideoRtpStreamStat.type}, ssrc: ${this._localVideoRtpStreamStat.ssrc}, kind: ${this._localVideoRtpStreamStat.kind}, packetCount: ${this._localVideoRtpStreamStat.packetCount}, packetsLost: ${this._localVideoRtpStreamStat.packetsLost}, packetsDiscard: ${this._localVideoRtpStreamStat.packetsDiscarded}, packetsRetransmitted: ${this._localVideoRtpStreamStat.packetsRetransmitted}, packetsRepaired: ${this._localVideoRtpStreamStat.packetsRepaired}, bitrate/s: ${this._localVideoRtpStreamStat.bitrate}/s`
+      `미디어전송통계 : type: ${this._localVideoRtpStreamStat.type}, kind: ${this._localVideoRtpStreamStat.kind}, packetCount: ${this._localVideoRtpStreamStat.packetCount}, packetsLost: ${this._localVideoRtpStreamStat.packetsLost}, packetsDiscard: ${this._localVideoRtpStreamStat.packetsDiscarded}, packetsRetransmitted: ${this._localVideoRtpStreamStat.packetsRetransmitted}, packetsRepaired: ${this._localVideoRtpStreamStat.packetsRepaired}, bitrate: ${this._localVideoRtpStreamStat.bitrate} bps`
     );
     console.log(
       `패킷손실률: ${

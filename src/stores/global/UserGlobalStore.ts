@@ -1,6 +1,7 @@
 import { bool } from "aws-sdk/clients/signer";
 import { makeAutoObservable } from "mobx";
 import loginService, { LoginService } from "@/service/loginService";
+import userService, { UserService } from "@/service/userService";
 import { Result } from "@/models/common/Result";
 import {
   getSessionTokenFromLocalStorage,
@@ -9,8 +10,12 @@ import {
 
 export class UserGlobalStore {
   private _didLogin: boolean = false;
+  private _hospitalCode: string = "";
 
-  constructor(private readonly _loginService: LoginService = loginService) {
+  constructor(
+    private readonly _loginService: LoginService = loginService,
+    private readonly _userService: UserService = userService,
+  ) {
     makeAutoObservable(this);
   }
 
@@ -37,10 +42,18 @@ export class UserGlobalStore {
       return;
     }
     this._didLogin = await this._loginService.validationJwt(sessionToken);
+    const validResult = await this._userService.findUserData(sessionToken);
+    if (validResult.isSuccess) {
+      this._hospitalCode = validResult.getOrNull()!.hospitalcode;
+    }
   };
 
   public get didLogin(): bool | undefined {
     return this._didLogin;
+  }
+
+  public get hospitalCode(): string {
+    return this._hospitalCode;
   }
 }
 

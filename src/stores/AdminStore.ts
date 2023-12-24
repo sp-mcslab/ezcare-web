@@ -5,6 +5,10 @@ import si from "systeminformation";
 import { bool } from "aws-sdk/clients/signer";
 import { OperationLogDto } from "@/dto/OperationLogDto";
 
+import userGlobalStore, {
+  UserGlobalStore,
+} from "@/stores/global/UserGlobalStore";
+
 export class AdminStore {
   private _errorMessage: string = "";
   private _roomRecord: CallLogDto[] = [];
@@ -16,7 +20,10 @@ export class AdminStore {
   private _networkData: string[] = [];
   private _didCheck: bool = false;
 
-  constructor(private readonly _adminService: AdminService = adminService) {
+  constructor(
+    private readonly _adminService: AdminService = adminService,
+    private readonly _userGlobalStore: UserGlobalStore = userGlobalStore
+  ) {
     makeAutoObservable(this);
   }
 
@@ -57,7 +64,9 @@ export class AdminStore {
   }
 
   public findRecordAllRoom = async (): Promise<void> => {
-    const getRecordResult = await this._adminService.findRecordAllRoom();
+    if(this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
+    const getRecordResult = await this._adminService.findRecordAllRoom(this._userGlobalStore.hospitalCode);
     if (getRecordResult.isSuccess) {
       runInAction(() => {
         this._initErrorMessage();
@@ -73,7 +82,9 @@ export class AdminStore {
   };
 
   public findOperationAllRoom = async (): Promise<void> => {
-    const getRecordResult = await this._adminService.findOperationAllRoom();
+    if(this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
+    const getRecordResult = await this._adminService.findOperationAllRoom(this._userGlobalStore.hospitalCode);
     if (getRecordResult.isSuccess) {
       runInAction(() => {
         this._initErrorMessage();
@@ -89,7 +100,9 @@ export class AdminStore {
   };
 
   public serverHealthCheck = async (): Promise<void> => {
-    const getServerHealthResult = await this._adminService.serverHealthCheck();
+    if(this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
+    const getServerHealthResult = await this._adminService.serverHealthCheck(this._userGlobalStore.hospitalCode);
     if (getServerHealthResult.isSuccess) {
       runInAction(() => {
         this._didCheck = true;

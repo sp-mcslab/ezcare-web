@@ -19,14 +19,6 @@ export const getUserData = async (
       return;
     }
 
-    // 병원 코드 확인
-    const hospitalCode = req.headers["hospital-code"] as string;
-    if (!hospitalCode) {
-      res.status(401).end();
-      return;
-    }
-
-    console.log("hospital Code :: " + hospitalCode);
 
     const user = await findUserById(userId);
     if (user == null) {
@@ -42,6 +34,7 @@ export const getUserData = async (
         role: user.role,
         displayname: user.displayname,
         name: user.name,
+        hospitalcode: user.hospitalcode,
       },
     });
   } catch (e) {

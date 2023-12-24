@@ -34,6 +34,10 @@ import { Transaction } from "@prisma/client";
 import { findTenant } from "@/repository/tenant.repository";
 import AwaitingPeerInfo from "@/models/room/AwaitingPeerInfo";
 
+import userGlobalStore, {
+  UserGlobalStore,
+} from "@/stores/global/UserGlobalStore";
+
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
   onNotExistsRoomId: () => void;
@@ -203,7 +207,8 @@ export class RoomStore implements RoomViewModel {
     roomSocketService?: RoomSocketService,
     roomListService?: RoomListService,
     userService?: UserService,
-    adminService?: AdminService
+    adminService?: AdminService,
+    private readonly _userGlobalStore: UserGlobalStore = userGlobalStore
   ) {
     makeAutoObservable(this);
     this._roomSocketService = roomSocketService ?? new RoomSocketService(this);
@@ -664,7 +669,7 @@ export class RoomStore implements RoomViewModel {
     this._joiningPeerIds = joiningPeerIds;
 
     const headers = {
-      "hospital-code": "A0013",
+      "hospital-code": this._userGlobalStore.hospitalCode,
       "Content-Type": "application/json",
     };
 
@@ -944,7 +949,7 @@ export class RoomStore implements RoomViewModel {
       success: success,
     });
 
-    this._adminService.postOperationLog(operationLogDto);
+    this._adminService.postOperationLog(this._userGlobalStore.hospitalCode, operationLogDto);
   };
 
   public onChangePeerState = (state: PeerState) => {
@@ -1299,7 +1304,9 @@ export class RoomStore implements RoomViewModel {
     if (sessionToken == null || sessionToken.length <= 0) {
       return;
     }
-    const roomResult = await this._roomListService.getRoomList(sessionToken);
+    if(this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
+    const roomResult = await this._roomListService.getRoomList(this._userGlobalStore.hospitalCode, sessionToken);
     if (roomResult.isSuccess) {
       this._roomList = roomResult.getOrNull()!;
     }
@@ -1461,8 +1468,11 @@ export class RoomStore implements RoomViewModel {
       });
     }
     this._createdAt.setSeconds(0, 0);
+    if(this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
     if (!this._isRoomCreateLater) {
       const roomResult = await this._roomListService.postRoomNow(
+        this._userGlobalStore.hospitalCode,
         sessionToken,
         getBaseURL(),
         this._createdRoomName,
@@ -1483,6 +1493,7 @@ export class RoomStore implements RoomViewModel {
       }
     } else {
       const roomResult = await this._roomListService.postRoomLater(
+        this._userGlobalStore.hospitalCode,
         sessionToken,
         getBaseURL(),
         this._createdRoomName,
@@ -1627,7 +1638,9 @@ export class RoomStore implements RoomViewModel {
   };
 
   public deleteRoom = async (roomId: string): Promise<void> => {
-    const roomResult = await this._roomListService.deleteRoomList(roomId);
+    if(this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
+    const roomResult = await this._roomListService.deleteRoomList(this._userGlobalStore.hospitalCode, roomId);
     if (!roomResult.isSuccess) {
       console.log(roomResult.throwableOrNull()!!.message);
       runInAction(() => {
@@ -1647,6 +1660,7 @@ export class RoomStore implements RoomViewModel {
   private _userRole: string = "";
   private _userName: string = "";
   private _userDisplayName: string = "";
+  private _userHospitalCode: string = "";
   private _isHost: boolean = false;
   private _isInvited: boolean = false;
 
@@ -1660,6 +1674,10 @@ export class RoomStore implements RoomViewModel {
 
   public get userDisplayName(): string {
     return this._userDisplayName;
+  }
+
+  public get userHospitalCode(): string {
+    return this._userHospitalCode;
   }
 
   public get isHost(): boolean {
@@ -1724,6 +1742,7 @@ export class RoomStore implements RoomViewModel {
       this._userDisplayName = validResult.getOrNull()!.displayname;
       this._userRole = validResult.getOrNull()!.role;
       this._userName = validResult.getOrNull()!.name;
+      this._userHospitalCode = validResult.getOrNull()!.hospitalcode;
     }
   };
 
@@ -1760,7 +1779,9 @@ export class RoomStore implements RoomViewModel {
   }
 
   public getRoomById = async (roomId: string): Promise<void> => {
-    const roomResult = await this._roomListService.getRoomById(roomId);
+    if(this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
+    const roomResult = await this._roomListService.getRoomById(this._userGlobalStore.hospitalCode, roomId);
     if (roomResult.isSuccess) {
       this._roomTitle = roomResult.getOrNull()!.name;
     }
@@ -1813,5 +1834,24 @@ export class RoomStore implements RoomViewModel {
 
   public changeNetworkViewMode = () => {
     this._networkViewMode = !this._networkViewMode;
+  };
+  
+  private _roomJoinOpt: string = "";
+  private _roomShareOpt: string = "";
+
+  public get roomJoinOpt(): string {
+    return this._roomJoinOpt;
+  }
+
+  public get roomShareOpt(): string {
+    return this._roomShareOpt;
+  }
+
+  public getHospitalOption = async (): Promise<void> => {
+    const hospitalResult = await this._adminService.getHospitalOption(this._userGlobalStore.hospitalCode);
+    if(hospitalResult.isSuccess){
+      this._roomJoinOpt = hospitalResult.getOrNull()!.joinOpt;
+      this._roomShareOpt = hospitalResult.getOrNull()!.shareOpt;
+    }
   };
 }

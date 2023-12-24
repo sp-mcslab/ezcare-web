@@ -2,18 +2,13 @@ import { Result } from "@/models/common/Result";
 import { RoomDto } from "@/dto/RoomDto";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
 
-const HEADER = {
-  "hospital-code": "A0013",
-  "Content-Type": "application/json",
-};
-
 export class RoomListService {
-  public async getRoomList(token: string): Promise<Result<RoomDto[]>> {
+  public async getRoomList(hospitalcode: string, token: string): Promise<Result<RoomDto[]>> {
     try {
       const response = await fetchAbsolute(`api/rooms`, {
         method: "GET",
         headers: {
-          "hospital-code": "A0013",
+          "hospital-code": hospitalcode,
           "Content-Type": "application/json",
           "x-ezcare-session-token": token,
         },
@@ -30,6 +25,7 @@ export class RoomListService {
   }
 
   public async postRoomNow(
+    hospitalcode: string,
     token: string,
     baseUrl: string,
     name: string,
@@ -48,7 +44,7 @@ export class RoomListService {
         headers: {
           "Content-Type": "application/json",
           "x-ezcare-session-token": token,
-          "hospital-code": "A0013",
+          "hospital-code": hospitalcode,
         },
       });
       if (response.ok) {
@@ -62,6 +58,7 @@ export class RoomListService {
   }
 
   public async postRoomLater(
+    hospitalcode: string,
     token: string,
     baseUrl: string,
     name: string,
@@ -82,7 +79,7 @@ export class RoomListService {
         headers: {
           "Content-Type": "application/json",
           "x-ezcare-session-token": token,
-          "hospital-code": "A0013",
+          "hospital-code": hospitalcode,
         },
       });
       if (response.ok) {
@@ -95,12 +92,15 @@ export class RoomListService {
     }
   }
 
-  public async deleteRoomList(roomId: string) {
+  public async deleteRoomList(hospitalcode: string,roomId: string) {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}`, {
         method: "DELETE",
         body: JSON.stringify({ roomId }),
-        headers: HEADER,
+        headers: {
+          "Content-Type": "application/json",
+          "hospital-code": hospitalcode,
+        },
       });
       if (response.ok) {
         return Result.success(undefined);
@@ -116,7 +116,9 @@ export class RoomListService {
     try {
       const response = await fetchAbsolute(`api/rooms/flag`, {
         method: "GET",
-        headers: HEADER,
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
       if (response.ok) {
         return Result.createSuccessUsingResponseData(response);
@@ -128,11 +130,14 @@ export class RoomListService {
     }
   }
 
-  public async getRoomById(roomId: string): Promise<Result<RoomDto>> {
+  public async getRoomById(hospitalcode: string, roomId: string): Promise<Result<RoomDto>> {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}`, {
         method: "GET",
-        headers: HEADER,
+        headers: {
+          "Content-Type": "application/json",
+          "hospital-code": hospitalcode,
+        },
       });
       if (response.ok) {
         return Result.createSuccessUsingResponseData(response);

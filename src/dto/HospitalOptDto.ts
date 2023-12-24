@@ -1,6 +1,3 @@
-import { Room } from "@prisma/client";
-import { CallLogItemDto } from "@/dto/CallLogItemDto";
-import { RoomDto } from "@/dto/RoomDto";
 import { Option } from "@prisma/client";
 
 export class HospitalOptDto {

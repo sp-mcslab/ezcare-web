@@ -27,11 +27,12 @@ export class UserService {
     }
   }
 
-  public async findUserIsHost(token: string, roomId: string): Promise<boolean> {
+  public async findUserIsHost(hospitalCode: string, token: string, roomId: string): Promise<boolean> {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}/host`, {
         method: "GET",
         headers: {
+          "hospital-code": hospitalCode,
           "x-ezcare-session-token": token,
           "Content-Type": "application/json",
         },

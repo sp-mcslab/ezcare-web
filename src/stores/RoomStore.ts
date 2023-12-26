@@ -1747,11 +1747,14 @@ export class RoomStore implements RoomViewModel {
   };
 
   public getIsHostWithSessionToken = async (roomId: string): Promise<void> => {
+    if(this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
     const sessionToken = getSessionTokenFromLocalStorage();
     if (sessionToken == null) {
       return;
     }
     const validResult = await this._userService.findUserIsHost(
+      this._userGlobalStore.hospitalCode,
       sessionToken,
       roomId
     );

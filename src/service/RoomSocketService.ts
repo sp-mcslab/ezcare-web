@@ -272,7 +272,6 @@ export class RoomSocketService {
     displayName: string
   ) => {
     const socket = this._requireSocket();
-    // TODO: JOIN_ROOM 포로토콜 콜백함수 인자 변경 -> AwaitingPeerInfo
     socket.emit(
       JOIN_ROOM,
       {

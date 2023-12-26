@@ -157,8 +157,13 @@ const WaitingRoom: NextPage<{
           {roomStore.failedToJoinMessage == "not_open" && (
             <div>{t("not_open")}</div>
           )}
+          {roomStore.failedToJoinMessage == "already_entered" && (
+            <div>{t("already_entered")}</div>
+          )}
 
-          {roomStore.roomJoinOpt == "A" || roomStore.userRole == "N" || roomStore.userRole == "D" ? (
+          {roomStore.roomJoinOpt == "A" ||
+          roomStore.userRole == "N" ||
+          roomStore.userRole == "D" ? (
             <div>
               <Button
                 variant="contained"

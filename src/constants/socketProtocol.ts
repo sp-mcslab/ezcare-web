@@ -219,19 +219,19 @@ const VIDEO_PRODUCER_SCORE = "video-producer-score";
 const AUDIO_PRODUCER_SCORE = "audio-producer-score";
 
 /**
- * 미디어서버가 클라이언트에게 다른 참여자로부터 받은 비디오의 전송 품질을 전송하는 프로토콜이다.
+ * 미디어서버가 클라이언트에게 다른 참여자로부터 받은 비디오의 수신 품질을 전송하는 프로토콜이다.
  */
 const VIDEO_CONSUMER_SCORE = "video-consumer-score";
 
 /**
- * 미디어서버가 클라이언트에게 다른 참여자로부터 받은 오디오의 전송 품질을 전송하는 프로토콜이다.
+ * 미디어서버가 클라이언트에게 다른 참여자로부터 받은 오디오의 수신 품질을 전송하는 프로토콜이다.
  */
 const AUDIO_CONSUMER_SCORE = "audio-consumer-score";
 
 /**
- * 미디어서버가 클라이언트에게 webrtc stream 네트워크 통계 정보를 전송하는 프로토콜이다.
+ * 미디어서버가 클라이언트에게 미디어 스트림 전송 통계 정보를 전송하는 프로토콜이다.
  */
-const RTP_STREAM_STAT = "rtc-stream-stat";
+const RTP_STREAM_STAT = "rtp-stream-stat";
 
 /**
  * 클라이언트가 DisplayName 을 변경했을 때 다른 참여자들에게 알리기 위한 프로토콜이다.

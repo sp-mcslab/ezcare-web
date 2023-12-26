@@ -63,5 +63,7 @@
   "room_create_failure": "Room creation has failed.",
   "room_delete_success": "Room deletion has been completed.",
   "room_delete_failure": "Room deletion has failed.",
-  "exit_check": "Do you really want to leave the room?"
+  "exit_check": "Do you really want to leave the room?",
+  "packets_lost": "Packets Lost",
+  "on_network_view_mode": "On network view mode"
 }

@@ -70,7 +70,7 @@
   "hospital_option": "병원 옵션",
   "change_option": "변경",
   "join_option": "로비 모드",
-  "share_option": "방 공유 옵션",
+  "share_option": "동시 화면 공유 옵션",
   "option_sucess": "옵션을 변경했습니다.",
   "option_failure": "옵션 변경에 실패했습니다."
 }

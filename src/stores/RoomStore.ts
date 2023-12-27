@@ -99,7 +99,6 @@ export class RoomStore implements RoomViewModel {
   private _localAudioStream?: MediaStream = undefined;
   private _enabledMuteAudio: boolean = false;
   private _localScreenVideoStream?: MediaStream = undefined;
-  private _enabledMultipleScreenShare: boolean = false;
 
   // ======================= 대기실 관련 =======================
   private _awaitConfirmToJoin: boolean = false;
@@ -279,10 +278,6 @@ export class RoomStore implements RoomViewModel {
 
   public get enabledLocalScreenVideo(): boolean {
     return this._localScreenVideoStream !== undefined;
-  }
-
-  public get enabledMultipleScreenShare(): boolean {
-    return this._enabledMultipleScreenShare;
   }
 
   public get awaitingPeerInfos(): AwaitingPeerInfo[] {
@@ -1529,24 +1524,20 @@ export class RoomStore implements RoomViewModel {
     return;
   };
 
-  public toggleEnabledMultipleScreenShare() {
-    return !this._enabledMultipleScreenShare;
-  }
-
   private isEnableMultiAndAnyRemoteScreenVideo() {
-    return this._enabledMultipleScreenShare;
+    return this.isEnableMultipleScreenShare();
   }
 
   private isNotEnableMultiAndNoRemoteScreenVideo() {
     return (
-      !this._enabledMultipleScreenShare &&
+      !this.isEnableMultipleScreenShare() &&
       this._remoteScreenVideoStreamsByPeerId.size === 0
     );
   }
 
   private isNotEnableMultiAndThereIsRemoteScreenVideo() {
     return (
-      !this._enabledMultipleScreenShare &&
+      !this.isEnableMultipleScreenShare() &&
       this._remoteScreenVideoStreamsByPeerId.size > 0
     );
   }
@@ -1858,15 +1849,24 @@ export class RoomStore implements RoomViewModel {
   };
 
   private _roomJoinOpt: string = "";
-  private _roomShareOpt: string = "";
+  private _screenShareOpt: string = "";
 
   public get roomJoinOpt(): string {
     return this._roomJoinOpt;
   }
 
-  public get roomShareOpt(): string {
-    return this._roomShareOpt;
+  public get screenShareOpt(): string {
+    return this._screenShareOpt;
   }
+
+  private isEnableMultipleScreenShare = () => {
+    switch (this._screenShareOpt) {
+      case "A":
+        return false;
+      case "B":
+        return true;
+    }
+  };
 
   public getHospitalOption = async (): Promise<void> => {
     const hospitalResult = await this._adminService.getHospitalOption(
@@ -1874,7 +1874,7 @@ export class RoomStore implements RoomViewModel {
     );
     if (hospitalResult.isSuccess) {
       this._roomJoinOpt = hospitalResult.getOrNull()!.joinOpt;
-      this._roomShareOpt = hospitalResult.getOrNull()!.shareOpt;
+      this._screenShareOpt = hospitalResult.getOrNull()!.shareOpt;
     }
   };
 }

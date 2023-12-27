@@ -738,7 +738,7 @@ export class RoomStore implements RoomViewModel {
 
   public showVideo = async (flag: Boolean, roomId: string) => {
     if (roomId == undefined) {
-      console.error("본인 : 비디오 unmute 를 실패했습니다.");
+      console.log("본인 : 비디오 unmute 를 실패했습니다.");
       this.createOperationLog(
         roomId,
         this.uid,
@@ -750,7 +750,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     if (this._localVideoStream !== undefined) {
-      console.error("본인 : 비디오 unmute 를 실패했습니다.");
+      console.log("본인 : 비디오 unmute 를 실패했습니다.");
       this.createOperationLog(
         roomId,
         this.uid,
@@ -791,7 +791,7 @@ export class RoomStore implements RoomViewModel {
     operatorId: string = this.uid
   ) => {
     if (roomId == undefined) {
-      console.error("본인 : 비디오 unmute 를 실패했습니다.");
+      console.log("본인 : 비디오 unmute 를 실패했습니다.");
       this.createOperationLog(
         roomId,
         operatorId,
@@ -803,7 +803,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     if (this._localVideoStream === undefined) {
-      console.error("본인 : 비디오 unmute 를 실패했습니다.");
+      console.log("본인 : 비디오 unmute 를 실패했습니다.");
       this.createOperationLog(
         roomId,
         operatorId,
@@ -833,7 +833,7 @@ export class RoomStore implements RoomViewModel {
 
   public unmuteMicrophone = async (flag: Boolean, roomId: string) => {
     if (roomId == undefined) {
-      console.error("본인 : 마이크 unmute 를 실패했습니다.");
+      console.log("본인 : 마이크 unmute 를 실패했습니다.");
       this.createOperationLog(
         roomId,
         this.uid,
@@ -845,7 +845,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     if (this._localAudioStream !== undefined) {
-      console.error("본인 : 마이크 unmute 를 실패했습니다.");
+      console.log("본인 : 마이크 unmute 를 실패했습니다.");
       this.createOperationLog(
         roomId,
         this.uid,
@@ -884,7 +884,7 @@ export class RoomStore implements RoomViewModel {
     operatorId: string = this.uid
   ) => {
     if (roomId == undefined) {
-      console.error("호스트/본인 : 마이크 mute 를 실패했습니다.");
+      console.log("호스트/본인 : 마이크 mute 를 실패했습니다.");
       this.createOperationLog(
         roomId,
         operatorId,
@@ -896,7 +896,7 @@ export class RoomStore implements RoomViewModel {
       return;
     }
     if (this._localAudioStream === undefined) {
-      console.error("호스트/본인 : 마이크 mute 를 실패했습니다.");
+      console.log("호스트/본인 : 마이크 mute 를 실패했습니다.");
       this.createOperationLog(
         roomId,
         operatorId,
@@ -1269,8 +1269,8 @@ export class RoomStore implements RoomViewModel {
     if (this._localAudioStream !== undefined) {
       this.muteMicrophone(true, roomId, operatorId);
     } else {
-      console.error("마이크 mute를 실패했습니다.");
-      console.error(
+      console.log("마이크 mute를 실패했습니다.");
+      console.log(
         "이미 마이크가 mute 상태이거나, audio stream을 찾지 못했습니다."
       );
       this.createOperationLog(
@@ -1289,8 +1289,8 @@ export class RoomStore implements RoomViewModel {
       console.log("비디오 mute 를 성공했습니다.");
       this.hideVideo(true, roomId, operatorId);
     } else {
-      console.error("비디오 mute를 실패했습니다.");
-      console.error(
+      console.log("비디오 mute를 실패했습니다.");
+      console.log(
         "이미 비디오가 mute 상태이거나, video stream 을 찾지 못했습니다."
       );
       this.createOperationLog(

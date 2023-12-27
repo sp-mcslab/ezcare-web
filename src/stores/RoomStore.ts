@@ -521,7 +521,13 @@ export class RoomStore implements RoomViewModel {
     if (this._state !== RoomState.JOINED) {
       return;
     }
-    this._awaitingPeerInfos = [...this._awaitingPeerInfos, awaitingPeerInfo];
+    if (
+      !this._awaitingPeerInfos.some(
+        (peerInfo) => awaitingPeerInfo.userId === peerInfo.userId
+      )
+    ) {
+      this._awaitingPeerInfos = [...this._awaitingPeerInfos, awaitingPeerInfo];
+    }
   };
 
   public onCancelJoinRequest = (userId: string) => {
@@ -949,7 +955,10 @@ export class RoomStore implements RoomViewModel {
       success: success,
     });
 
-    this._adminService.postOperationLog(this._userGlobalStore.hospitalCode, operationLogDto);
+    this._adminService.postOperationLog(
+      this._userGlobalStore.hospitalCode,
+      operationLogDto
+    );
   };
 
   public onChangePeerState = (state: PeerState) => {
@@ -1304,9 +1313,12 @@ export class RoomStore implements RoomViewModel {
     if (sessionToken == null || sessionToken.length <= 0) {
       return;
     }
-    if(this._userGlobalStore.hospitalCode == "")
+    if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
-    const roomResult = await this._roomListService.getRoomList(this._userGlobalStore.hospitalCode, sessionToken);
+    const roomResult = await this._roomListService.getRoomList(
+      this._userGlobalStore.hospitalCode,
+      sessionToken
+    );
     if (roomResult.isSuccess) {
       this._roomList = roomResult.getOrNull()!;
     }
@@ -1468,7 +1480,7 @@ export class RoomStore implements RoomViewModel {
       });
     }
     this._createdAt.setSeconds(0, 0);
-    if(this._userGlobalStore.hospitalCode == "")
+    if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
     if (!this._isRoomCreateLater) {
       const roomResult = await this._roomListService.postRoomNow(
@@ -1638,9 +1650,12 @@ export class RoomStore implements RoomViewModel {
   };
 
   public deleteRoom = async (roomId: string): Promise<void> => {
-    if(this._userGlobalStore.hospitalCode == "")
+    if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
-    const roomResult = await this._roomListService.deleteRoomList(this._userGlobalStore.hospitalCode, roomId);
+    const roomResult = await this._roomListService.deleteRoomList(
+      this._userGlobalStore.hospitalCode,
+      roomId
+    );
     if (!roomResult.isSuccess) {
       console.log(roomResult.throwableOrNull()!!.message);
       runInAction(() => {
@@ -1747,7 +1762,7 @@ export class RoomStore implements RoomViewModel {
   };
 
   public getIsHostWithSessionToken = async (roomId: string): Promise<void> => {
-    if(this._userGlobalStore.hospitalCode == "")
+    if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
     const sessionToken = getSessionTokenFromLocalStorage();
     if (sessionToken == null) {
@@ -1782,9 +1797,12 @@ export class RoomStore implements RoomViewModel {
   }
 
   public getRoomById = async (roomId: string): Promise<void> => {
-    if(this._userGlobalStore.hospitalCode == "")
+    if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
-    const roomResult = await this._roomListService.getRoomById(this._userGlobalStore.hospitalCode, roomId);
+    const roomResult = await this._roomListService.getRoomById(
+      this._userGlobalStore.hospitalCode,
+      roomId
+    );
     if (roomResult.isSuccess) {
       this._roomTitle = roomResult.getOrNull()!.name;
     }
@@ -1838,7 +1856,7 @@ export class RoomStore implements RoomViewModel {
   public changeNetworkViewMode = () => {
     this._networkViewMode = !this._networkViewMode;
   };
-  
+
   private _roomJoinOpt: string = "";
   private _roomShareOpt: string = "";
 
@@ -1851,8 +1869,10 @@ export class RoomStore implements RoomViewModel {
   }
 
   public getHospitalOption = async (): Promise<void> => {
-    const hospitalResult = await this._adminService.getHospitalOption(this._userGlobalStore.hospitalCode);
-    if(hospitalResult.isSuccess){
+    const hospitalResult = await this._adminService.getHospitalOption(
+      this._userGlobalStore.hospitalCode
+    );
+    if (hospitalResult.isSuccess) {
       this._roomJoinOpt = hospitalResult.getOrNull()!.joinOpt;
       this._roomShareOpt = hospitalResult.getOrNull()!.shareOpt;
     }

@@ -43,9 +43,23 @@ const LogPage: NextPage = observer(() => {
           <Button
             variant="contained"
             color="primary"
+            onClick={() => router.replace("/admin/operation-log")}
+          >
+            {t("operation_log")}
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
             onClick={() => router.replace("/admin/server-health")}
           >
             {t("server_health")}
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => router.replace("/admin/option")}
+          >
+            {t("hospital_option")}
           </Button>
         </div>
       </div>

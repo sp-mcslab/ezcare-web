@@ -4,10 +4,12 @@ import { CallLogDto } from "@/dto/CallLogDto";
 import si from "systeminformation";
 import { bool } from "aws-sdk/clients/signer";
 import { OperationLogDto } from "@/dto/OperationLogDto";
+import { HospitalOptDto } from "@/dto/HospitalOptDto";
 
 import userGlobalStore, {
   UserGlobalStore,
 } from "@/stores/global/UserGlobalStore";
+import { Option } from "@prisma/client";
 
 export class AdminStore {
   private _errorMessage: string = "";
@@ -64,7 +66,7 @@ export class AdminStore {
   }
 
   public findRecordAllRoom = async (): Promise<void> => {
-    if(this._userGlobalStore.hospitalCode == "")
+    if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
     const getRecordResult = await this._adminService.findRecordAllRoom(this._userGlobalStore.hospitalCode);
     if (getRecordResult.isSuccess) {
@@ -82,7 +84,7 @@ export class AdminStore {
   };
 
   public findOperationAllRoom = async (): Promise<void> => {
-    if(this._userGlobalStore.hospitalCode == "")
+    if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
     const getRecordResult = await this._adminService.findOperationAllRoom(this._userGlobalStore.hospitalCode);
     if (getRecordResult.isSuccess) {
@@ -100,7 +102,7 @@ export class AdminStore {
   };
 
   public serverHealthCheck = async (): Promise<void> => {
-    if(this._userGlobalStore.hospitalCode == "")
+    if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
     const getServerHealthResult = await this._adminService.serverHealthCheck(this._userGlobalStore.hospitalCode);
     if (getServerHealthResult.isSuccess) {
@@ -167,6 +169,72 @@ export class AdminStore {
         this._didCheck = true;
         this._errorMessage = getServerHealthResult.throwableOrNull()!!.message;
         console.log(this._errorMessage);
+      });
+    }
+  };
+
+  private _joinOpt: Option = "A";
+  private _shareOpt: Option = "A";
+  private _patchOptionMessage?: string = undefined;
+
+  public get joinOpt(): string {
+    return this._joinOpt;
+  }
+
+  public get shareOpt(): string {
+    return this._shareOpt;
+  }
+
+  public get patchOptionMessage(): string | undefined {
+    return this._patchOptionMessage;
+  }
+
+  public clearPatchOptionMessage = () => {
+    this._patchOptionMessage = undefined;
+  };
+
+  public getHospitalOption = async (): Promise<void> => {
+    if (this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
+    const hospitalResult = await this._adminService.getHospitalOption(this._userGlobalStore.hospitalCode);
+    if (hospitalResult.isSuccess) {
+      this._joinOpt = hospitalResult.getOrNull()!.joinOpt;
+      this._shareOpt = hospitalResult.getOrNull()!.shareOpt;
+    }
+  };
+
+  public updatejoinOpt = (option: string) => {
+    if (option == "A")
+      this._joinOpt = "A";
+    else if (option == "B")
+      this._joinOpt = "B";
+  };
+
+  public updateshareOpt = (option: string) => {
+    if (option == "A")
+      this._shareOpt = "A";
+    else if (option == "B")
+      this._shareOpt = "B";
+  };
+
+  public patchHospitalOption = async (): Promise<void> => {
+    if (this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLoginWithSessionToken();
+
+    const operationLogDto = new HospitalOptDto({
+      hospitalCode: this._userGlobalStore.hospitalCode,
+      joinOpt: this._joinOpt,
+      shareOpt: this._shareOpt,
+    });
+
+    const getRecordResult = await this._adminService.patchHospitalOption(this._userGlobalStore.hospitalCode, operationLogDto);
+    if (getRecordResult.isSuccess) {
+      runInAction(() => {
+        this._patchOptionMessage = "option_sucess";
+      });
+    } else {
+      runInAction(() => {
+        this._patchOptionMessage = "option_failure";
       });
     }
   };

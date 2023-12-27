@@ -66,5 +66,11 @@
   "room_delete_failure": "Room deletion has failed.",
   "exit_check": "Do you really want to leave the room?",
   "packets_lost": "Packets Lost",
-  "on_network_view_mode": "On network view mode"
+  "on_network_view_mode": "On network view mode",
+  "hospital_option": "Hospital option",
+  "change_option": "change",
+  "join_option": "lobby mode",
+  "share_option": "room share option",
+  "option_sucess": "Changed the option.",
+  "option_failure": "Option change failed."
 }

@@ -102,10 +102,11 @@ export class AdminService {
     }
   }
 
-  public async patchHospitalOption(hospitalCode: string): Promise<Result<string>> {
+  public async patchHospitalOption(hospitalCode: string, option: HospitalOptDto): Promise<Result<string>> {
     try {
       const response = await fetchAbsolute(`api/admin/hospital/option`, {
         method: "PATCH",
+        body: JSON.stringify(option),
         headers: {
           "hospital-code": hospitalCode,
           "Content-Type": "application/json",

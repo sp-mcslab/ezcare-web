@@ -177,7 +177,10 @@ const WaitingRoom: NextPage<{
                 variant="contained"
                 color="primary"
                 style={{ marginLeft: "16px" }}
-                onClick={() => router.replace("/")}
+                onClick={() => {
+                  roomStore.exitRoom();
+                  router.replace("/");
+                }}
               >
                 {t("exit")}
               </Button>
@@ -196,7 +199,10 @@ const WaitingRoom: NextPage<{
                 variant="contained"
                 color="primary"
                 style={{ marginLeft: "16px" }}
-                onClick={() => router.replace("/")}
+                onClick={() => {
+                  roomStore.exitRoom();
+                  router.replace("/");
+                }}
               >
                 {t("exit")}
               </Button>

@@ -142,6 +142,11 @@ const PRODUCER_CLOSED = "producer-closed";
 const CLOSE_VIDEO_PRODUCER = "close-video-producer";
 
 /**
+ * 클라이언트가 서버에게 화면 공유 비디오 생산자를 닫으라는 요청을 보낸다.
+ */
+const CLOSE_SCREEN_VIDEO_PRODUCER = "close-screen-video-producer";
+
+/**
  * 클라이언트가 서버에게 오디오 생산자를 닫으라는 요청을 보낸다.
  */
 const CLOSE_AUDIO_PRODUCER = "close-audio-producer";
@@ -265,6 +270,7 @@ export {
   PRODUCER_CLOSED,
   PEER_STATE_CHANGED,
   CLOSE_VIDEO_PRODUCER,
+  CLOSE_SCREEN_VIDEO_PRODUCER,
   CLOSE_AUDIO_PRODUCER,
   OTHER_PEER_DISCONNECTED,
   SEND_CHAT,

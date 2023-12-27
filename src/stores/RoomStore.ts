@@ -1027,6 +1027,20 @@ export class RoomStore implements RoomViewModel {
     );
   };
 
+  private waitForTrackSettings = (track: MediaStreamTrack) => {
+    return new Promise<MediaTrackSettings>((res, rej) => {
+      const checkSettings = () => {
+        const settings = track.getSettings();
+        if (settings.width && settings.height) {
+          res(settings);
+        } else {
+          setTimeout(checkSettings, 100);
+        }
+      };
+      checkSettings();
+    });
+  };
+
   public onAddedConsumer = async (
     peerId: string,
     track: MediaStreamTrack,
@@ -1047,21 +1061,8 @@ export class RoomStore implements RoomViewModel {
       case "video":
         if (!appData.isScreenShare) {
           // 카메라에서 받아온 video mediastream
-          const waitForTrackSettings = (track: MediaStreamTrack) => {
-            return new Promise<MediaTrackSettings>((res, rej) => {
-              const checkSettings = () => {
-                const settings = track.getSettings();
-                if (settings.width && settings.height) {
-                  res(settings);
-                } else {
-                  setTimeout(checkSettings, 100);
-                }
-              };
-              checkSettings();
-            });
-          };
           try {
-            const checkedSettings = await waitForTrackSettings(track);
+            const checkedSettings = await this.waitForTrackSettings(track);
             const mediaStream = new MediaStream([track]);
             const width = checkedSettings.width!;
             const height = checkedSettings.height!;

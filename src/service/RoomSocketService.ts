@@ -41,6 +41,7 @@ import {
   AUDIO_CONSUMER_SCORE,
   RTP_STREAM_STAT,
   BROADCAST_DISPLAYNAME,
+  CLOSE_SCREEN_VIDEO_PRODUCER,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
 import { Device } from "mediasoup-client";
@@ -762,6 +763,7 @@ export class RoomSocketService {
     }
     producer.close();
     this._screenVideoProducer = undefined;
+    this._requireSocket().emit(CLOSE_SCREEN_VIDEO_PRODUCER);
   };
 
   public sendChat = (message: string) => {

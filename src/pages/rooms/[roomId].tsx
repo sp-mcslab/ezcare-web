@@ -386,7 +386,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
               <div className={styles.sideTitle}>
                 {t("waiting_list_for_enter")}
               </div>
-              <br />
               {roomStore.awaitingPeerInfos.map((peerInfo) => {
                 return (
                   <>
@@ -405,6 +404,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                     >
                       {t("refuse")}
                     </Button>
+                    <br />
                   </>
                 );
               })}

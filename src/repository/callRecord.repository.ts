@@ -73,11 +73,15 @@ export const findOperationLogByRoomId = async (
 };
 
 // 접속중인 유저들 찾기
-export const findOnlineUsers = async (): Promise<{
+export const findOnlineUsers = async (
+  hospitalCode: string
+): Promise<{
   [roomId: string]: string[];
 } | null> => {
   const onlineUsers = await client.callRecord.findMany({
-    where: { exitat: null },
+    where: {
+      AND: [{ exitat: null }, { hospitalcode: hospitalCode }],
+    },
   });
 
   if (!onlineUsers || onlineUsers.length === 0) {

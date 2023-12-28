@@ -271,7 +271,7 @@ export const getOnlineUsers = async (
     console.log("hospital Code :: " + hospitalCode);
 
     // 접속 중인 사용자 조회
-    const onlineUsers = await findOnlineUsers();
+    const onlineUsers = await findOnlineUsers(hospitalCode);
 
     if (onlineUsers == null) {
       res.status(404).json({
@@ -294,7 +294,7 @@ export const getOnlineUsers = async (
             return;
           }
 
-          return { id: userId, name: user.name, role: user.role };
+          return { hospital_code: hospitalCode, userName: user.name };
         })
       );
 

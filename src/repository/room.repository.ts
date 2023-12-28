@@ -90,7 +90,10 @@ export const deleteRoomReq = async (roomId: string) => {
   }
 };
 
-export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
+export const findRooms = async (
+  user: UserDto,
+  hospital_code: string
+): Promise<RoomDto[] | null> => {
   let where = {};
   if (user.role === "N") {
     //간호사 -> 호스트인 방, 초대받은 방
@@ -155,6 +158,7 @@ export const findRooms = async (user: UserDto): Promise<RoomDto[] | null> => {
       AND: [
         where,
         { OR: [{ flag: RoomFlag.OPENED }, { flag: RoomFlag.SCHEDULED }] },
+        { hospitalcode: hospital_code },
       ],
     },
     orderBy: {

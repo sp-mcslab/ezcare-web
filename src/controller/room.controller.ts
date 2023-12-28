@@ -252,7 +252,7 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
-    const rooms = await findRooms(UserDto.fromEntity(user));
+    const rooms = await findRooms(UserDto.fromEntity(user), hospitalCode);
     res.status(200);
     res.json({
       message: "진료실 목록이 조회되었습니다.",

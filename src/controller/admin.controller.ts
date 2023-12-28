@@ -456,15 +456,7 @@ export const getServerHealth = async (
       return;
     }
 
-    const tenant = await findTenant(hospitalCode);
-    if (tenant == null) {
-      res.status(401).end();
-      return;
-    }
-    const tenantCode = tenant.tenantcode;
-
     console.log("hospital Code :: " + hospitalCode);
-    console.log("tenant Code :: " + tenantCode);
 
     // 서버 헬스 체크
     // npm install os, npm install diskusage, npm install systeminformation,

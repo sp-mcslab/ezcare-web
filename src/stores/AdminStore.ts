@@ -9,7 +9,6 @@ import { HospitalOptDto } from "@/dto/HospitalOptDto";
 import userGlobalStore, {
   UserGlobalStore,
 } from "@/stores/global/UserGlobalStore";
-import { Option } from "@prisma/client";
 
 export class AdminStore {
   private _errorMessage: string = "";
@@ -68,7 +67,9 @@ export class AdminStore {
   public findRecordAllRoom = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
-    const getRecordResult = await this._adminService.findRecordAllRoom(this._userGlobalStore.hospitalCode);
+    const getRecordResult = await this._adminService.findRecordAllRoom(
+      this._userGlobalStore.hospitalCode
+    );
     if (getRecordResult.isSuccess) {
       runInAction(() => {
         this._initErrorMessage();
@@ -86,7 +87,9 @@ export class AdminStore {
   public findOperationAllRoom = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
-    const getRecordResult = await this._adminService.findOperationAllRoom(this._userGlobalStore.hospitalCode);
+    const getRecordResult = await this._adminService.findOperationAllRoom(
+      this._userGlobalStore.hospitalCode
+    );
     if (getRecordResult.isSuccess) {
       runInAction(() => {
         this._initErrorMessage();
@@ -104,7 +107,9 @@ export class AdminStore {
   public serverHealthCheck = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
-    const getServerHealthResult = await this._adminService.serverHealthCheck(this._userGlobalStore.hospitalCode);
+    const getServerHealthResult = await this._adminService.serverHealthCheck(
+      this._userGlobalStore.hospitalCode
+    );
     if (getServerHealthResult.isSuccess) {
       runInAction(() => {
         this._didCheck = true;
@@ -173,15 +178,15 @@ export class AdminStore {
     }
   };
 
-  private _joinOpt: Option = "A";
-  private _shareOpt: Option = "A";
+  private _joinOpt: boolean = false;
+  private _shareOpt: boolean = false;
   private _patchOptionMessage?: string = undefined;
 
-  public get joinOpt(): string {
+  public get joinOpt(): boolean {
     return this._joinOpt;
   }
 
-  public get shareOpt(): string {
+  public get shareOpt(): boolean {
     return this._shareOpt;
   }
 
@@ -196,25 +201,20 @@ export class AdminStore {
   public getHospitalOption = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLoginWithSessionToken();
-    const hospitalResult = await this._adminService.getHospitalOption(this._userGlobalStore.hospitalCode);
+    const hospitalResult = await this._adminService.getHospitalOption(
+      this._userGlobalStore.hospitalCode
+    );
     if (hospitalResult.isSuccess) {
       this._joinOpt = hospitalResult.getOrNull()!.joinOpt;
-      this._shareOpt = hospitalResult.getOrNull()!.shareOpt;
     }
   };
 
-  public updatejoinOpt = (option: string) => {
-    if (option == "A")
-      this._joinOpt = "A";
-    else if (option == "B")
-      this._joinOpt = "B";
+  public updatejoinOpt = (option: boolean) => {
+    this._joinOpt = option;
   };
 
-  public updateshareOpt = (option: string) => {
-    if (option == "A")
-      this._shareOpt = "A";
-    else if (option == "B")
-      this._shareOpt = "B";
+  public updateshareOpt = (option: boolean) => {
+    this._joinOpt = option;
   };
 
   public patchHospitalOption = async (): Promise<void> => {
@@ -224,10 +224,12 @@ export class AdminStore {
     const operationLogDto = new HospitalOptDto({
       hospitalCode: this._userGlobalStore.hospitalCode,
       joinOpt: this._joinOpt,
-      shareOpt: this._shareOpt,
     });
 
-    const getRecordResult = await this._adminService.patchHospitalOption(this._userGlobalStore.hospitalCode, operationLogDto);
+    const getRecordResult = await this._adminService.patchHospitalOption(
+      this._userGlobalStore.hospitalCode,
+      operationLogDto
+    );
     if (getRecordResult.isSuccess) {
       runInAction(() => {
         this._patchOptionMessage = "option_sucess";

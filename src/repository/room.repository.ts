@@ -37,12 +37,12 @@ export const createRoom = async (
   const roomEntity = await client.room.create({
     data: {
       id: roomUniqueId,
-      creatorid: creatorId, // Updated field name
+      creatorid: creatorId,
       name: name,
       createdat: createdAt,
       openat: openAt,
       deletedat: null,
-      hospitalcode: hospitalCode, // Updated field name
+      hospitalcode: hospitalCode,
       flag: flag,
       Host: {
         createMany: {

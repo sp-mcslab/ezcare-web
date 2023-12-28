@@ -1,21 +1,16 @@
-import { Option } from "@prisma/client";
-
+// TODO : 필요없어질 겁니다.
 export class HospitalOptDto {
   public readonly hospitalCode: string;
-  public readonly joinOpt: Option;
-  public readonly shareOpt: Option;
+  public readonly joinOpt: boolean;
 
   constructor({
     hospitalCode,
     joinOpt,
-    shareOpt,
   }: {
     hospitalCode: string;
-    joinOpt: Option;
-    shareOpt: Option;
+    joinOpt: boolean;
   }) {
     this.hospitalCode = hospitalCode;
     this.joinOpt = joinOpt;
-    this.shareOpt = shareOpt;
   }
 }

@@ -35,6 +35,7 @@ const RoomScaffold: NextPage = observer(() => {
         await roomStore.getIsHostWithSessionToken(roomId);
         await roomStore.getRoomById(roomId);
         await roomStore.getHospitalOption();
+        console.log("room Join Option :: " + roomStore.roomJoinOpt);
       }
     })();
   }, [roomStore, roomId]);
@@ -161,7 +162,7 @@ const WaitingRoom: NextPage<{
             <div>{t("already_entered")}</div>
           )}
 
-          {roomStore.roomJoinOpt == "A" ||
+          {roomStore.roomJoinOpt ||
           roomStore.userRole == "N" ||
           roomStore.userRole == "D" ? (
             <div>

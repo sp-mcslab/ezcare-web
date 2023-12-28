@@ -38,9 +38,8 @@ const ListPage: NextPage = observer(() => {
   };
 
   return (
-
     <div className="App">
-      <div style={{ fontSize: "30px", paddingTop: "50px"}}>
+      <div style={{ fontSize: "30px", paddingTop: "50px" }}>
         {t("hospital_option")}
         <div
           style={{
@@ -85,17 +84,21 @@ const ListPage: NextPage = observer(() => {
             style={{
               display: "inline-block",
               float: "right",
-            }}>
+            }}
+          >
             <Button
               variant="contained"
               color="primary"
-              onClick={() => adminStore.updatejoinOpt("A")}>
-              A
+              onClick={() => adminStore.updatejoinOpt(true)}
+            >
+              옵션 적용
             </Button>
-            <Button variant="contained"
+            <Button
+              variant="contained"
               color="primary"
-              onClick={() => adminStore.updatejoinOpt("B")}>
-              B
+              onClick={() => adminStore.updatejoinOpt(false)}
+            >
+              옵션 해제
             </Button>
           </div>
         </div>
@@ -105,17 +108,21 @@ const ListPage: NextPage = observer(() => {
             style={{
               display: "inline-block",
               float: "right",
-            }}>
+            }}
+          >
             <Button
               variant="contained"
               color="primary"
-              onClick={() => adminStore.updateshareOpt("A")}>
-              A
+              onClick={() => adminStore.updateshareOpt(true)}
+            >
+              옵션 적용
             </Button>
-            <Button variant="contained"
+            <Button
+              variant="contained"
               color="primary"
-              onClick={() => adminStore.updateshareOpt("B")}>
-              B
+              onClick={() => adminStore.updateshareOpt(false)}
+            >
+              옵션 해제
             </Button>
           </div>
         </div>
@@ -133,7 +140,6 @@ const ListPage: NextPage = observer(() => {
         <Button onClick={() => router.replace("/auth/logout")}>로그아웃</Button>
       </div>
     </div>
-
   );
 });
 

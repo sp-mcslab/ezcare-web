@@ -14,7 +14,6 @@ model CallRecord {
   joinat       DateTime  @db.Timestamptz(6)
   exitat       DateTime? @db.Timestamptz(6)
   hospitalcode String    @db.VarChar(100)
-  Hospital     Hospital  @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_CallRecord_1")
   Room         Room      @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_CallRecord_1")
   User         User      @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_CallRecord_1")
 
@@ -23,23 +22,12 @@ model CallRecord {
 
 model Hospital {
   code         String         @id(map: "PK_HOSPITAL") @db.VarChar(100)
-  tenantcode   String         @db.VarChar(100)
-  joinopt      Option         @default(A)
-  shareopt     Option         @default(A)
-  CallRecord   CallRecord[]
-  Tenant       Tenant         @relation(fields: [tenantcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Tenant_TO_Hospital_1")
-  Host         Host[]
-  Invite       Invite[]
-  OperationLog OperationLog[]
-  Room         Room[]
-  User         User[]
 }
 
 model Host {
   roomid       String   @db.VarChar(100)
   userid       String   @db.VarChar(100)
   hospitalcode String   @db.VarChar(100)
-  Hospital     Hospital @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Host_1")
   Room         Room     @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_Host_1")
   User         User     @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Host_1")
 
@@ -50,7 +38,6 @@ model Invite {
   userid       String   @db.VarChar(100)
   roomid       String   @db.VarChar(100)
   hospitalcode String
-  Hospital     Hospital @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Invite_1")
   Room         Room     @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_Invite_1")
   User         User     @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Invite_1")
 
@@ -66,7 +53,6 @@ model OperationLog {
   time                              DateTime    @db.Timestamptz(6)
   success                           Boolean     @db.Boolean
   hospitalcode                      String      @db.VarChar(100)
-  Hospital                          Hospital    @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_OperationLog_1")
   User_OperationLog_operatorToUser  User        @relation("OperationLog_operatorToUser", fields: [operator], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Operator_TO_OperationLog_1")
   User_OperationLog_recipientToUser User        @relation("OperationLog_recipientToUser", fields: [recipient], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Recipient_TO_OperationLog_1")
   Room                              Room        @relation(fields: [roomid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Room_TO_OperationLog_1")
@@ -87,13 +73,7 @@ model Room {
   Host         Host[]
   Invite       Invite[]
   OperationLog OperationLog[]
-  Hospital     Hospital       @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_Room_1")
   User         User           @relation(fields: [creatorid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_User_TO_Room_1")
-}
-
-model Tenant {
-  code     String     @id(map: "PK_TENANT") @db.VarChar(100)
-  Hospital Hospital[]
 }
 
 model User {
@@ -110,12 +90,6 @@ model User {
   OperationLog_OperationLog_operatorToUser  OperationLog[] @relation("OperationLog_operatorToUser")
   OperationLog_OperationLog_recipientToUser OperationLog[] @relation("OperationLog_recipientToUser")
   Room                                      Room[]
-  Hospital                                  Hospital       @relation(fields: [hospitalcode], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "FK_Hospital_TO_User_1")
-}
-
-enum Option {
-  A
-  B
 }
 
 enum RoomFlag {

@@ -2,9 +2,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { tenant } from "@/controller/tenant.controller";
 
+//TODO : 삭제
 export default async function tenantHandler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   const { method } = req;
   switch (method) {

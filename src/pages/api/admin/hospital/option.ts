@@ -1,6 +1,10 @@
 //라우팅
 import { NextApiRequest, NextApiResponse } from "next";
-import { getOption, updateOption } from "@/controller/hospital.controller";
+import {
+  getOption,
+  addOption,
+  deleteOption,
+} from "@/controller/hospital.controller";
 
 export default async function userHandler(
   req: NextApiRequest,
@@ -11,8 +15,11 @@ export default async function userHandler(
     case "GET":
       await getOption(req, res);
       break;
-    case "PATCH":
-      await updateOption(req, res);
+    case "POST":
+      await addOption(req, res);
+      break;
+    case "DELETE":
+      await deleteOption(req, res);
       break;
     default:
       res.status(405).end(`Method ${method} Not Allowed`);

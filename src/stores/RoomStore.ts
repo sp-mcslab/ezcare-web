@@ -1776,9 +1776,9 @@ export class RoomStore implements RoomViewModel {
     this._networkViewMode = !this._networkViewMode;
   };
 
-  private _roomJoinOpt: string = "";
+  private _roomJoinOpt: boolean = false;
 
-  public get roomJoinOpt(): string {
+  public get roomJoinOpt(): boolean {
     return this._roomJoinOpt;
   }
 

@@ -4,45 +4,45 @@ import { HospitalOptDto } from "@/dto/HospitalOptDto";
 
 export const findOptionByCode = async (
   code: string
-): Promise<HospitalOptDto | null> => {
+): Promise<boolean | null> => {
   try {
     const options = await prisma.hospital.findUnique({
-      select: {
-        joinopt: true,
-        shareopt: true,
-      },
+      select: { code: true },
       where: {
         code: code,
       },
     });
 
-    if (!options) {
-      return null;
-    }
-
-    return new HospitalOptDto({
-      hospitalCode: code,
-      joinOpt: options.joinopt,
-      shareOpt: options.shareopt,
-    });
+    if (!options) return false;
+    else return true;
   } catch (e) {
     console.error(e);
     return null;
   }
 };
 
-export const updateOptionByCode = async (
-  code: string,
-  newOption: HospitalOptDto
+export const addOptionByCode = async (
+  code: string
 ): Promise<Boolean | null> => {
   try {
-    await prisma.hospital.update({
+    await prisma.hospital.create({
+      data: { code: code },
+    });
+
+    return true;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+};
+
+export const deleteOptionByCode = async (
+  code: string
+): Promise<Boolean | null> => {
+  try {
+    await prisma.hospital.delete({
       where: {
         code: code,
-      },
-      data: {
-        joinopt: newOption.joinOpt,
-        shareopt: newOption.shareOpt,
       },
     });
 

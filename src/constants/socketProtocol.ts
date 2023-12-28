@@ -204,11 +204,6 @@ const KICK_USER_TO_WAITINGR_ROOM = "kick-user-to-waiting-room";
 const UPDATE_ROOM_JOINERS = "update-room-joiners";
 
 /**
- * 동시 화면 공유를 허용하지 않을 때 다른 참여자의 공유 화면을 끄는 프로토콜이다.
- */
-const DISCONNECT_OTHER_SCREEN_SHARE = "disconnect-other-screen-share";
-
-/**
  * 화면 공유자가 다른 참여자에게 화면 공유 종료를 알리는 프로토콜이다.
  */
 const BROADCAST_STOP_SHARE_SCREEN = "broadcast-stop-share-screen";
@@ -281,7 +276,6 @@ export {
   CLOSE_VIDEO_BY_HOST,
   KICK_USER_TO_WAITINGR_ROOM,
   UPDATE_ROOM_JOINERS,
-  DISCONNECT_OTHER_SCREEN_SHARE,
   BROADCAST_STOP_SHARE_SCREEN,
   VIDEO_PRODUCER_SCORE,
   AUDIO_PRODUCER_SCORE,

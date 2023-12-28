@@ -31,7 +31,6 @@ import {
   CLOSE_VIDEO_BY_HOST,
   KICK_USER_TO_WAITINGR_ROOM,
   UPDATE_ROOM_JOINERS,
-  DISCONNECT_OTHER_SCREEN_SHARE,
   BROADCAST_STOP_SHARE_SCREEN,
   PEER_APPROVED_TO_JOIN,
   PEER_REJECTED_TO_JOIN,
@@ -376,9 +375,6 @@ export class RoomSocketService {
       console.log("update room joiners - other peer joined room : " + joinerId);
       this._roomViewModel.onChangeJoinerList(joinerId);
     });
-    socket.on(DISCONNECT_OTHER_SCREEN_SHARE, () =>
-      this._roomViewModel.onDisConnectScreenShare()
-    );
     socket.on(BROADCAST_STOP_SHARE_SCREEN, (userId: string) =>
       this._roomViewModel.onBroadcastStopShareScreen(userId)
     );
@@ -816,11 +812,6 @@ export class RoomSocketService {
     // TODO OPERATION ===================
     const socket = this._requireSocket();
     socket.emit(CLOSE_VIDEO_BY_HOST, roomId, operatorId, userIds);
-  };
-
-  public disConnectOtherScreenShare = async (userId: string) => {
-    const socket = this._requireSocket();
-    socket.emit(DISCONNECT_OTHER_SCREEN_SHARE, userId);
   };
 
   public broadcastStopShareScreen = () => {

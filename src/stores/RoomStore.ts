@@ -70,7 +70,6 @@ export interface RoomViewModel {
   onChangeJoinerList: (userId: string) => void;
   onRemoveJoinerList: (disposedPeerId: string) => void;
   onGetUsersInfo: (roomId: string) => void;
-  onDisConnectScreenShare: () => void;
   onBroadcastStopShareScreen: (userId: string) => void;
   onVideoProducerScore: (ssrc: number, score: number) => void;
   onAudioProducerScore: (ssrc: number, score: number) => void;
@@ -975,11 +974,6 @@ export class RoomStore implements RoomViewModel {
     beep();
   };
 
-  public onDisConnectScreenShare = () => {
-    this.stopShareMyScreen();
-    this._userMessage = "message_stop_share_my_screen";
-  };
-
   public onBroadcastStopShareScreen = (userId: string) => {
     // TODO: 화면공유 종료 알림 받고 remoteScreenVideoStreamByPeerId 에서 해당 미디어 삭제
     this._remoteScreenVideoStreamsByPeerId.delete(userId);
@@ -1525,44 +1519,14 @@ export class RoomStore implements RoomViewModel {
     return;
   };
 
-  private isEnableMultiAndAnyRemoteScreenVideo() {
-    return this.isEnableMultipleScreenShare();
-  }
-
-  private isNotEnableMultiAndNoRemoteScreenVideo() {
-    return (
-      !this.isEnableMultipleScreenShare() &&
-      this._remoteScreenVideoStreamsByPeerId.size === 0
-    );
-  }
-
-  private isNotEnableMultiAndThereIsRemoteScreenVideo() {
-    return (
-      !this.isEnableMultipleScreenShare() &&
-      this._remoteScreenVideoStreamsByPeerId.size > 0
-    );
-  }
-
-  public shareMyScreen() {
-    if (this.isEnableMultiAndAnyRemoteScreenVideo()) {
-      this.produceScreenShare();
-    }
-    if (this.isNotEnableMultiAndNoRemoteScreenVideo()) {
-      this.produceScreenShare();
-    }
-    if (this.isNotEnableMultiAndThereIsRemoteScreenVideo()) {
-      this.produceScreenShareAndDisConnectOtherScreen();
-    }
-  }
-
-  public addMediaStreamTrackEndedEvent(track: MediaStreamTrack) {
+  private addMediaStreamTrackEndedEvent(track: MediaStreamTrack) {
     track.onended = () => {
       console.log("브라우저 UI에 의해 화면 공유가 중지되었습니다.");
       this.stopShareMyScreen();
     };
   }
 
-  private produceScreenShare = async () => {
+  public shareMyScreen = async () => {
     try {
       const modifiedMediaStream =
         await this._mediaUtil.fetchScreenCaptureVideo();
@@ -1584,43 +1548,6 @@ export class RoomStore implements RoomViewModel {
           });
       } catch (error) {
         console.error(`공유화면 크기 조절 실패: ${error}`);
-      }
-    } catch (error) {
-      console.log(`공유화면 불러오기 취소/실패: ${error}`);
-    }
-  };
-
-  private produceScreenShareAndDisConnectOtherScreen = async () => {
-    const userIdNowSharing = this.remoteScreenVideoStreamByPeerIdEntries[0][0];
-    try {
-      const modifiedMediaStream =
-        await this._mediaUtil.fetchScreenCaptureVideo();
-      try {
-        // 다른 유저 공유화면 종료
-        await this._roomSocketService.disConnectOtherScreenShare(
-          userIdNowSharing
-        );
-        // 공유화면 video 추출 후 producer 생성
-        const displayMediaTrack = modifiedMediaStream.getVideoTracks()[0];
-        this.addMediaStreamTrackEndedEvent(displayMediaTrack);
-        try {
-          await displayMediaTrack
-            .applyConstraints(this._mediaUtil.SCREEN_CAPTURE_MEDIA_CONSTRAINTS)
-            .then(async () => {
-              await runInAction(async () => {
-                this._localScreenVideoStream = new MediaStream([
-                  displayMediaTrack,
-                ]);
-                await this._roomSocketService.produceScreenVideoTrack(
-                  displayMediaTrack
-                );
-              });
-            });
-        } catch (error) {
-          console.error(`공유화면 크기 조절 실패: ${error}`);
-        }
-      } catch (error) {
-        console.error(`다른 참여자 공유화면 종료 실패: ${error}`);
       }
     } catch (error) {
       console.log(`공유화면 불러오기 취소/실패: ${error}`);
@@ -1850,24 +1777,10 @@ export class RoomStore implements RoomViewModel {
   };
 
   private _roomJoinOpt: string = "";
-  private _screenShareOpt: string = "";
 
   public get roomJoinOpt(): string {
     return this._roomJoinOpt;
   }
-
-  public get screenShareOpt(): string {
-    return this._screenShareOpt;
-  }
-
-  private isEnableMultipleScreenShare = () => {
-    switch (this._screenShareOpt) {
-      case "A":
-        return false;
-      case "B":
-        return true;
-    }
-  };
 
   public getHospitalOption = async (): Promise<void> => {
     const hospitalResult = await this._adminService.getHospitalOption(
@@ -1875,7 +1788,6 @@ export class RoomStore implements RoomViewModel {
     );
     if (hospitalResult.isSuccess) {
       this._roomJoinOpt = hospitalResult.getOrNull()!.joinOpt;
-      this._screenShareOpt = hospitalResult.getOrNull()!.shareOpt;
     }
   };
 }

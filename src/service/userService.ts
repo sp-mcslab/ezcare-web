@@ -13,7 +13,7 @@ export class UserService {
   ): Promise<boolean> {
     try {
       const response = await fetchAbsolute(
-        `api/rooms/${roomId}/host/${userId}`,
+        `api/rooms/${roomId}/host?userId=${userId}`,
         {
           method: "GET",
           headers: {

@@ -1,8 +1,7 @@
 import client from "prisma/client";
 import { uuid } from "uuidv4";
 import { RoomDto } from "@/dto/RoomDto";
-import { UserDto } from "@/dto/UserDto";
-import { Room, RoomFlag } from "@prisma/client";
+import { RoomFlag } from "@prisma/client";
 import { getUsageOfDay } from "@/utils/UsageUtil";
 
 export const findAllRooms = async (): Promise<RoomDto[] | undefined> => {
@@ -91,61 +90,63 @@ export const deleteRoomReq = async (roomId: string) => {
 };
 
 export const findRooms = async (
-  user: UserDto,
+  userId: string,
   hospital_code: string
 ): Promise<RoomDto[] | null> => {
   let where = {};
-  if (user.role === "N") {
+  const userRole = userId.substring(0, 1);
+  console.log(userRole);
+  if (userRole === "N") {
     //간호사 -> 호스트인 방, 초대받은 방
     where = {
       OR: [
         {
-          creatorid: user.id,
+          creatorid: userId,
         },
         {
           Host: {
             some: {
-              userid: user.id,
+              userid: userId,
             },
           },
         },
         {
           Invite: {
             some: {
-              userid: user.id,
+              userid: userId,
             },
           },
         },
       ],
     };
-  } else if (user.role === "D") {
+  } else if (userRole === "D") {
     // 의사 -> 호스트인 방, 초대받은 방
     where = {
       OR: [
         {
           Host: {
             some: {
-              userid: user.id,
+              userid: userId,
             },
           },
         },
         {
           Invite: {
             some: {
-              userid: user.id,
+              userid: userId,
             },
           },
         },
       ],
     };
-  } else if (user.role === "P") {
+  } else if (userRole === "P") {
     // 환자 -> 초대받은 방
     where = {
       OR: [
         {
           Invite: {
             some: {
-              userid: user.id,
+              userid: userId,
             },
           },
         },

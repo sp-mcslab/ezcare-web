@@ -1,6 +1,4 @@
 import prisma from "../../prisma/client";
-import { User } from "@prisma/client";
-import { HospitalOptDto } from "@/dto/HospitalOptDto";
 
 export const findOptionByCode = async (
   code: string

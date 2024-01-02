@@ -3,19 +3,19 @@ import { RoomDto } from "@/dto/RoomDto";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
 
 export class RoomListService {
-  public async getRoomList(hospitalcode: string, token: string): Promise<Result<RoomDto[]>> {
+  public async getRoomList(
+    hospitalcode: string,
+    userId: string
+  ): Promise<Result<RoomDto[]>> {
     try {
-      const response = await fetchAbsolute(`api/rooms`, {
+      console.log(userId + " // " + hospitalcode);
+      const response = await fetchAbsolute(`api/rooms?userId=${userId}`, {
         method: "GET",
         headers: {
-          "hospital-code": hospitalcode,
           "Content-Type": "application/json",
+          "hospital-code": hospitalcode,
         },
-        body: JSON.stringify({
-          token,
-        }),
       });
-      console.log(response);
       if (response.ok) {
         return Result.createSuccessUsingResponseData(response);
       } else {
@@ -28,7 +28,7 @@ export class RoomListService {
 
   public async postRoomNow(
     hospitalcode: string,
-    token: string,
+    creatorId: string,
     baseUrl: string,
     name: string,
     invitedUserIds: string[], // 초대된 회원의 ID 목록
@@ -39,6 +39,7 @@ export class RoomListService {
         method: "POST",
         body: JSON.stringify({
           name,
+          creatorId,
           invitedUserIds,
           hostUserIds,
           baseUrl,
@@ -60,7 +61,7 @@ export class RoomListService {
 
   public async postRoomLater(
     hospitalcode: string,
-    token: string,
+    creatorId: string,
     baseUrl: string,
     name: string,
     openAt: Date,
@@ -72,6 +73,7 @@ export class RoomListService {
         method: "POST",
         body: JSON.stringify({
           name,
+          creatorId,
           openAt,
           invitedUserIds,
           hostUserIds,
@@ -92,7 +94,7 @@ export class RoomListService {
     }
   }
 
-  public async deleteRoomList(hospitalcode: string,roomId: string) {
+  public async deleteRoomList(hospitalcode: string, roomId: string) {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}`, {
         method: "DELETE",
@@ -130,7 +132,10 @@ export class RoomListService {
     }
   }
 
-  public async getRoomById(hospitalcode: string, roomId: string): Promise<Result<RoomDto>> {
+  public async getRoomById(
+    hospitalcode: string,
+    roomId: string
+  ): Promise<Result<RoomDto>> {
     try {
       const response = await fetchAbsolute(`api/rooms/${roomId}`, {
         method: "GET",

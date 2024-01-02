@@ -116,7 +116,6 @@ export class RoomStore implements RoomViewModel {
     observable.map(new Map());
   private readonly _remoteScreenVideoStreamsByPeerId: Map<string, MediaStream> =
     observable.map(new Map());
-  // TODO: remoteScreenVideoSwitchByPeerId 가 필요할지 생각 후 추가
 
   private _masterId?: string = undefined;
   private _peerStates: PeerState[] = [];
@@ -289,7 +288,6 @@ export class RoomStore implements RoomViewModel {
   // ================================ 대기실 getter 시작 ================================
   /**
    * 임시 회원 ID입니다.
-   * TODO: 회원 기능 구현되면 제거하고 실제 회원 ID 사용하기
    */
   private _uid = uuidv4();
   public get uid(): string {
@@ -508,7 +506,6 @@ export class RoomStore implements RoomViewModel {
     console.log(
       `onRequestToJoinRoom: ${awaitingPeerInfo.userId}, ${awaitingPeerInfo.displayName}`
     );
-    // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
     }
@@ -526,7 +523,7 @@ export class RoomStore implements RoomViewModel {
 
   public onCancelJoinRequest = (userId: string) => {
     console.log("onCancelJoinRequest: ", userId);
-    // TODO: 호스트가 맞는지 검증하기
+
     if (!this._isHost) {
       return;
     }
@@ -540,7 +537,6 @@ export class RoomStore implements RoomViewModel {
 
   public onApproveJoinRequest = (userId: string) => {
     console.log("onApproveJoinRequest: ", userId);
-    // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
     }
@@ -554,7 +550,6 @@ export class RoomStore implements RoomViewModel {
 
   public onRejectJoinRequest = (userId: string) => {
     console.log("onRejectJoinRequest: ", userId);
-    // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
     }
@@ -609,7 +604,6 @@ export class RoomStore implements RoomViewModel {
   };
 
   public approveJoiningRoom = async (peerInfo: AwaitingPeerInfo) => {
-    // TODO: 호스트인지 검증하기
     if (!this._isHost) {
       return;
     }
@@ -623,7 +617,6 @@ export class RoomStore implements RoomViewModel {
   };
 
   public rejectJoiningRoom = async (peerInfo: AwaitingPeerInfo) => {
-    // TODO: 호스트인지 검증하기
     if (!this._isHost) {
       return;
     }
@@ -681,7 +674,6 @@ export class RoomStore implements RoomViewModel {
       exitAt: null,
     };
 
-    //TODO :: HEADER 추가.
     const axios = require("axios");
     axios
       .post("/api/admin/call-log", record, { headers })
@@ -975,7 +967,6 @@ export class RoomStore implements RoomViewModel {
   };
 
   public onBroadcastStopShareScreen = (userId: string) => {
-    // TODO: 화면공유 종료 알림 받고 remoteScreenVideoStreamByPeerId 에서 해당 미디어 삭제
     this._remoteScreenVideoStreamsByPeerId.delete(userId);
   };
 
@@ -1079,7 +1070,6 @@ export class RoomStore implements RoomViewModel {
             peerId,
             new MediaStream([track])
           );
-          // TODO: 공유화면 전송품질 필요한가?
           break;
         }
     }
@@ -1209,7 +1199,6 @@ export class RoomStore implements RoomViewModel {
       console.error("진료실 정보가 올바르지 않습니다.");
       return;
     }
-    // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
     }
@@ -1221,7 +1210,6 @@ export class RoomStore implements RoomViewModel {
   };
 
   public muteOneAudio = (roomId: string | undefined, peerId: string) => {
-    // TODO: 호스트가 맞는지 검증하기
     if (roomId == undefined) {
       console.error("진료실 정보가 올바르지 않습니다.");
       return;
@@ -1234,7 +1222,6 @@ export class RoomStore implements RoomViewModel {
   };
 
   public closeAllVideo = (roomId: string) => {
-    // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
     }
@@ -1246,7 +1233,6 @@ export class RoomStore implements RoomViewModel {
   };
 
   public closeOneVideo = (roomId: string, peerId: string) => {
-    // TODO: 호스트가 맞는지 검증하기
     if (!this._isHost) {
       return;
     }
@@ -1311,6 +1297,8 @@ export class RoomStore implements RoomViewModel {
     );
     if (roomResult.isSuccess) {
       this._roomList = roomResult.getOrNull()!;
+    } else {
+      console.log(roomResult.throwableOrNull()!!.message);
     }
     return;
   };
@@ -1323,7 +1311,6 @@ export class RoomStore implements RoomViewModel {
   private _hostUserList: string[] = [];
   private _inviteUserList: {
     id: string;
-    name: string;
     role: string;
     host: boolean;
   }[] = [];
@@ -1358,7 +1345,6 @@ export class RoomStore implements RoomViewModel {
 
   public get inviteUserList(): {
     id: string;
-    name: string;
     role: string;
     host: boolean;
   }[] {
@@ -1384,27 +1370,18 @@ export class RoomStore implements RoomViewModel {
       (element) => element.id !== this._inviteUserId
     );
 
-    const validResult = await this._userService.findUserById(
-      this._inviteUserId
-    );
-    if (validResult.isSuccess) {
-      const inviteUser = validResult.getOrNull()!!;
-      this._inviteUserIdList.push(inviteUser.id);
-      this._inviteUserList.push({
-        id: inviteUser.id,
-        name: inviteUser.name,
-        role: inviteUser.role,
-        host: false,
-      });
-      this._inviteUserId = "";
-      runInAction(() => {
-        this._roomCreateMessage = "invite_success";
-      });
-      return;
-    }
-    runInAction(() => {
-      this._roomCreateMessage = "invite_failure";
+    this._inviteUserIdList.push(this._inviteUserId);
+    this._inviteUserList.push({
+      id: this._inviteUserId,
+      role: this._inviteUserId.slice(0, 1),
+      host: false,
     });
+    this._inviteUserId = "";
+
+    runInAction(() => {
+      this._roomCreateMessage = "invite_success";
+    });
+    return;
   };
 
   public get hostUserList(): string[] {
@@ -1665,22 +1642,22 @@ export class RoomStore implements RoomViewModel {
   };
 
   // 호스트
-  public getUserDataWithSessionToken = async (): Promise<void> => {
-    const sessionToken = localStorage.getItem("username");
-    if (sessionToken == null) {
+  public getUserData = async (): Promise<void> => {
+    const username = localStorage.getItem("username");
+    if (username == null) {
       return;
     }
-    const validResult = await this._userService.findUserData(sessionToken);
-    if (validResult.isSuccess) {
-      this._uid = validResult.getOrNull()!.id;
-      this._userDisplayName = validResult.getOrNull()!.displayname;
-      this._userRole = validResult.getOrNull()!.role;
-      this._userName = validResult.getOrNull()!.name;
-      this._userHospitalCode = validResult.getOrNull()!.hospitalcode;
+    this._uid = username.slice(1);
+    this._userRole = username.slice(0, 1);
+    this._userName = username.slice(1);
+
+    const property_code = localStorage.getItem("property_code");
+    if (property_code != null) {
+      this._userHospitalCode = property_code;
     }
   };
 
-  public getIsHostWithSessionToken = async (roomId: string): Promise<void> => {
+  public getIsHost = async (roomId: string): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLogin();
     const sessionToken = localStorage.getItem("username");

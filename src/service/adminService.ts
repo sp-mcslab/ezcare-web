@@ -7,7 +7,9 @@ import { HealthLogDto } from "@/dto/HealthLogDto";
 import { HospitalOptDto } from "@/dto/HospitalOptDto";
 
 export class AdminService {
-  public async findRecordAllRoom(hospitalCode: string): Promise<Result<CallLogDto[]>> {
+  public async findRecordAllRoom(
+    hospitalCode: string
+  ): Promise<Result<CallLogDto[]>> {
     try {
       const response = await fetchAbsolute(`api/admin/call-log`, {
         method: "GET",
@@ -26,7 +28,9 @@ export class AdminService {
     }
   }
 
-  public async findOperationAllRoom(hospitalCode: string): Promise<Result<OperationLogDto[]>> {
+  public async findOperationAllRoom(
+    hospitalCode: string
+  ): Promise<Result<OperationLogDto[]>> {
     try {
       const response = await fetchAbsolute(`api/admin/operation-log`, {
         method: "GET",
@@ -64,7 +68,9 @@ export class AdminService {
       return;
     }
   }
-  public async serverHealthCheck(hospitalCode: string): Promise<Result<HealthLogDto>> {
+  public async serverHealthCheck(
+    hospitalCode: string
+  ): Promise<Result<HealthLogDto>> {
     try {
       const response = await fetchAbsolute(`api/admin/server-health`, {
         method: "GET",
@@ -82,8 +88,10 @@ export class AdminService {
       return Result.createErrorUsingException(e);
     }
   }
-  
-  public async getHospitalOption(hospitalCode: string): Promise<Result<HospitalOptDto>> {
+
+  public async getHospitalOption(
+    hospitalCode: string
+  ): Promise<Result<HospitalOptDto>> {
     try {
       const response = await fetchAbsolute(`api/admin/hospital/option`, {
         method: "GET",
@@ -96,27 +104,6 @@ export class AdminService {
         return Result.createSuccessUsingResponseData(response);
       } else {
         return Result.createErrorUsingResponseMessage(response);
-      }
-    } catch (e) {
-      return Result.createErrorUsingException(e);
-    }
-  }
-
-  public async patchHospitalOption(hospitalCode: string, option: HospitalOptDto): Promise<Result<string>> {
-    try {
-      const response = await fetchAbsolute(`api/admin/hospital/option`, {
-        method: "PATCH",
-        body: JSON.stringify(option),
-        headers: {
-          "hospital-code": hospitalCode,
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        return Result.createSuccessUsingResponseMessage(response);
-      } else {
-        console.log(response);
-        return await Result.createErrorUsingResponseMessage(response);
       }
     } catch (e) {
       return Result.createErrorUsingException(e);

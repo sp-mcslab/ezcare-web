@@ -30,9 +30,9 @@ const RoomScaffold: NextPage = observer(() => {
   }
   useEffect(() => {
     (async () => {
-      await roomStore.getUserDataWithSessionToken();
+      await roomStore.getUserData();
       if (typeof roomId === "string") {
-        await roomStore.getIsHostWithSessionToken(roomId);
+        await roomStore.getIsHost(roomId);
         await roomStore.getRoomById(roomId);
         await roomStore.getHospitalOption();
         console.log("room Join Option :: " + roomStore.roomJoinOpt);
@@ -213,11 +213,8 @@ const WaitingRoom: NextPage<{
               ) : null}
             </div>
           )}
-          {/*TODO: 임시로 두는 버튼입니다. 추후에 회원 기능이 구현되면 회원 타입이 환자인 경우만 보여야 합니다.*/}
-          {/*231024 : 실제 이지케어텍 api가 아닌 자체 db로 작업 완료. 이후 수정 요망.*/}
         </div>
         <div>{roomStore.waitingRoomMessage}</div>
-        {/* TODO: 회원 기능 구현되면 삭제하기. 임시용 회원 ID 입력 필드임. */}
         {DisplayNameChanger(roomStore)}
       </div>
     </>
@@ -387,7 +384,6 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             )}
           </div>
 
-          {/* TODO: 호스트인 경우에만 아래의 입장 대기목록 보이도록 수정 */}
           {roomStore.isHost && (
             <div className={styles.sideElement}>
               <div className={styles.sideTitle}>
@@ -1031,7 +1027,6 @@ const DeviceSelector: NextPage<{ roomStore: RoomStore }> = observer(
 
     // 장치가 추가되거나 제거되었을 때 발생하는 이벤트
     // 장치 리스트 갱신 -> 사용 중이던 장치 제거되었으면 다른 장치로 대치
-    // TODO(대현) 현재 사용 가능한 장치 중 첫 번째 장치로 대치함. -> 다른 방법 있는지 생각.
     navigator.mediaDevices.ondevicechange = async function () {
       await initDevice();
       // 조건문: 각 device 리스트에 현재 deviceId 와 일치하는 device 가 없다면 ...
@@ -1132,8 +1127,6 @@ const Video: NextPage<{
   height: string;
 }> = ({ id, videoStream, roomStore, width, height }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  // TODO 오퍼레이션 로그 - 비디오 audio state 변화 감지
-  // console.log(id + " => video state " + roomStore.enabledLocalVideo);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -1211,8 +1204,6 @@ const Audio: NextPage<{
   roomStore: RoomStore;
 }> = ({ id, audioStream, roomStore }) => {
   const audioRef = useRef<HTMLMediaElement>(null);
-  // TODO 오퍼레이션 로그 - 오디오 audio state 변화 감지
-  // console.log(id + " => audio state : " + roomStore.enabledLocalAudio);
 
   // 컴포넌트가 마운트 될 때만 실행
   useEffect(() => {

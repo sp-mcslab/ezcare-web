@@ -19,9 +19,6 @@ import si from "systeminformation";
 import { Health } from "aws-sdk";
 import { createOperationLog } from "@/repository/operationLog.repository";
 import { OperationLogDto } from "@/dto/OperationLogDto";
-import { findTenant } from "@/repository/tenant.repository";
-import { getUserById } from "@/controller/user.controller";
-import { findUserById } from "@/repository/user.repository";
 
 export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -122,7 +119,6 @@ export const getTotalCallTime = async (
 
     console.log("hospital Code :: " + hospitalCode);
 
-    // 전체 진료 시간 조회 -> 테넌트 별..
     const rooms = await findAllRooms();
 
     console.log(rooms);
@@ -279,33 +275,26 @@ export const getOnlineUsers = async (
       });
       return;
     }
-
-    let usersWithRolesObject: { [roomId: string]: object[] } = {};
-
-    for (const [roomId, users] of Object.entries(onlineUsers)) {
-      console.log("진료실 ID: " + roomId);
-
-      const usersWithRoles = await Promise.all(
-        users.map(async (userId) => {
-          const user = await findUserById(userId);
-
-          if (user == null) {
-            res.status(404).end();
-            return;
-          }
-
-          return { hospital_code: hospitalCode, userName: user.name };
-        })
-      );
-
-      usersWithRolesObject[roomId] = usersWithRolesObject[roomId] || [];
-      usersWithRolesObject[roomId] =
-        usersWithRolesObject[roomId].concat(usersWithRoles);
-    }
+    //
+    // let usersWithRolesObject: { [roomId: string]: object[] } = {};
+    //
+    // for (const [roomId, users] of Object.entries(onlineUsers)) {
+    //   console.log("진료실 ID: " + roomId);
+    //
+    //   const usersWithRoles = await Promise.all(
+    //     users.map(async (userId) => {
+    //       return { hospital_code: hospitalCode, userName: user.name };
+    //     })
+    //   );
+    //
+    //   usersWithRolesObject[roomId] = usersWithRolesObject[roomId] || [];
+    //   usersWithRolesObject[roomId] =
+    //     usersWithRolesObject[roomId].concat(usersWithRoles);
+    // }
 
     res.status(200).json({
       message: "접속 중인 사용자를 조회했습니다.",
-      data: usersWithRolesObject,
+      data: onlineUsers,
     });
   } catch (e) {
     if (typeof e === "string") {

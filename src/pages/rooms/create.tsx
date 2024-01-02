@@ -33,7 +33,7 @@ const ListPage: NextPage = observer(() => {
 
   useEffect(() => {
     (async () => {
-      await roomStore.getUserDataWithSessionToken();
+      await roomStore.getUserData();
       if (roomStore.userRole != "N") {
         router.replace("/rooms");
         return <></>;
@@ -167,8 +167,7 @@ const ListPage: NextPage = observer(() => {
             <TableHead>
               <TableRow>
                 <TableCell>{t("host")}</TableCell>
-                <TableCell>{t("name")}</TableCell>
-                <TableCell>{t("role")}</TableCell>
+                <TableCell>{t("id")}</TableCell>
                 <TableCell></TableCell>
               </TableRow>
             </TableHead>
@@ -193,8 +192,7 @@ const ListPage: NextPage = observer(() => {
                       {t("cancel")}
                     </Button>
                   </TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.role}</TableCell>
+                  <TableCell>{row.id}</TableCell>
                   <TableCell>
                     <Button
                       variant="contained"

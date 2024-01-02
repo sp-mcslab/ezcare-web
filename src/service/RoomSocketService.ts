@@ -809,7 +809,6 @@ export class RoomSocketService {
     operatorId: string,
     userIds: string[]
   ) => {
-    // TODO OPERATION ===================
     const socket = this._requireSocket();
     socket.emit(CLOSE_VIDEO_BY_HOST, roomId, operatorId, userIds);
   };

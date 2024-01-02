@@ -1,7 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import adminService, { AdminService } from "@/service/adminService";
 import { CallLogDto } from "@/dto/CallLogDto";
-import si from "systeminformation";
 import { bool } from "aws-sdk/clients/signer";
 import { OperationLogDto } from "@/dto/OperationLogDto";
 import { HospitalOptDto } from "@/dto/HospitalOptDto";
@@ -185,59 +184,4 @@ export class AdminStore {
   public get joinOpt(): boolean {
     return this._joinOpt;
   }
-
-  public get shareOpt(): boolean {
-    return this._shareOpt;
-  }
-
-  public get patchOptionMessage(): string | undefined {
-    return this._patchOptionMessage;
-  }
-
-  public clearPatchOptionMessage = () => {
-    this._patchOptionMessage = undefined;
-  };
-
-  public getHospitalOption = async (): Promise<void> => {
-    if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLogin();
-    const hospitalResult = await this._adminService.getHospitalOption(
-      this._userGlobalStore.hospitalCode
-    );
-    if (hospitalResult.isSuccess) {
-      this._joinOpt = hospitalResult.getOrNull()!.joinOpt;
-    }
-  };
-
-  public updatejoinOpt = (option: boolean) => {
-    this._joinOpt = option;
-  };
-
-  public updateshareOpt = (option: boolean) => {
-    this._joinOpt = option;
-  };
-
-  public patchHospitalOption = async (): Promise<void> => {
-    if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLogin();
-
-    const operationLogDto = new HospitalOptDto({
-      hospitalCode: this._userGlobalStore.hospitalCode,
-      joinOpt: this._joinOpt,
-    });
-
-    const getRecordResult = await this._adminService.patchHospitalOption(
-      this._userGlobalStore.hospitalCode,
-      operationLogDto
-    );
-    if (getRecordResult.isSuccess) {
-      runInAction(() => {
-        this._patchOptionMessage = "option_sucess";
-      });
-    } else {
-      runInAction(() => {
-        this._patchOptionMessage = "option_failure";
-      });
-    }
-  };
 }

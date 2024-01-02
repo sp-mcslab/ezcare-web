@@ -9,18 +9,12 @@ import {
   updateAllCallRecordOfRoom,
 } from "@/repository/room.repository";
 import { createHost, findUserHostByRoomId } from "@/repository/host.repository";
-import { getIdFromToken } from "@/utils/JwtUtil";
 import { findRooms } from "@/repository/room.repository";
-import { findUserById } from "@/repository/user.repository";
 import {
   createInvitation,
   findInvitedUsersByRoomId,
 } from "@/repository/invite.repository";
 import roomListService from "@/service/roomListService";
-import { findTenant } from "@/repository/tenant.repository";
-import { UserDto } from "@/dto/UserDto";
-
-const secretKey: string = process.env.JWT_SECRET_KEY || "jwt-secret-key";
 
 // 즉시 방 생성
 export const postRoomNow = async (
@@ -28,21 +22,16 @@ export const postRoomNow = async (
   res: NextApiResponse
 ) => {
   // 진료실 생성
-  const { name, invitedUserIds, hostUserIds, baseUrl } = req.body;
-
-  const creatorId = getIdFromToken(
-    req.headers["x-ezcare-session-token"] as string,
-    secretKey
-  ); // 방 생성자의 id get.
-
-  const currentTime = new Date();
-  currentTime.setSeconds(0, 0);
+  const { name, creatorId, invitedUserIds, hostUserIds, baseUrl } = req.body;
 
   //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
   if (creatorId == null) {
     res.status(401).end();
     return;
   }
+
+  const currentTime = new Date();
+  currentTime.setSeconds(0, 0);
 
   if (baseUrl == undefined) {
     console.log("base url is undefined");
@@ -98,12 +87,14 @@ export const postRoomLater = async (
   res: NextApiResponse
 ) => {
   // 진료실 생성
-  const { name, openAt, invitedUserIds, hostUserIds, baseUrl } = req.body;
+  const { name, creatorId, openAt, invitedUserIds, hostUserIds, baseUrl } =
+    req.body;
 
-  const creatorId = getIdFromToken(
-    req.headers["x-ezcare-session-token"] as string,
-    secretKey
-  ); // 방 생성자의 id get.
+  //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
+  if (creatorId == null) {
+    res.status(401).end();
+    return;
+  }
 
   let flag: RoomFlag = RoomFlag.SCHEDULED; // Use the enum values
 
@@ -115,12 +106,6 @@ export const postRoomLater = async (
 
   console.log("진료실 open 예정 시간은 : " + openTime + " 입니다. ");
   console.log("current Time : " + currentTime + "/ open Time : " + openTime);
-
-  //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
-  if (creatorId == null) {
-    res.status(401).end();
-    return;
-  }
 
   if (baseUrl == undefined) {
     res.status(404).end();
@@ -228,15 +213,6 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
       roomListService.checkAndUpdateFlag();
     });
 
-    const userId = getIdFromToken(
-      req.headers["x-ezcare-session-token"] as string,
-      secretKey
-    ); // 사용자의 id get.
-    if (userId == null) {
-      res.status(401).end();
-      return;
-    }
-
     // 병원 코드 확인
     const hospitalCode = req.headers["hospital-code"] as string;
     if (!hospitalCode) {
@@ -246,13 +222,13 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
 
     console.log("hospital Code :: " + hospitalCode);
 
-    const user = await findUserById(userId);
-    if (user == null) {
+    const userId = req.query.userId;
+    if (userId == null) {
       res.status(401).end();
       return;
     }
 
-    const rooms = await findRooms(UserDto.fromEntity(user), hospitalCode);
+    const rooms = await findRooms(userId as string, hospitalCode);
     res.status(200);
     res.json({
       message: "진료실 목록이 조회되었습니다.",
@@ -338,12 +314,11 @@ export const getHostById = async (
   res: NextApiResponse
 ) => {
   try {
-    const userId = getIdFromToken(
-      req.headers["x-ezcare-session-token"] as string,
-      secretKey
-    ); // 사용자의 id get.
+    // 사용자의 id get.
+    const userId = req.query.userId;
 
-    if (!userId) {
+    //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
+    if (userId == null) {
       res.status(401).end();
       return;
     }
@@ -372,7 +347,7 @@ export const getHostById = async (
     }
 
     for (const host of hosts) {
-      if (host.userid == userId) {
+      if (host.userid == (userId as string)) {
         res.status(200);
         res.json({ message: "호스트 권한을 가지고 있습니다.", data: true });
         return;

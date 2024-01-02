@@ -1,43 +1,27 @@
 import { Result } from "@/models/common/Result";
 import { fetchAbsolute } from "@/utils/fetchAbsolute";
-import { UserSearchDto } from "@/dto/UserSearchDto";
 
 const HEADER = {
   "Content-Type": "application/json",
 };
 
 export class UserService {
-  public async findUserData(token: string): Promise<Result<UserSearchDto>> {
+  public async findUserIsHost(
+    hospitalCode: string,
+    userId: string,
+    roomId: string
+  ): Promise<boolean> {
     try {
-      const response = await fetchAbsolute(`api/auth/user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        return Result.createSuccessUsingResponseData(response);
-      } else {
-        console.log(response);
-        return await Result.createErrorUsingResponseMessage(response);
-      }
-    } catch (e) {
-      return Result.createErrorUsingException(e);
-    }
-  }
-
-  public async findUserIsHost(hospitalCode: string, token: string, roomId: string): Promise<boolean> {
-    try {
-      const response = await fetchAbsolute(`api/rooms/${roomId}/host`, {
-        method: "GET",
-        headers: {
-          "hospital-code": hospitalCode,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-        }),
-      });
+      const response = await fetchAbsolute(
+        `api/rooms/${roomId}/host/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "hospital-code": hospitalCode,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const data = await response.json();
       return data.data as boolean;
     } catch (e) {
@@ -45,25 +29,10 @@ export class UserService {
     }
   }
 
-  public async findUserById(userId: string): Promise<Result<UserSearchDto>> {
-    try {
-      const response = await fetchAbsolute(`api/user`, {
-        method: "POST",
-        body: JSON.stringify({ userId }),
-        headers: HEADER,
-      });
-      if (response.ok) {
-        return Result.createSuccessUsingResponseData(response);
-      } else {
-        console.log(response);
-        return await Result.createErrorUsingResponseMessage(response);
-      }
-    } catch (e) {
-      return Result.createErrorUsingException(e);
-    }
-  }
-
-  public async patchDisplayName(token: string, displayName: string): Promise<Result<string>> {
+  public async patchDisplayName(
+    token: string,
+    displayName: string
+  ): Promise<Result<string>> {
     try {
       const response = await fetchAbsolute(`api/auth/user/displayname`, {
         method: "PATCH",

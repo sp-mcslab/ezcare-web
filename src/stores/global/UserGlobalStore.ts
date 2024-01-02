@@ -1,20 +1,14 @@
 import { bool } from "aws-sdk/clients/signer";
 import { makeAutoObservable } from "mobx";
-import loginService, { LoginService } from "@/service/loginService";
 import userService, { UserService } from "@/service/userService";
 import { Result } from "@/models/common/Result";
-import {
-  getUserNameFromLocalStorage
-} from "@/utils/JwtUtil";
+import { getUserNameFromLocalStorage } from "@/utils/JwtUtil";
 
 export class UserGlobalStore {
   private _didLogin: boolean = false;
   private _hospitalCode: string = "";
 
-  constructor(
-    private readonly _loginService: LoginService = loginService,
-    private readonly _userService: UserService = userService,
-  ) {
+  constructor(private readonly _userService: UserService = userService) {
     makeAutoObservable(this);
   }
 

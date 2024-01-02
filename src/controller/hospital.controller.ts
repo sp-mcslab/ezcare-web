@@ -1,12 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getIdFromToken } from "@/utils/JwtUtil";
-import { findUserById, patchDisplayName } from "@/repository/user.repository";
 import {
   addOptionByCode,
   findOptionByCode,
   deleteOptionByCode,
 } from "@/repository/hospital.repository";
-import { HospitalOptDto } from "@/dto/HospitalOptDto";
 
 // header 내 hospital-code 참조 -> 옵션 조회
 export const getOption = async (req: NextApiRequest, res: NextApiResponse) => {

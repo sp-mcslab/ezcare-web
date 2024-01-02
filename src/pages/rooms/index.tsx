@@ -34,7 +34,7 @@ const ListPage: NextPage = observer(() => {
 
   useEffect(() => {
     (async () => {
-      await roomStore.getUserDataWithSessionToken();
+      await roomStore.getUserData();
     })();
   }, [roomStore]);
 

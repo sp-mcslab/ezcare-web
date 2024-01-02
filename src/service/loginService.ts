@@ -31,7 +31,6 @@ export class LoginService {
       const response = await fetchAbsolute(`api/auth/validation`, {
         method: "POST",
         headers: {
-          "x-ezcare-session-token": token,
           "Content-Type": "application/json",
         },
       });

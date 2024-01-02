@@ -21,7 +21,7 @@ import { RoomListService } from "@/service/roomListService";
 
 import userService, { UserService } from "@/service/userService";
 import { AdminService } from "@/service/adminService";
-import { getSessionTokenFromLocalStorage } from "@/utils/JwtUtil";
+import { getUserNameFromLocalStorage } from "@/utils/JwtUtil";
 import { uuidv4 } from "@firebase/util";
 
 import { MediaUtil } from "@/utils/MediaUtil";
@@ -1299,12 +1299,12 @@ export class RoomStore implements RoomViewModel {
   }
 
   public loadRoomList = async (): Promise<void> => {
-    const sessionToken = getSessionTokenFromLocalStorage();
+    const sessionToken = localStorage.getItem("username");
     if (sessionToken == null || sessionToken.length <= 0) {
       return;
     }
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
     const roomResult = await this._roomListService.getRoomList(
       this._userGlobalStore.hospitalCode,
       sessionToken
@@ -1445,7 +1445,7 @@ export class RoomStore implements RoomViewModel {
   };
 
   public postRoom = async (): Promise<void> => {
-    const sessionToken = getSessionTokenFromLocalStorage();
+    const sessionToken = localStorage.getItem("username");
     if (sessionToken == null) {
       return;
     }
@@ -1471,7 +1471,7 @@ export class RoomStore implements RoomViewModel {
     }
     this._createdAt.setSeconds(0, 0);
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
     if (!this._isRoomCreateLater) {
       const roomResult = await this._roomListService.postRoomNow(
         this._userGlobalStore.hospitalCode,
@@ -1570,7 +1570,7 @@ export class RoomStore implements RoomViewModel {
 
   public deleteRoom = async (roomId: string): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
     const roomResult = await this._roomListService.deleteRoomList(
       this._userGlobalStore.hospitalCode,
       roomId
@@ -1649,7 +1649,7 @@ export class RoomStore implements RoomViewModel {
   };
 
   public patchUserDisplayName = async (): Promise<void> => {
-    const sessionToken = getSessionTokenFromLocalStorage();
+    const sessionToken = localStorage.getItem("username");
     if (sessionToken == null) {
       return;
     }
@@ -1666,7 +1666,7 @@ export class RoomStore implements RoomViewModel {
 
   // 호스트
   public getUserDataWithSessionToken = async (): Promise<void> => {
-    const sessionToken = getSessionTokenFromLocalStorage();
+    const sessionToken = localStorage.getItem("username");
     if (sessionToken == null) {
       return;
     }
@@ -1682,8 +1682,8 @@ export class RoomStore implements RoomViewModel {
 
   public getIsHostWithSessionToken = async (roomId: string): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
-    const sessionToken = getSessionTokenFromLocalStorage();
+      await this._userGlobalStore.tryToLogin();
+    const sessionToken = localStorage.getItem("username");
     if (sessionToken == null) {
       return;
     }
@@ -1717,7 +1717,7 @@ export class RoomStore implements RoomViewModel {
 
   public getRoomById = async (roomId: string): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
     const roomResult = await this._roomListService.getRoomById(
       this._userGlobalStore.hospitalCode,
       roomId

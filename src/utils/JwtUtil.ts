@@ -1,13 +1,13 @@
 import jwt from "jsonwebtoken";
 
-const SESSION_TOKEN_KEY = "sessionToken";
+const USER_NAME_KEY = "username";
 
-export function setSessionTokenLocalStorage(token: string) {
-  localStorage.setItem(SESSION_TOKEN_KEY, token);
+export function setUserNameLocalStorage(token: string) {
+  localStorage.setItem(USER_NAME_KEY, token);
 }
 
-export function getSessionTokenFromLocalStorage(): string | null {
-  return localStorage.getItem(SESSION_TOKEN_KEY);
+export function getUserNameFromLocalStorage(): string | null {
+  return localStorage.getItem(USER_NAME_KEY);
 }
 
 export function signJWT(id: string, PRIVATE_KEY: string) {

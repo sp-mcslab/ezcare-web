@@ -66,7 +66,7 @@ export class AdminStore {
 
   public findRecordAllRoom = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
     const getRecordResult = await this._adminService.findRecordAllRoom(
       this._userGlobalStore.hospitalCode
     );
@@ -86,7 +86,7 @@ export class AdminStore {
 
   public findOperationAllRoom = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
     const getRecordResult = await this._adminService.findOperationAllRoom(
       this._userGlobalStore.hospitalCode
     );
@@ -106,7 +106,7 @@ export class AdminStore {
 
   public serverHealthCheck = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
     const getServerHealthResult = await this._adminService.serverHealthCheck(
       this._userGlobalStore.hospitalCode
     );
@@ -200,7 +200,7 @@ export class AdminStore {
 
   public getHospitalOption = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
     const hospitalResult = await this._adminService.getHospitalOption(
       this._userGlobalStore.hospitalCode
     );
@@ -219,7 +219,7 @@ export class AdminStore {
 
   public patchHospitalOption = async (): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLoginWithSessionToken();
+      await this._userGlobalStore.tryToLogin();
 
     const operationLogDto = new HospitalOptDto({
       hospitalCode: this._userGlobalStore.hospitalCode,

@@ -40,14 +40,10 @@ export class LoginStore {
   };
 
   public login = async (): Promise<void> => {
-    const loginResult = await this._userGlobalStore.login(
+    await this._userGlobalStore.login(
       this._userId,
       this._userPassword
     );
-
-    if (loginResult.isFailure) {
-      this._errorMessage = loginResult.throwableOrNull()!.message;
-    }
   };
 
   public logout = () => {

@@ -10,7 +10,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
-    userGlobalStore.tryToLoginWithSessionToken().then();
+    userGlobalStore.tryToLogin().then();
   }, []);
 
   return (

@@ -39,8 +39,7 @@ const LoginPage: NextPage = observer(() => {
             onChange={(e) => loginStore.updateUserId(e.target.value)}
           />
           <input
-            type="password"
-            placeholder={t("password")}
+            placeholder={t("property_code")}
             style={{ padding: "8px", margin: "8px" }}
             value={loginStore.userPassword}
             onChange={(e) => loginStore.updateUserPassword(e.target.value)}

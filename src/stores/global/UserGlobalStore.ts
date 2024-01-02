@@ -4,8 +4,7 @@ import loginService, { LoginService } from "@/service/loginService";
 import userService, { UserService } from "@/service/userService";
 import { Result } from "@/models/common/Result";
 import {
-  getSessionTokenFromLocalStorage,
-  setSessionTokenLocalStorage,
+  getUserNameFromLocalStorage
 } from "@/utils/JwtUtil";
 
 export class UserGlobalStore {
@@ -19,32 +18,27 @@ export class UserGlobalStore {
     makeAutoObservable(this);
   }
 
-  public async login(id: string, password: string): Promise<Result<void>> {
-    const result = await this._loginService.login(id, password);
-    if (result.isSuccess) {
-      const sessionToken = result.getOrNull()!.sessionToken;
-      this._didLogin = true;
-      setSessionTokenLocalStorage(sessionToken);
-      return Result.success(undefined);
-    }
-    this._didLogin = false;
-    return Result.error(new Error(result.throwableOrNull()!.message));
+  public async login(username: string, property_code: string): Promise<void> {
+    localStorage.setItem("username", username);
+    localStorage.setItem("property_code", property_code);
+    this._didLogin = true;
   }
 
   public logout = () => {
+    localStorage.setItem("username", "");
+    localStorage.setItem("property_code", "");
     this._didLogin = false;
-    setSessionTokenLocalStorage("");
   };
 
-  public tryToLoginWithSessionToken = async (): Promise<void> => {
-    const sessionToken = getSessionTokenFromLocalStorage();
-    if (sessionToken == null) {
+  public tryToLogin = async (): Promise<void> => {
+    const username = localStorage.getItem("username");
+    if (username == null) {
       return;
     }
-    this._didLogin = await this._loginService.validationJwt(sessionToken);
-    const validResult = await this._userService.findUserData(sessionToken);
-    if (validResult.isSuccess) {
-      this._hospitalCode = validResult.getOrNull()!.hospitalcode;
+    this._didLogin = true;
+    const property_code = localStorage.getItem("property_code");
+    if (property_code != null) {
+      this._hospitalCode = property_code;
     }
   };
 

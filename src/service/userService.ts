@@ -12,7 +12,6 @@ export class UserService {
       const response = await fetchAbsolute(`api/auth/user`, {
         method: "POST",
         headers: {
-          "x-ezcare-session-token": token,
           "Content-Type": "application/json",
         },
       });
@@ -33,9 +32,11 @@ export class UserService {
         method: "GET",
         headers: {
           "hospital-code": hospitalCode,
-          "x-ezcare-session-token": token,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          token,
+        }),
       });
       const data = await response.json();
       return data.data as boolean;
@@ -68,7 +69,6 @@ export class UserService {
         method: "PATCH",
         body: JSON.stringify({ displayName }),
         headers: {
-          "x-ezcare-session-token": token,
           "Content-Type": "application/json",
         },
       });

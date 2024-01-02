@@ -10,8 +10,10 @@ export class RoomListService {
         headers: {
           "hospital-code": hospitalcode,
           "Content-Type": "application/json",
-          "x-ezcare-session-token": token,
         },
+        body: JSON.stringify({
+          token,
+        }),
       });
       console.log(response);
       if (response.ok) {
@@ -43,7 +45,6 @@ export class RoomListService {
         }),
         headers: {
           "Content-Type": "application/json",
-          "x-ezcare-session-token": token,
           "hospital-code": hospitalcode,
         },
       });
@@ -78,7 +79,6 @@ export class RoomListService {
         }),
         headers: {
           "Content-Type": "application/json",
-          "x-ezcare-session-token": token,
           "hospital-code": hospitalcode,
         },
       });

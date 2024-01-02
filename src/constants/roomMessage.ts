@@ -1,3 +1,2 @@
 export const CONNECTING_ROOM_MESSAGE: string = "연결 중...";
-export const ALREADY_JOINED_ROOM_MESSAGE: string =
-  "이미 해당 방에 접속해 있습니다.";
+export const ROOM_IS_FULL: string = "방이 이미 가득 찼습니다.";

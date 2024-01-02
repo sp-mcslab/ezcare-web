@@ -28,29 +28,6 @@ export class UserService {
       return false;
     }
   }
-
-  public async patchDisplayName(
-    token: string,
-    displayName: string
-  ): Promise<Result<string>> {
-    try {
-      const response = await fetchAbsolute(`api/auth/user/displayname`, {
-        method: "PATCH",
-        body: JSON.stringify({ displayName }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response.ok) {
-        return Result.createSuccessUsingResponseMessage(response);
-      } else {
-        console.log(response);
-        return await Result.createErrorUsingResponseMessage(response);
-      }
-    } catch (e) {
-      return Result.createErrorUsingException(e);
-    }
-  }
 }
 
 const userService = new UserService();

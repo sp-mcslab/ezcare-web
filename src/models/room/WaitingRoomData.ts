@@ -10,9 +10,4 @@ export interface WaitingRoomData {
    * 공부방의 최대 참여 가능한 인원이다.
    */
   readonly capacity: number;
-
-  /**
-   * 공부방의 방장 ID이다.
-   */
-  readonly masterId: string;
 }

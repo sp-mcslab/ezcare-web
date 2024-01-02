@@ -1,7 +1,4 @@
-import {
-  ALREADY_JOINED_ROOM_MESSAGE,
-  CONNECTING_ROOM_MESSAGE,
-} from "@/constants/roomMessage";
+import { CONNECTING_ROOM_MESSAGE, ROOM_IS_FULL } from "@/constants/roomMessage";
 import { RoomDto } from "@/dto/RoomDto";
 import { ChatMessage } from "@/models/room/ChatMessage";
 import { PeerState } from "@/models/room/PeerState";
@@ -19,9 +16,8 @@ import { RoomSocketService } from "@/service/RoomSocketService";
 import { beep } from "@/service/SoundPlayer";
 import { RoomListService } from "@/service/roomListService";
 
-import userService, { UserService } from "@/service/userService";
+import { UserService } from "@/service/userService";
 import { AdminService } from "@/service/adminService";
-import { getUserNameFromLocalStorage } from "@/utils/JwtUtil";
 import { uuidv4 } from "@firebase/util";
 
 import { MediaUtil } from "@/utils/MediaUtil";
@@ -31,7 +27,6 @@ import { makeAutoObservable, observable, runInAction } from "mobx";
 import { RtpStreamStat } from "@/models/room/RtpStreamStat";
 import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
 import { Transaction } from "@prisma/client";
-import { findTenant } from "@/repository/tenant.repository";
 import AwaitingPeerInfo from "@/models/room/AwaitingPeerInfo";
 
 import userGlobalStore, {
@@ -89,7 +84,6 @@ export class RoomStore implements RoomViewModel {
   private readonly _roomListService;
   private readonly _userService;
   private readonly _adminService;
-  private _failedToSignIn: boolean = false;
 
   private _state: RoomState = RoomState.CREATED;
 
@@ -102,7 +96,6 @@ export class RoomStore implements RoomViewModel {
   // ======================= 대기실 관련 =======================
   private _awaitConfirmToJoin: boolean = false;
   private _waitingRoomData?: WaitingRoomData = undefined;
-  private _passwordInput: string = "";
   private _failedToJoinMessage?: string = undefined;
   // ========================================================
 
@@ -117,7 +110,6 @@ export class RoomStore implements RoomViewModel {
   private readonly _remoteScreenVideoStreamsByPeerId: Map<string, MediaStream> =
     observable.map(new Map());
 
-  private _masterId?: string = undefined;
   private _peerStates: PeerState[] = [];
   private _chatInput: string = "";
   private _awaitingPeerInfos: AwaitingPeerInfo[] = [];
@@ -242,10 +234,6 @@ export class RoomStore implements RoomViewModel {
     return this._state;
   }
 
-  public get failedToSignIn(): boolean {
-    return this._failedToSignIn;
-  }
-
   public get localVideoStream(): MediaStream | undefined {
     return this._localVideoStream;
   }
@@ -298,23 +286,8 @@ export class RoomStore implements RoomViewModel {
     return this._uid;
   }
 
-  private _isCurrentUserMaster = (
-    waitingRoomData: WaitingRoomData
-  ): boolean => {
-    return waitingRoomData.masterId === this._requireCurrentUserId();
-  };
-
   private _isRoomFull = (waitingRoomData: WaitingRoomData): boolean => {
     return waitingRoomData.joinerList.length >= waitingRoomData.capacity;
-  };
-
-  private _isCurrentUserAlreadyJoined = (
-    waitingRoomData: WaitingRoomData
-  ): boolean => {
-    const currentUserId = this._requireCurrentUserId();
-    return waitingRoomData.joinerList.some(
-      (joiner) => joiner.id === currentUserId
-    );
   };
 
   public get failedToJoinMessage(): string | undefined {
@@ -326,22 +299,11 @@ export class RoomStore implements RoomViewModel {
     if (waitingRoomData === undefined) {
       return CONNECTING_ROOM_MESSAGE;
     }
-    if (this._isCurrentUserAlreadyJoined(waitingRoomData)) {
-      return ALREADY_JOINED_ROOM_MESSAGE;
-    }
-    if (this._isCurrentUserMaster(waitingRoomData)) {
-      return undefined;
+    if (this._isRoomFull(waitingRoomData)) {
+      return ROOM_IS_FULL;
     }
     return undefined;
   }
-
-  public get passwordInput(): string {
-    return this._passwordInput;
-  }
-
-  public updatePasswordInput = (password: string) => {
-    this._passwordInput = password;
-  };
 
   public get enableJoinButton(): boolean {
     const waitingRoomData = this._waitingRoomData;
@@ -351,23 +313,10 @@ export class RoomStore implements RoomViewModel {
     if (this._awaitConfirmToJoin) {
       return false;
     }
-    if (this._isCurrentUserAlreadyJoined(waitingRoomData)) {
-      return false;
-    }
-    if (this._isCurrentUserMaster(waitingRoomData)) {
-      return true;
-    }
     return !this._isRoomFull(waitingRoomData);
   }
 
   // ==============================================================================
-
-  public get isCurrentUserMaster(): boolean {
-    if (this._uid === undefined) {
-      return false;
-    }
-    return this._masterId === this._uid;
-  }
 
   public get peerStates(): PeerState[] {
     return this._peerStates;
@@ -453,7 +402,6 @@ export class RoomStore implements RoomViewModel {
             this._state = RoomState.WAITING_ROOM;
             // 미디어서버에서 roomId로 진료실 검색 후 없으면 waitingRoomData === undefined
             this._waitingRoomData = waitingRoomData;
-            this._masterId = waitingRoomData.masterId;
           });
           successGetMediaStream = true;
         })
@@ -503,9 +451,6 @@ export class RoomStore implements RoomViewModel {
   };
 
   public onRequestToJoinRoom = (awaitingPeerInfo: AwaitingPeerInfo) => {
-    console.log(
-      `onRequestToJoinRoom: ${awaitingPeerInfo.userId}, ${awaitingPeerInfo.displayName}`
-    );
     if (!this._isHost) {
       return;
     }
@@ -587,10 +532,7 @@ export class RoomStore implements RoomViewModel {
 
   public requestToJoinRoom = async () => {
     this._awaitConfirmToJoin = true;
-    const result = await this._roomSocketService.requestToJoin(
-      this._uid,
-      this._userDisplayName
-    );
+    const result = await this._roomSocketService.requestToJoin(this._uid);
     if (result.isFailure) {
       this._failedToJoinMessage = "request_transfer_failed";
       this._awaitConfirmToJoin = false;
@@ -640,12 +582,11 @@ export class RoomStore implements RoomViewModel {
     if (this.kickedToWaitingRoom) {
       this._kickedToWaitingRoom = false;
     }
-    this._roomSocketService.join(mediaStream, this._uid, this._userDisplayName);
+    this._roomSocketService.join(mediaStream, this._uid);
   };
 
   public onFailedToJoin = (message: string) => {
     this._failedToJoinMessage = message;
-    this._passwordInput = "";
   };
 
   public onJoined = (
@@ -1075,18 +1016,6 @@ export class RoomStore implements RoomViewModel {
     }
   };
 
-  private getUserNameBy = (userId: string): string | undefined => {
-    return this._peerStates.find((state) => state.uid === userId)?.name;
-  };
-
-  public requireUserNameBy = (userId: string): string => {
-    const userName = this.getUserNameBy(userId);
-    if (userName == null) {
-      throw Error("해당 회원 이름을 찾을 수 없습니다.");
-    }
-    return userName;
-  };
-
   public kickUser = (userId: string) => {
     this._roomSocketService.kickUser(userId);
   };
@@ -1108,7 +1037,7 @@ export class RoomStore implements RoomViewModel {
       if (kickedPeerState == null) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
-      this._userMessage = `other_peer_kicked:${kickedPeerState.name}`;
+      this._userMessage = `other_peer_kicked:${kickedPeerState.uid}`;
     }
   };
 
@@ -1127,7 +1056,7 @@ export class RoomStore implements RoomViewModel {
       if (kickedPeerState == null) {
         throw Error("강퇴시킨 피어의 정보가 없습니다.");
       }
-      this._userMessage = `other_peer_kicked_to_waiting_room:${kickedPeerState.name}`;
+      this._userMessage = `other_peer_kicked_to_waiting_room:${kickedPeerState.uid}`;
     }
   };
 
@@ -1569,22 +1498,12 @@ export class RoomStore implements RoomViewModel {
 
   //유저 권한, 호스트 여부 조회, 초대 인원 조회
   private _userRole: string = "";
-  private _userName: string = "";
-  private _userDisplayName: string = "";
   private _userHospitalCode: string = "";
   private _isHost: boolean = false;
   private _isInvited: boolean = false;
 
   public get userRole(): string {
     return this._userRole;
-  }
-
-  public get userName(): string {
-    return this._userName;
-  }
-
-  public get userDisplayName(): string {
-    return this._userDisplayName;
   }
 
   public get userHospitalCode(): string {
@@ -1599,48 +1518,6 @@ export class RoomStore implements RoomViewModel {
     return this._isInvited;
   }
 
-  public updateUserDisplayName = (newDisplayName: string) => {
-    this._userDisplayName = newDisplayName;
-  };
-
-  private updateMyPeerStateDisplayName = () => {
-    const myPeerState = this.peerStates.find((ps) => ps.uid === this._uid);
-    let newPeerState: PeerState;
-    if (myPeerState === undefined) {
-      newPeerState = {
-        uid: this._uid,
-        name: this._userName,
-        displayName: this._userDisplayName,
-        enabledMicrophone: this.enabledMuteAudio(),
-      };
-    } else {
-      newPeerState = {
-        uid: myPeerState.uid,
-        name: myPeerState.name,
-        displayName: this._userDisplayName,
-        enabledMicrophone: myPeerState.enabledMicrophone,
-      };
-    }
-    this._peerStates = this.peerStates.filter((ps) => ps.uid !== this._uid);
-    this._peerStates.push(newPeerState);
-  };
-
-  public patchUserDisplayName = async (): Promise<void> => {
-    const sessionToken = localStorage.getItem("username");
-    if (sessionToken == null) {
-      return;
-    }
-    const patchResult = await this._userService.patchDisplayName(
-      sessionToken,
-      this._userDisplayName
-    );
-    if (patchResult.isSuccess) {
-      console.log(patchResult.getOrNull()!);
-      this.updateMyPeerStateDisplayName();
-      this.broadcastDisplayName();
-    }
-  };
-
   // 호스트
   public getUserData = async (): Promise<void> => {
     const username = localStorage.getItem("username");
@@ -1649,7 +1526,6 @@ export class RoomStore implements RoomViewModel {
     }
     this._uid = username.slice(1);
     this._userRole = username.slice(0, 1);
-    this._userName = username.slice(1);
 
     const property_code = localStorage.getItem("property_code");
     if (property_code != null) {
@@ -1737,10 +1613,6 @@ export class RoomStore implements RoomViewModel {
       };
       this._remoteVideoStreamsByPeerId.set(peerId, wrapper);
     }
-  };
-
-  public broadcastDisplayName = () => {
-    this._roomSocketService.broadcastDisplayName(this._userDisplayName);
   };
 
   private _networkViewMode: boolean = false;

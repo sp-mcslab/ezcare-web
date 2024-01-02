@@ -3,7 +3,6 @@ import { io, Socket } from "socket.io-client";
 import {
   CANCEL_JOIN_REQUEST,
   APPROVE_JOINING_ROOM,
-  BLOCK_USER,
   CLOSE_AUDIO_PRODUCER,
   CLOSE_VIDEO_PRODUCER,
   CONNECTION_SUCCESS,
@@ -26,7 +25,6 @@ import {
   TRANSPORT_PRODUCER,
   TRANSPORT_PRODUCER_CONNECT,
   TRANSPORT_RECEIVER_CONNECT,
-  UNBLOCK_USER,
   CLOSE_AUDIO_BY_HOST,
   CLOSE_VIDEO_BY_HOST,
   KICK_USER_TO_WAITINGR_ROOM,
@@ -39,7 +37,6 @@ import {
   VIDEO_CONSUMER_SCORE,
   AUDIO_CONSUMER_SCORE,
   RTP_STREAM_STAT,
-  BROADCAST_DISPLAYNAME,
   CLOSE_SCREEN_VIDEO_PRODUCER,
 } from "@/constants/socketProtocol";
 import { MediaKind, RtpParameters } from "mediasoup-client/lib/RtpParameters";
@@ -200,14 +197,10 @@ export class RoomSocketService {
     socket.removeListener(OTHER_PEER_EXITED_ROOM);
   };
 
-  public requestToJoin = async (
-    uid: string,
-    displayName: string
-  ): Promise<Result<boolean>> => {
+  public requestToJoin = async (uid: string): Promise<Result<boolean>> => {
     const socket = this._requireSocket();
     const args: AwaitingPeerInfo = {
       userId: uid,
-      displayName: displayName,
     };
     return new Promise((resolve) => {
       socket.emit(REQUEST_TO_JOIN_ROOM, args, (existsRoom: boolean) => {
@@ -266,17 +259,12 @@ export class RoomSocketService {
     });
   };
 
-  public join = (
-    localMediaStream: MediaStream,
-    uid: string,
-    displayName: string
-  ) => {
+  public join = (localMediaStream: MediaStream, uid: string) => {
     const socket = this._requireSocket();
     socket.emit(
       JOIN_ROOM,
       {
         userId: uid,
-        displayName: displayName,
       },
       async (
         data: JoinRoomSuccessCallbackProperty | JoinRoomFailureCallbackProperty
@@ -775,26 +763,6 @@ export class RoomSocketService {
     socket.emit(KICK_USER_TO_WAITINGR_ROOM, userId);
   };
 
-  public blockUser = (userId: string) => {
-    this._requireSocket().emit(BLOCK_USER, userId);
-  };
-
-  public unblockUser = (userId: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      this._requireSocket().emit(
-        UNBLOCK_USER,
-        userId,
-        (isSuccess: boolean, message: string) => {
-          if (isSuccess) {
-            resolve();
-          } else {
-            reject(message);
-          }
-        }
-      );
-    });
-  };
-
   public closeAudioByHost = (
     roomId: string,
     operatorId: string,
@@ -821,10 +789,5 @@ export class RoomSocketService {
   public exitRoom = () => {
     const socket = this._requireSocket();
     socket.disconnect();
-  };
-
-  public broadcastDisplayName = (displayName: string) => {
-    const socket = this._requireSocket();
-    socket.emit(BROADCAST_DISPLAYNAME, displayName);
   };
 }

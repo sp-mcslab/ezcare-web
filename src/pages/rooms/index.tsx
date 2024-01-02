@@ -38,11 +38,6 @@ const ListPage: NextPage = observer(() => {
     })();
   }, [roomStore]);
 
-  if (roomStore.failedToSignIn) {
-    router.replace("/login");
-    return <></>;
-  }
-
   dayjs.extend(utc);
 
   const deleteRoom = async (roomId: string) => {
@@ -65,7 +60,7 @@ const ListPage: NextPage = observer(() => {
               marginLeft: "30%",
             }}
           >
-            {roomStore.uid} - {roomStore.userName} - {roomStore.userRole}
+            {roomStore.uid} - {roomStore.userRole}
           </div>
         ) : undefined}
       </div>

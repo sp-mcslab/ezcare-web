@@ -31,7 +31,6 @@
   "request_transfer_failed": "입장 요청 전송을 실패했습니다.",
   "not_open": "아직 방이 열리지 않았습니다.",
   "already_entered": "이미 해당 진료실에 참여 중 입니다.",
-  "display_name": "디스플레이 네임",
   "other_peer_kicked": "다른 참여자가 강퇴되었습니다.",
   "other_peer_kicked_to_waiting_room": "다른 참여자가 로비로 강퇴되었습니다.",
   "kicked": "방장에 의해 강퇴되었습니다.",

@@ -174,16 +174,6 @@ const SEND_CHAT = "send-chat";
 const KICK_USER = "kick-user";
 
 /**
- * 방장이 회원을 차단할 때 서버에 전송하는 프로토콜이다.
- */
-const BLOCK_USER = "block-user";
-
-/**
- * 방장이 회원 차단을 해제할 때 서버에 전송하는 프로토콜이다.
- */
-const UNBLOCK_USER = "unblock-user";
-
-/**
  * 호스트가 회원의 마이크를 종료시킬 때 전송하는 프로토콜이다.
  */
 const CLOSE_AUDIO_BY_HOST = "close-audio-by-host";
@@ -233,11 +223,6 @@ const AUDIO_CONSUMER_SCORE = "audio-consumer-score";
  */
 const RTP_STREAM_STAT = "rtp-stream-stat";
 
-/**
- * 클라이언트가 DisplayName 을 변경했을 때 다른 참여자들에게 알리기 위한 프로토콜이다.
- */
-const BROADCAST_DISPLAYNAME = "broadcast-displayname";
-
 export {
   IP_ADDRESS,
   NAME_SPACE,
@@ -270,8 +255,6 @@ export {
   OTHER_PEER_DISCONNECTED,
   SEND_CHAT,
   KICK_USER,
-  BLOCK_USER,
-  UNBLOCK_USER,
   CLOSE_AUDIO_BY_HOST,
   CLOSE_VIDEO_BY_HOST,
   KICK_USER_TO_WAITINGR_ROOM,
@@ -282,5 +265,4 @@ export {
   VIDEO_CONSUMER_SCORE,
   AUDIO_CONSUMER_SCORE,
   RTP_STREAM_STAT,
-  BROADCAST_DISPLAYNAME,
 };

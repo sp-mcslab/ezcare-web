@@ -1,8 +1,6 @@
 import { bool } from "aws-sdk/clients/signer";
 import { makeAutoObservable } from "mobx";
 import userService, { UserService } from "@/service/userService";
-import { Result } from "@/models/common/Result";
-import { getUserNameFromLocalStorage } from "@/utils/JwtUtil";
 
 export class UserGlobalStore {
   private _didLogin: boolean = false;

@@ -70,13 +70,6 @@ const OperationPage: NextPage = observer(() => {
           >
             {t("server_health")}
           </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => router.replace("/admin/option")}
-          >
-            {t("hospital_option")}
-          </Button>
         </div>
       </div>
       <div>

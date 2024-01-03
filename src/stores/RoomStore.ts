@@ -13,7 +13,6 @@ import {
 } from "@/models/room/WaitingRoomEvent";
 
 import { RoomSocketService } from "@/service/RoomSocketService";
-import { beep } from "@/service/SoundPlayer";
 import { RoomListService } from "@/service/roomListService";
 
 import { UserService } from "@/service/userService";
@@ -904,7 +903,6 @@ export class RoomStore implements RoomViewModel {
 
   public onReceivedChat = (message: ChatMessage) => {
     this._chatMessages.push(message);
-    beep();
   };
 
   public onBroadcastStopShareScreen = (userId: string) => {

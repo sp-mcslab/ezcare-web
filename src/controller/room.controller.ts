@@ -21,8 +21,10 @@ export const postRoomNow = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
+  const protocol = req.headers["x-forwarded-proto"] || "http";
+  const host = req.headers["host"];
   // 진료실 생성
-  const { name, creatorId, invitedUserIds, hostUserIds, baseUrl } = req.body;
+  const { name, creatorId, invitedUserIds, hostUserIds } = req.body;
 
   //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
   if (creatorId == null) {
@@ -32,12 +34,6 @@ export const postRoomNow = async (
 
   const currentTime = new Date();
   currentTime.setSeconds(0, 0);
-
-  if (baseUrl == undefined) {
-    console.log("base url is undefined");
-    res.status(404).end();
-    return;
-  }
 
   const hospitalCode = req.headers["hospital-code"] as string;
   if (!hospitalCode) {
@@ -59,7 +55,7 @@ export const postRoomNow = async (
 
     await createHost(room.id, creatorId, hospitalCode);
 
-    const roomUrl = (baseUrl as string) + room.id;
+    const roomUrl = `${protocol}://${host}/rooms/${room.id}`;
 
     res.status(201);
     res.json({
@@ -86,9 +82,11 @@ export const postRoomLater = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
+  const protocol = req.headers["x-forwarded-proto"] || "http";
+  const host = req.headers["host"];
+
   // 진료실 생성
-  const { name, creatorId, openAt, invitedUserIds, hostUserIds, baseUrl } =
-    req.body;
+  const { name, creatorId, openAt, invitedUserIds, hostUserIds } = req.body;
 
   //방 생성을 요청한 사용자의 토큰이 유효하지 않을 때.
   if (creatorId == null) {
@@ -107,10 +105,6 @@ export const postRoomLater = async (
   console.log("진료실 open 예정 시간은 : " + openTime + " 입니다. ");
   console.log("current Time : " + currentTime + "/ open Time : " + openTime);
 
-  if (baseUrl == undefined) {
-    res.status(404).end();
-    return;
-  }
   //openAt이 createdAt보다 과거인 경우
   if (openTime.getTime() < currentTime.getTime()) {
     res.status(404);
@@ -138,7 +132,7 @@ export const postRoomLater = async (
 
     await createHost(room.id, creatorId, hospitalCode);
 
-    const roomUrl = (baseUrl as string) + room.id;
+    const roomUrl = `${protocol}://${host}/rooms/${room.id}`;
 
     res.status(201);
     res.json({
@@ -454,6 +448,44 @@ export const postInvitation = async (
   } catch (e) {
     res.status(404);
     res.json({ message: "초대 목록에 추가되지 않았습니다." });
+    return;
+  }
+};
+
+// 진료실 url 조회
+export const getUrlById = async (req: NextApiRequest, res: NextApiResponse) => {
+  try {
+    const protocol = req.headers["x-forwarded-proto"] || "http";
+    const host = req.headers["host"];
+
+    const roomId = req.query.roomId;
+
+    if (roomId == null) {
+      res.status(404);
+      res.json({ message: "존재하지 않는 진료실입니다." });
+      return;
+    }
+
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
+    const roomUrl = `${protocol}://${host}/rooms/${roomId}`;
+
+    res.status(200);
+    res.json({
+      message: "진료실 url 이 조회되었습니다.",
+      data: roomUrl,
+    });
+    return;
+  } catch (e) {
+    console.error(e);
+    res.status(400);
+    res.json({ message: "진료실 url 이 조회되지 않았습니다." });
     return;
   }
 };

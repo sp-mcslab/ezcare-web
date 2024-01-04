@@ -29,7 +29,6 @@ export class RoomListService {
   public async postRoomNow(
     hospitalcode: string,
     creatorId: string,
-    baseUrl: string,
     name: string,
     invitedUserIds: string[], // 초대된 회원의 ID 목록
     hostUserIds: string[]
@@ -42,7 +41,6 @@ export class RoomListService {
           creatorId,
           invitedUserIds,
           hostUserIds,
-          baseUrl,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +60,6 @@ export class RoomListService {
   public async postRoomLater(
     hospitalcode: string,
     creatorId: string,
-    baseUrl: string,
     name: string,
     openAt: Date,
     invitedUserIds: string[], // 초대된 회원의 ID 목록
@@ -77,7 +74,6 @@ export class RoomListService {
           openAt,
           invitedUserIds,
           hostUserIds,
-          baseUrl,
         }),
         headers: {
           "Content-Type": "application/json",

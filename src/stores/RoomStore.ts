@@ -20,7 +20,6 @@ import { AdminService } from "@/service/adminService";
 import { uuidv4 } from "@firebase/util";
 
 import { MediaUtil } from "@/utils/MediaUtil";
-import { getBaseURL } from "@/utils/getBaseURL";
 import { MediaKind } from "mediasoup-client/lib/RtpParameters";
 import { makeAutoObservable, observable, runInAction } from "mobx";
 import { RtpStreamStat } from "@/models/room/RtpStreamStat";
@@ -1380,7 +1379,6 @@ export class RoomStore implements RoomViewModel {
       const roomResult = await this._roomListService.postRoomNow(
         this._userGlobalStore.hospitalCode,
         sessionToken,
-        getBaseURL(),
         this._createdRoomName,
         this._inviteUserIdList,
         this._hostUserList
@@ -1401,7 +1399,6 @@ export class RoomStore implements RoomViewModel {
       const roomResult = await this._roomListService.postRoomLater(
         this._userGlobalStore.hospitalCode,
         sessionToken,
-        getBaseURL(),
         this._createdRoomName,
         this._createdAt,
         this._inviteUserIdList,

@@ -1,6 +1,10 @@
 //라우팅
 import { NextApiRequest, NextApiResponse } from "next";
-import { getCallLog, postCallLog } from "@/controller/admin.controller";
+import {
+  getCallLog,
+  postCallLog,
+  updateCallLog,
+} from "@/controller/admin.controller";
 
 export default async function CallLogHandler(
   req: NextApiRequest,
@@ -13,6 +17,9 @@ export default async function CallLogHandler(
       break;
     case "POST":
       await postCallLog(req, res);
+      break;
+    case "PATCH":
+      await updateCallLog(req, res);
       break;
     default:
       res.status(405).end(`Method ${method} Not Allowed`);

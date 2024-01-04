@@ -399,6 +399,16 @@ export class RoomSocketService {
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#TransportOptions
         this._sendTransport = device.createSendTransport(params);
 
+        // Handle the situation when the media server is unreachable or has died
+        this._sendTransport.on("connectionstatechange", (state) => {
+          if (state === "failed" || state === "closed") {
+            console.error(
+              `Send transport connection state changed to ${state}. Media server may have died.`
+            );
+            this._roomViewModel.onDisconnectedServer();
+          }
+        });
+
         // https://mediasoup.org/documentation/v3/communication-between-client-and-server/#producing-media
         // this event is raised when a first call to transport.produce() is made
         // see connectSendTransport() below
@@ -412,7 +422,6 @@ export class RoomSocketService {
             );
           }
         );
-
         this._sendTransport.on(
           "produce",
           async (parameters, callback, errback) => {

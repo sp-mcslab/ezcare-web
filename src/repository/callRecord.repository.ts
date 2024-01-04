@@ -50,6 +50,24 @@ export const createRecord = async (
   return CallLogItemDto.fromEntity(recordEntity);
 };
 
+// 기록 갱신
+export const updateRecord = async (
+  hospitalCode: string,
+  exitDate: Date
+): Promise<boolean> => {
+  const recordEntity = await client.callRecord.updateMany({
+    data: {
+      exitat: exitDate,
+    },
+    where: {
+      hospitalcode: hospitalCode,
+    },
+  });
+
+  if (recordEntity) return true;
+  else return false;
+};
+
 // 모든 진료실의 오퍼레이션 조회
 export const findOperationLogByRoomId = async (
   roomId: string

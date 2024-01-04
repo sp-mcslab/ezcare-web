@@ -34,6 +34,7 @@ import userGlobalStore, {
 export interface RoomViewModel {
   onConnectedWaitingRoom: (waitingRoomData: WaitingRoomData) => void;
   onNotExistsRoomId: () => void;
+  onDisconnectedServer: () => void;
   onWaitingRoomEvent: (event: WaitingRoomEvent) => void;
   onFailedToJoin: (message: string) => void;
   onJoined: (
@@ -377,6 +378,23 @@ export class RoomStore implements RoomViewModel {
 
   public connectSocket = (roomId: string) => {
     this._roomSocketService.connect(roomId);
+  };
+
+  public onDisconnectedServer = () => {
+    // 참여자들의 로그를 exit로 변경
+    const headers = {
+      "hospital-code": this._userGlobalStore.hospitalCode,
+      "Content-Type": "application/json",
+    };
+    const axios = require("axios");
+    axios
+      .patch("/api/admin/call-log", { exitAt: new Date() }, { headers })
+      .then((response: { data: any }) => {
+        console.log("Record updated:", response.data);
+      })
+      .catch((error: any) => {
+        console.error("Error updating record:", error);
+      });
   };
 
   public onConnectedWaitingRoom = async (waitingRoomData: WaitingRoomData) => {

@@ -14,6 +14,7 @@ import {
   findOnlineUsers,
   findOperationLogByRoomId,
   findRecordAllRoom,
+  updateRecord,
 } from "@/repository/callRecord.repository";
 import si from "systeminformation";
 import { Health } from "aws-sdk";
@@ -92,6 +93,48 @@ export const postCallLog = async (
     res.status(200).json({
       message: "통화기록이 저장되었습니다.",
       data: createdRecord,
+    });
+  } catch (e) {
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
+    return;
+  }
+};
+
+export const updateCallLog = async (
+  req: NextApiRequest,
+  res: NextApiResponse
+) => {
+  try {
+    console.log("record updated ... ");
+    let exitDate = req.body;
+
+    if (exitDate == null) {
+      exitDate = new Date();
+    }
+
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    const updatedRecord = updateRecord(hospitalCode, exitDate.exitAt as Date);
+
+    if (!updatedRecord) {
+      res.status(404).json({
+        message: "통화기록 갱신에 실패했습니다.",
+      });
+    }
+
+    res.status(200).json({
+      message: "통화기록이 갱신되었습니다.",
+      data: updatedRecord,
     });
   } catch (e) {
     if (typeof e === "string") {

@@ -8,7 +8,6 @@ export class RoomListService {
     userId: string
   ): Promise<Result<RoomDto[]>> {
     try {
-      console.log(userId + " // " + hospitalcode);
       const response = await fetchAbsolute(`api/rooms?userId=${userId}`, {
         method: "GET",
         headers: {
@@ -110,12 +109,13 @@ export class RoomListService {
     }
   }
 
-  public async checkAndUpdateFlag() {
+  public async checkAndUpdateFlag(hospitalcode: string) {
     try {
       const response = await fetchAbsolute(`api/rooms/flag`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "hospital-code": hospitalcode,
         },
       });
       if (response.ok) {

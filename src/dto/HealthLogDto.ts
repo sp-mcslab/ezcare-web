@@ -61,7 +61,7 @@ export class HealthLogDto {
     this.network = network;
   }
 
-  // RoomEntity -> CallLogDTO
+  // Entity -> HealthLogDto
   public static fromDataEntity = (
     cpu: {
       speed: string;

@@ -16,7 +16,9 @@ import {
 } from "@/repository/invite.repository";
 import roomListService from "@/service/roomListService";
 
-// 즉시 방 생성
+/**
+ * 즉시 방 생성
+ */
 export const postRoomNow = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -77,7 +79,9 @@ export const postRoomNow = async (
   }
 };
 
-// 예약 방 생성
+/**
+ * 예약 방 생성
+ */
 export const postRoomLater = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -154,7 +158,9 @@ export const postRoomLater = async (
   }
 };
 
-// 방 삭제
+/**
+ * 진료실 아이디로 특정 진료실 삭제
+ */
 export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if ((await deleteRoomReq(req.query.roomId as string)) == undefined)
@@ -199,22 +205,24 @@ export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-// 방 목록 조회
+/**
+ * 병원 별, 모든 진료실 조회
+ */
 export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const schedule = require("node-schedule");
-    const job = schedule.scheduleJob("1 * * * * *", function () {
-      roomListService.checkAndUpdateFlag();
-    });
-
     // 병원 코드 확인
     const hospitalCode = req.headers["hospital-code"] as string;
     if (!hospitalCode) {
       res.status(401).end();
       return;
     }
-
     console.log("hospital Code :: " + hospitalCode);
+
+    // 방의 오픈 여부 검사
+    const schedule = require("node-schedule");
+    const job = schedule.scheduleJob("1 * * * * *", function () {
+      roomListService.checkAndUpdateFlag(hospitalCode);
+    });
 
     const userId = req.query.userId;
     if (userId == null) {
@@ -240,7 +248,9 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-// 방 아이디로 방 조회
+/**
+ * 진료실 아이디로 특정 진료실 조회
+ */
 export const getRoomById = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -283,31 +293,48 @@ export const getRoomById = async (
   }
 };
 
-// 진료실 상태 확인
+/**
+ * 진료실의 오픈 상태가 변경되어야 하는지 검사
+ * open : 방에 접근 가능한 상태 (예약 방의 경우, 오픈될 시간이 도래하여 오픈되었거나 / 방이 열린 후 아직 삭제되지 않았을 때)
+ * close : 방에 접근 불가능한 상태 (예약 방의 경우, 오픈될 시간이 아직 되지 않았거나 / 방이 이미 삭제된 경우)
+ */
 export const checkRoomFlag = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
   try {
+    // 병원 코드 확인
+    const hospitalCode = req.headers["hospital-code"] as string;
+    if (!hospitalCode) {
+      res.status(401).end();
+      return;
+    }
+
+    console.log("hospital Code :: " + hospitalCode);
+
     checkRoomOpened();
     checkRoomClosed();
 
     res.status(200);
-    res.json({ message: "flag 검사를 완료하였습니다.", data: false });
+    res.json({ message: "flag 검사를 완료하였습니다." });
     return;
   } catch (e) {
-    res.status(404);
+    res.status(400);
     res.json({ message: "flag 검사 중 오류가 발생했습니다." });
     return;
   }
 };
 
-// 호스트 조회
+/**
+ * 사용자가 진료실에 호스트 권한을 가지고 있는지 조회
+ * @param: userId와 roomId를 활용해 사용자(userId)가 진료실(roomId)에 호스트 권한을 가지고 있는지 여부 조회
+ */
 export const getHostById = async (
   req: NextApiRequest,
   res: NextApiResponse
 ) => {
   try {
+    console.log(req.query.userId + " // " + req.query.roomId);
     // 사용자의 id get.
     const userId = req.query.userId;
 
@@ -358,7 +385,9 @@ export const getHostById = async (
   }
 };
 
-// 초대 목록 조회
+/**
+ * @param: query parameter; roomId로 초대된 사용자 리스트 조회
+ */
 export const getInvitedUsersByRoomId = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -400,7 +429,10 @@ export const getInvitedUsersByRoomId = async (
   }
 };
 
-// 초대 신청
+/**
+ * 해당 방에 사용자가 초대되었을 때 데이터 저장
+ * @param: query - 초대한 방 / body - 초대된 사용자
+ */
 export const postInvitation = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -452,7 +484,9 @@ export const postInvitation = async (
   }
 };
 
-// 진료실 url 조회
+/**
+ * 진료실에 접근할 수 있는 url을 조회한다.
+ */
 export const getUrlById = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const protocol = req.headers["x-forwarded-proto"] || "http";

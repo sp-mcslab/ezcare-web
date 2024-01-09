@@ -3,7 +3,9 @@ import { uuid } from "uuidv4";
 import { Transaction, OperationLog } from "@prisma/client";
 import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
 
-// 오퍼레이션 기록 저장
+/**
+ * 오퍼레이션 저장
+ */
 export const createOperationLog = async (
   roomId: string,
   operator: string,
@@ -15,20 +17,6 @@ export const createOperationLog = async (
 ): Promise<OperationLogItemDto> => {
   // 생성할 record의 고유 아이디 (기본키 id)
   const recordUniqueId = uuid();
-
-  console.log(
-    roomId +
-      " // " +
-      operator +
-      " // " +
-      recipient +
-      " // " +
-      transaction +
-      " // " +
-      time +
-      " => 성공 ? : " +
-      success
-  );
 
   const operationEntity = await client.operationLog.create({
     data: {

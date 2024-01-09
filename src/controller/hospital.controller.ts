@@ -5,7 +5,11 @@ import {
   deleteOptionByCode,
 } from "@/repository/hospital.repository";
 
-// header 내 hospital-code 참조 -> 옵션 조회
+/**
+ * header 내 hospital-code 참조 -> 옵션 조회
+ * 결과 true -> 옵션 적용할 병원으로 저장되어 있음 -> 옵션이 적용됨
+ * 결과 false -> 옵션 적용할 병원으로 저장되어 있지 않음 -> 별도 옵션 적용 없이 Default
+ */
 export const getOption = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const hospitalCode = req.headers["hospital-code"] as string;
@@ -32,6 +36,9 @@ export const getOption = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
+/**
+ * header 내 hospital-code 참조 -> 옵션을 저장할 병원을 저장 => 옵션 설정
+ */
 export const addOption = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const hospitalCode = req.headers["hospital-code"] as string;
@@ -66,6 +73,9 @@ export const addOption = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
+/**
+ * header 내 hospital-code 참조 -> 옵션을 저장할 병원 목록에서 제외 => 옵션 해제
+ */
 export const deleteOption = async (
   req: NextApiRequest,
   res: NextApiResponse

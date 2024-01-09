@@ -4,9 +4,17 @@ import { RoomDto } from "@/dto/RoomDto";
 import { RoomFlag } from "@prisma/client";
 import { getUsageOfDay } from "@/utils/UsageUtil";
 
-export const findAllRooms = async (): Promise<RoomDto[] | undefined> => {
+/**
+ * 모든 진료실을 생성일 기준 내림차순으로 (최신순) 정렬하여 조회한다.
+ */
+export const findAllRooms = async (
+  hospitalCode: string
+): Promise<RoomDto[] | undefined> => {
   try {
     const rooms = await client.room.findMany({
+      where: {
+        hospitalcode: hospitalCode,
+      },
       orderBy: {
         createdat: "desc",
       },
@@ -18,8 +26,9 @@ export const findAllRooms = async (): Promise<RoomDto[] | undefined> => {
   }
 };
 
-import { Prisma } from "@prisma/client";
-
+/**
+ * 진료실 생성
+ */
 export const createRoom = async (
   creatorId: string,
   name: string,
@@ -65,6 +74,9 @@ export const createRoom = async (
   return RoomDto.fromEntity(roomEntity);
 };
 
+/**
+ * 특정 진료실 삭제
+ */
 export const deleteRoomReq = async (roomId: string) => {
   if (roomId == null) return undefined;
   try {
@@ -89,6 +101,12 @@ export const deleteRoomReq = async (roomId: string) => {
   }
 };
 
+/**
+ * 병원 별, 진료실 목록 조회
+ * 간호사 - 호스트인 방, 초대받은 방
+ * 의사 - 호스트인 방 , 초대받은 방
+ * 환자 - 초대받은 방
+ */
 export const findRooms = async (
   userId: string,
   hospital_code: string
@@ -184,6 +202,9 @@ export const findRoomById = async (roomId: string): Promise<RoomDto | null> => {
   return RoomDto.fromEntity(room);
 };
 
+/**
+ * 방이 삭제될 때, 방에 남아있던 모든 유저들을 퇴장 처리
+ */
 export const updateAllCallRecordOfRoom = async (
   roomId: string
 ): Promise<boolean> => {
@@ -200,6 +221,9 @@ export const updateAllCallRecordOfRoom = async (
   return updatedRecords != undefined;
 };
 
+/**
+ * OPEN 처리 해야할 방이 있는지 검사
+ */
 export const checkRoomOpened = async (): Promise<boolean | null> => {
   const presentTime = new Date(); // 비교할 현재 시간
   console.log("check Room Opened :: " + presentTime.toISOString());
@@ -219,6 +243,9 @@ export const checkRoomOpened = async (): Promise<boolean | null> => {
   return !!result;
 };
 
+/**
+ * CLOSE 처리 해야할 방이 있는지 검사
+ */
 export const checkRoomClosed = async (): Promise<boolean | null> => {
   const presentTime = new Date(); // 비교할 현재 시간
   console.log("check room closed :: " + presentTime.toISOString());
@@ -239,8 +266,12 @@ export const checkRoomClosed = async (): Promise<boolean | null> => {
   return !!result;
 };
 
+/**
+ * 병원 별, 일별 사용량을 조회한다.
+ */
 export const findDayUsage = async (
-  date: Date
+  date: Date,
+  hospitalCode: string
 ): Promise<{
   dayCount: number;
   dayUsage: number;
@@ -266,6 +297,7 @@ export const findDayUsage = async (
     where: {
       AND: [
         { openat: { not: { gte: todayLast } } },
+        { hospitalcode: hospitalCode },
         {
           OR: [
             { deletedat: { equals: null } },
@@ -299,8 +331,12 @@ export const findDayUsage = async (
   return { dayCount, dayUsage };
 };
 
+/**
+ * 병원 별, 월별 사용량을 조회한다.
+ */
 export const findMonthUsage = async (
-  date: Date
+  date: Date,
+  hospitalCode: string
 ): Promise<{
   monthCount: number;
   monthUsage: number;
@@ -315,8 +351,6 @@ export const findMonthUsage = async (
   monthLast.setMonth(monthLast.getMonth() + 1, 1);
   monthLast.setHours(0, 0, 0, 0);
 
-  console.log("Start :: " + monthStart + " // " + "End :: " + monthLast);
-
   const data = await client.room.findMany({
     select: {
       openat: true,
@@ -325,6 +359,7 @@ export const findMonthUsage = async (
     where: {
       AND: [
         { openat: { not: { gte: monthLast } } },
+        { hospitalcode: hospitalCode },
         {
           OR: [
             { deletedat: { equals: null } },
@@ -360,8 +395,12 @@ export const findMonthUsage = async (
   return { monthCount, monthUsage };
 };
 
+/**
+ * 병원 별, 년별 사용량을 조회한다.
+ */
 export const findYearUsage = async (
-  date: Date
+  date: Date,
+  hospitalCode: string
 ): Promise<{
   yearCount: number;
   yearUsage: number;
@@ -378,8 +417,6 @@ export const findYearUsage = async (
   yearLast.setMonth(0, 1);
   yearLast.setHours(0, 0, 0, 0);
 
-  console.log("Start :: " + yearStart + " // " + "End :: " + yearLast);
-
   const data = await client.room.findMany({
     select: {
       openat: true,
@@ -388,6 +425,7 @@ export const findYearUsage = async (
     where: {
       AND: [
         { openat: { not: { gte: yearLast } } },
+        { hospitalcode: hospitalCode },
         {
           OR: [
             { deletedat: { equals: null } },
@@ -421,28 +459,4 @@ export const findYearUsage = async (
   console.log("this year's opened room time (ms) : " + yearUsage);
 
   return { yearCount, yearUsage };
-};
-
-export const findDayRoomTime = async (): Promise<number | null> => {
-  const presentTime = new Date();
-
-  const closeDeadLine = new Date(presentTime);
-  closeDeadLine.setHours(0, 0, 0, 0);
-
-  const openDeadLine = new Date(presentTime);
-  openDeadLine.setDate(openDeadLine.getDate() + 1); // Set to the next day
-  openDeadLine.setHours(0, 0, 0, 0);
-
-  const count = await client.room.count({
-    where: {
-      AND: [
-        { openat: { not: { gte: openDeadLine } } },
-        { deletedat: { not: { lte: closeDeadLine } } },
-      ],
-    },
-  });
-
-  console.log("today's opened room count : " + count);
-
-  return count;
 };

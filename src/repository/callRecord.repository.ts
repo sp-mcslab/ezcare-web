@@ -2,7 +2,11 @@ import client from "prisma/client";
 import { uuid } from "uuidv4";
 import { CallLogItemDto } from "@/dto/CallLogItemDto";
 import { OperationLogItemDto } from "@/dto/OperationLogItemDto";
-// 모든 진료실의 입퇴장 이력 조회
+
+/**
+ * 모든 진료실의 record를 조회한다.
+ * @param: 진료실 별로 Mapping
+ */
 export const findRecordAllRoom = async (
   roomId: string
 ): Promise<CallLogItemDto[] | null> => {
@@ -25,7 +29,9 @@ export const findRecordAllRoom = async (
     });
 };
 
-// 기록 저장
+/**
+ * 진료실에 입퇴장하는 사용자의 Record를 저장한다.
+ */
 export const createRecord = async (
   userId: string,
   roomId: string,
@@ -50,7 +56,9 @@ export const createRecord = async (
   return CallLogItemDto.fromEntity(recordEntity);
 };
 
-// 기록 갱신
+/**
+ * 진료실 퇴장 시각이 달라진 경우, 사용자의 퇴장 일시를 갱신한다.
+ */
 export const updateRecord = async (
   hospitalCode: string,
   exitDate: Date
@@ -68,7 +76,10 @@ export const updateRecord = async (
   else return false;
 };
 
-// 모든 진료실의 오퍼레이션 조회
+/**
+ * 진료실 별 모든 Operation을 조회한다.
+ * @param: 진료실 별로 Mapping
+ */
 export const findOperationLogByRoomId = async (
   roomId: string
 ): Promise<OperationLogItemDto[] | null> => {
@@ -90,7 +101,9 @@ export const findOperationLogByRoomId = async (
   }
 };
 
-// 접속중인 유저들 찾기
+/**
+ * 접속 중인 유저들을 조회한다 - callRecord 상에서 exitat이 채워지지 않은 유저 검색
+ */
 export const findOnlineUsers = async (
   hospitalCode: string
 ): Promise<{

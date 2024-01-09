@@ -3,7 +3,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 import {
   findAllRooms,
   findDayUsage,
-  findDayRoomTime,
   findMonthUsage,
   findYearUsage,
 } from "@/repository/room.repository";
@@ -16,20 +15,15 @@ import {
   findRecordAllRoom,
   updateRecord,
 } from "@/repository/callRecord.repository";
-import si from "systeminformation";
-import { Health } from "aws-sdk";
 import { createOperationLog } from "@/repository/operationLog.repository";
 import { OperationLogDto } from "@/dto/OperationLogDto";
 
+/**
+ * 모든 병원의 call-log를 조회한다
+ * 병원 병 각 사용자의 입장과 퇴장을 표현한다.
+ */
 export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const rooms = await findAllRooms();
-
-    if (!rooms || rooms.length === 0) {
-      res.status(400).json({ message: "No rooms found" });
-      return;
-    }
-
     // 병원 코드 확인
     const hospitalCode = req.headers["hospital-code"] as string;
     if (!hospitalCode) {
@@ -38,6 +32,13 @@ export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     console.log("hospital Code :: " + hospitalCode);
+
+    const rooms = await findAllRooms(hospitalCode);
+
+    if (!rooms || rooms.length === 0) {
+      res.status(400).json({ message: "No rooms found" });
+      return;
+    }
 
     const callLogPromises = rooms.map(async (room) => {
       const callRecords = await findRecordAllRoom(room.id);
@@ -62,6 +63,9 @@ export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
+/**
+ * 사용자가 진료실에 입장 및 퇴장 시, 해당 Record를 저장한다.
+ */
 export const postCallLog = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -106,6 +110,10 @@ export const postCallLog = async (
   }
 };
 
+/**
+ * 사용자가 퇴장하거나, 강퇴당하는 등의 경우
+ * 사용자의 퇴장을 기록하기 위해 Record를 갱신한다.
+ */
 export const updateCallLog = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -148,6 +156,10 @@ export const updateCallLog = async (
   }
 };
 
+/**
+ * 병원 별, 전체 누적 진료 시간을 조회한다.
+ * 병원의 오픈 시간(openat)과 삭제 시간(deletedat)을 비교하여 도출한 "활성화된 누적 시간"
+ */
 export const getTotalCallTime = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -162,7 +174,7 @@ export const getTotalCallTime = async (
 
     console.log("hospital Code :: " + hospitalCode);
 
-    const rooms = await findAllRooms();
+    const rooms = await findAllRooms(hospitalCode);
 
     console.log(rooms);
 
@@ -204,6 +216,11 @@ export const getTotalCallTime = async (
   }
 };
 
+/**
+ * 진료실에서 사용자가 오퍼레이션 시도 시, 데이터 저장
+ * 성공(SUCCESS) : 정상적으로 미디어를 제어한 경우
+ * 실패(FAIL) : 미디어 제어 과정에서 오류가 발생하였거나, 실질적으로 작용되지 않은 경우 (이미 꺼진 비디오 끄는 오퍼레이션)
+ */
 export const postOperationLog = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -250,6 +267,11 @@ export const postOperationLog = async (
   }
 };
 
+/**
+ * 진료실 내에서 시도된 사용자들의 모든 오퍼레이션들을 조회한다.
+ * 성공(SUCCESS) : 정상적으로 미디어를 제어한 경우
+ * 실패(FAIL) : 미디어 제어 과정에서 오류가 발생하였거나, 실질적으로 작용되지 않은 경우 (이미 꺼진 비디오 끄는 오퍼레이션)
+ */
 export const getOperationLog = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -265,7 +287,7 @@ export const getOperationLog = async (
     console.log("hospital Code :: " + hospitalCode);
 
     // operation log 조회
-    const rooms = await findAllRooms();
+    const rooms = await findAllRooms(hospitalCode);
 
     if (!rooms || rooms.length === 0) {
       res.status(400).json({ message: "No rooms found" });
@@ -295,6 +317,10 @@ export const getOperationLog = async (
   }
 };
 
+/**
+ * 현재 진료실에 접속해 있는 유저들을 조회한다.
+ * Record 상에 exitAt가 채워지지 않은 유저들을 조회한다.
+ */
 export const getOnlineUsers = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -318,22 +344,6 @@ export const getOnlineUsers = async (
       });
       return;
     }
-    //
-    // let usersWithRolesObject: { [roomId: string]: object[] } = {};
-    //
-    // for (const [roomId, users] of Object.entries(onlineUsers)) {
-    //   console.log("진료실 ID: " + roomId);
-    //
-    //   const usersWithRoles = await Promise.all(
-    //     users.map(async (userId) => {
-    //       return { hospital_code: hospitalCode, userName: user.name };
-    //     })
-    //   );
-    //
-    //   usersWithRolesObject[roomId] = usersWithRolesObject[roomId] || [];
-    //   usersWithRolesObject[roomId] =
-    //     usersWithRolesObject[roomId].concat(usersWithRoles);
-    // }
 
     res.status(200).json({
       message: "접속 중인 사용자를 조회했습니다.",
@@ -351,6 +361,10 @@ export const getOnlineUsers = async (
   }
 };
 
+/**
+ * 병원 별, 일별 월별 년별 사용량을 조회한다.
+ * "누적 생성 진료실 개수 (개)"와 "누적 진료실 활성 시간 (ms)" 제공
+ */
 export const getPeriodUsage = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -365,7 +379,7 @@ export const getPeriodUsage = async (
 
     console.log("hospital Code :: " + hospitalCode);
 
-    // 일별 월별 년별 사용량 통계 조회
+    // 일별 월별 년별 사용량 조회
     const currentdate = req.query.currentdate;
 
     if (!currentdate) {
@@ -389,8 +403,6 @@ export const getPeriodUsage = async (
       }
     }
 
-    console.log(hasYear + " // " + hasMonth + " // " + hasDate);
-
     // 보내려는 값이 오늘/이번 달/이번 년 보다 미래면 보낼 수 없도록 예외처리
     const date = new Date(currentdate as string);
 
@@ -406,9 +418,9 @@ export const getPeriodUsage = async (
     let monthResult = null;
     let yearResult = null;
 
-    if (hasDate) dayResult = await findDayUsage(date); // 일별 누적 사용량
-    if (hasMonth) monthResult = await findMonthUsage(date); // 월별 누적 사용량
-    if (hasYear) yearResult = await findYearUsage(date); // 년별 누적 사용량
+    if (hasDate) dayResult = await findDayUsage(date, hospitalCode); // 일별 누적 사용량
+    if (hasMonth) monthResult = await findMonthUsage(date, hospitalCode); // 월별 누적 사용량
+    if (hasYear) yearResult = await findYearUsage(date, hospitalCode); // 년별 누적 사용량
 
     const { dayCount, dayUsage } = dayResult || { dayCount: 0, dayUsage: 0 };
     const { monthCount, monthUsage } = monthResult || {
@@ -476,6 +488,9 @@ export const getPeriodUsage = async (
   }
 };
 
+/**
+ * 서버 헬스 체크 결과를 조회한다.
+ */
 export const getServerHealth = async (
   req: NextApiRequest,
   res: NextApiResponse
@@ -491,7 +506,7 @@ export const getServerHealth = async (
     console.log("hospital Code :: " + hospitalCode);
 
     // 서버 헬스 체크
-    // npm install os, npm install diskusage, npm install systeminformation,
+    // npm install systeminformation,
     var si = require("systeminformation");
 
     const cpuInfo = await si.cpu();

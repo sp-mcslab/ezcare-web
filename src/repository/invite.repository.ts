@@ -2,6 +2,9 @@ import client from "prisma/client";
 import { Invite } from "@prisma/client";
 import { InviteDto } from "@/dto/InviteDto";
 
+/**
+ * roomId를 사용해 초대된 사용자 리스트 조회
+ */
 export const findInvitedUsersByRoomId = async (
   roomid: string
 ): Promise<InviteDto[] | null> => {
@@ -19,6 +22,9 @@ export const findInvitedUsersByRoomId = async (
   }
 };
 
+/**
+ * 사용자 정보와 진료실 정보를 invite 테이블에 저장
+ */
 export const createInvitation = async (
   roomId: string,
   userId: string,

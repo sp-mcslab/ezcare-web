@@ -495,7 +495,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
               </Button>
             </div>
           )}
-          {roomStore.userRole == "S" && (
+          {roomStore.userRole == "N" && (
             <div style={{ display: "inline-block" }}>
               <Button
                 variant="contained"

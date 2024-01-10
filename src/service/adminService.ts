@@ -91,7 +91,7 @@ export class AdminService {
 
   public async getHospitalOption(
     hospitalCode: string
-  ): Promise<Result<HospitalOptDto>> {
+  ): Promise<Result<boolean>> {
     try {
       const response = await fetchAbsolute(`api/admin/hospital/option`, {
         method: "GET",

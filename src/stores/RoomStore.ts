@@ -1649,7 +1649,7 @@ export class RoomStore implements RoomViewModel {
       this._userGlobalStore.hospitalCode
     );
     if (hospitalResult.isSuccess) {
-      this._roomJoinOpt = hospitalResult.getOrNull()!.joinOpt;
+      this._roomJoinOpt = true;
     }
   };
 }

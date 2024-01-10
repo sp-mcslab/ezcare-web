@@ -108,11 +108,13 @@ const WaitingRoom: NextPage<{
       <div style={{ textAlign: "center", paddingTop: "50px" }}>
         <div style={{ fontSize: "20px" }}>{roomStore.roomTitle}</div>
         <div className={styles.nameContainer}>
-          <div>
-            {roomStore.getLocalResolution()?.width +
-              "x" +
-              roomStore.getLocalResolution()?.height}
-          </div>
+          {roomStore.getLocalResolution()?.width != undefined && (
+            <div>
+              {roomStore.getLocalResolution()?.width +
+                "x" +
+                roomStore.getLocalResolution()?.height}
+            </div>
+          )}
         </div>
         <Video
           id="localVideo"
@@ -130,7 +132,7 @@ const WaitingRoom: NextPage<{
               style={{ margin: "8px" }}
               onClick={handleVideoToggleClick}
             >
-              {roomStore.enabledLocalVideo ? "Hide Video" : "Show Video"}
+              {roomStore.enabledLocalVideo ? t("mute_vid") : t("unmute_vid")}
             </Button>
             <Button
               id="audioToggle"
@@ -139,7 +141,7 @@ const WaitingRoom: NextPage<{
               style={{ margin: "8px" }}
               onClick={handleAudioToggleClick}
             >
-              {roomStore.enabledLocalAudio ? "Mute Audio" : "Unmute Audio"}
+              {roomStore.enabledLocalAudio ? t("mute_mic") : t("unmute_mic")}
             </Button>
           </div>
         </ThemeProvider>
@@ -421,7 +423,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             color="primary"
             onClick={handleVideoToggleClick}
           >
-            {enabledOffVideo ? "Hide Video" : "Show Video"}
+            {enabledOffVideo ? t("mute_vid") : t("unmute_vid")}
           </Button>
           <Button
             id="microphoneToggle"
@@ -429,7 +431,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
             color="primary"
             onClick={handleAudioToggleClick}
           >
-            {enabledMuteAudio ? "Mute Mic" : "Unmute Mic"}
+            {enabledMuteAudio ? t("mute_mic") : t("unmute_mic")}
           </Button>
           <Button
             id="screenShareToggle"
@@ -441,7 +443,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 : roomStore.shareMyScreen();
             }}
           >
-            {enabledScreenVideo ? "Stop Screen Share" : "Screen Share"}
+            {enabledScreenVideo ? t("screen_share") : t("screen_share_stop")}
           </Button>
 
           {!viewMode ? (
@@ -550,11 +552,13 @@ const RemoteMediaGroup: NextPage<{
                     {roomStore.uid}
                     <div>Video : {roomStore.localVideoProducerScore.score}</div>
                     <div>Audio : {roomStore.localAudioProducerScore.score}</div>
-                    <div>
-                      {roomStore.getLocalResolution()?.width +
-                        "x" +
-                        roomStore.getLocalResolution()?.height}
-                    </div>
+                    {roomStore.getLocalResolution()?.width != undefined && (
+                      <div>
+                        {roomStore.getLocalResolution()?.width +
+                          "x" +
+                          roomStore.getLocalResolution()?.height}
+                      </div>
+                    )}
                     <div>
                       {t("packets_lost")} : {roomStore.localVideoPacketsLost}
                     </div>
@@ -573,7 +577,7 @@ const RemoteMediaGroup: NextPage<{
                     />
                   </div>
                 ) : (
-                  <div className={styles.localCameraNull}>
+                  <div className={styles.localCameraNull} style={{padding: "30% 0px 30% 0px"}}>
                     <BsCameraVideoOffFill />
                   </div>
                 )}
@@ -604,11 +608,13 @@ const RemoteMediaGroup: NextPage<{
                             Audio :{" "}
                             {roomStore.remoteAudioConsumerScore[index][1]}
                           </div>
-                          <div>
-                            {mediaStreamWrapper.width +
-                              "x" +
-                              mediaStreamWrapper.height}
-                          </div>
+                          {mediaStreamWrapper.width && (
+                            <div>
+                              {mediaStreamWrapper.width +
+                                "x" +
+                                mediaStreamWrapper.height}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className={styles.nameContainer}>
@@ -708,10 +714,11 @@ const RemoteMediaGroup: NextPage<{
       );
     } else {
       let containerWidth = 85;
-      if (roomStore.joiningPeerIds.length < 2) containerWidth = 70;
-      else if (roomStore.joiningPeerIds.length < 3) containerWidth = 85 / 2;
-      else if (roomStore.joiningPeerIds.length < 7) containerWidth = 85 / 3;
-      else containerWidth = 85 / 4;
+      let containerPadding = 30;
+      if (roomStore.joiningPeerIds.length < 2) {containerWidth = 70; containerPadding = 30;}
+      else if (roomStore.joiningPeerIds.length < 3) {containerWidth = 85 / 2; containerPadding = 26;}
+      else if (roomStore.joiningPeerIds.length < 7) {containerWidth = 85 / 3; containerPadding = 20;}
+      else {containerWidth = 85 / 4; containerPadding = 10;}
       return (
         <>
           <div>
@@ -728,11 +735,13 @@ const RemoteMediaGroup: NextPage<{
                     {roomStore.uid}
                     <div>Video : {roomStore.localVideoProducerScore.score}</div>
                     <div>Audio : {roomStore.localAudioProducerScore.score}</div>
-                    <div>
-                      {roomStore.getLocalResolution()?.width +
-                        "x" +
-                        roomStore.getLocalResolution()?.height}
-                    </div>
+                    {roomStore.getLocalResolution()?.width != undefined && (
+                      <div>
+                        {roomStore.getLocalResolution()?.width +
+                          "x" +
+                          roomStore.getLocalResolution()?.height}
+                      </div>
+                    )}
                     <div>
                       {t("packets_lost")} : {roomStore.localVideoPacketsLost}
                     </div>
@@ -799,8 +808,58 @@ const RemoteMediaGroup: NextPage<{
                     )}
                   </div>
                 ) : (
-                  <div className={styles.localCameraNullTile}>
-                    <BsCameraVideoOffFill />
+                  <div>
+                    <div className={styles.localCameraNullTile} style={{padding: containerPadding+"% 0px "+containerPadding+"% 0px"}}>
+                      <BsCameraVideoOffFill />
+                    </div>
+                    {roomStore.isHost && (
+                      <div>
+                        <Button
+                          disabled
+                          sx={{
+                            "&.Mui-disabled": {
+                              background: "rgba(0,0,0,0)",
+                              color: "rgba(0,0,0,0)",
+                            },
+                          }}
+                        >
+                          {t("mute_mic")}
+                        </Button>
+                        <Button
+                          disabled
+                          sx={{
+                            "&.Mui-disabled": {
+                              background: "rgba(0,0,0,0)",
+                              color: "rgba(0,0,0,0)",
+                            },
+                          }}
+                        >
+                          {t("mute_vid")}
+                        </Button>
+                        <Button
+                          disabled
+                          sx={{
+                            "&.Mui-disabled": {
+                              background: "rgba(0,0,0,0)",
+                              color: "rgba(0,0,0,0)",
+                            },
+                          }}
+                        >
+                          {t("kick_to_waiting_room")}
+                        </Button>
+                        <Button
+                          disabled
+                          sx={{
+                            "&.Mui-disabled": {
+                              background: "rgba(0,0,0,0)",
+                              color: "rgba(0,0,0,0)",
+                            },
+                          }}
+                        >
+                          {t("kick")}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -831,11 +890,13 @@ const RemoteMediaGroup: NextPage<{
                         <div>
                           Audio : {roomStore.remoteAudioConsumerScore[index][1]}
                         </div>
-                        <div>
-                          {mediaStreamWrapper.width +
-                            "x" +
-                            mediaStreamWrapper.height}
-                        </div>
+                        {mediaStreamWrapper.width && (
+                          <div>
+                            {mediaStreamWrapper.width +
+                              "x" +
+                              mediaStreamWrapper.height}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className={styles.nameContainer}>

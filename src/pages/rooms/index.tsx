@@ -52,7 +52,7 @@ const ListPage: NextPage = observer(() => {
   return (
     <div className="App">
       <div>
-        {roomStore.userRole && roomStore.uid ? (
+        {roomStore.userRole && roomStore.uid && roomStore.userHospitalCode ? (
           <div
             style={{
               fontSize: "40px",
@@ -60,7 +60,8 @@ const ListPage: NextPage = observer(() => {
               marginLeft: "30%",
             }}
           >
-            {roomStore.uid} - {roomStore.userRole}
+            {roomStore.uid} - {roomStore.userRole} -{" "}
+            {roomStore.userHospitalCode}
           </div>
         ) : undefined}
       </div>

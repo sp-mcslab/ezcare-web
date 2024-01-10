@@ -127,7 +127,7 @@ export const postRoomLater = async (
       creatorId,
       name,
       currentTime,
-      openAt,
+      openTime,
       invitedUserIds,
       hostUserIds,
       hospitalCode,

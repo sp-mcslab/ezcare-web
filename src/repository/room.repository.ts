@@ -42,6 +42,8 @@ export const createRoom = async (
   // 생성할 방의 고유 아이디 (기본키 id)
   const roomUniqueId = uuid();
 
+  const deleteTime = new Date(openAt.getTime() + 24 * 60 * 60 * 1000);
+
   const roomEntity = await client.room.create({
     data: {
       id: roomUniqueId,
@@ -49,7 +51,7 @@ export const createRoom = async (
       name: name,
       createdat: createdAt,
       openat: openAt,
-      deletedat: null,
+      deletedat: deleteTime,
       hospitalcode: hospitalCode,
       flag: flag,
       Host: {

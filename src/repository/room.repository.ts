@@ -289,8 +289,10 @@ export const findDayUsage = async (
   todayLast.setDate(todayLast.getDate() + 1); // 내일이 되어서야 열린 것은 포함하지 않도록
   todayLast.setHours(0, 0, 0, 0);
 
+  console.log(isToday);
   const data = await client.room.findMany({
     select: {
+      id: true,
       openat: true,
       deletedat: true,
     },
@@ -314,10 +316,11 @@ export const findDayUsage = async (
 
   let dayUsage = 0;
   data.map((r) => {
+    if (r.deletedat == null || r.deletedat == today) isToday = true;
+
     if (!isToday) today.setHours(23, 59, 59, 599);
     if (isToday) today.setTime(new Date().getTime());
 
-    console.log(dayUsage);
     dayUsage += getUsageOfDay(
       today,
       todayStart,
@@ -353,6 +356,7 @@ export const findMonthUsage = async (
 
   const data = await client.room.findMany({
     select: {
+      id: true,
       openat: true,
       deletedat: true,
     },
@@ -376,11 +380,12 @@ export const findMonthUsage = async (
 
   let monthUsage = 0;
   data.map((r) => {
-    let isThisMonth = false;
+    let isToday = false;
     const today = new Date();
-    if (r.openat == today || r.deletedat == today) isThisMonth = true;
+    if (r.deletedat == null || r.deletedat == today) isToday = true;
 
-    if (!isThisMonth) today.setHours(23, 59, 59, 599);
+    if (!isToday) today.setHours(23, 59, 59, 599);
+    if (isToday) today.setTime(new Date().getTime());
 
     monthUsage += getUsageOfDay(
       today,
@@ -419,6 +424,7 @@ export const findYearUsage = async (
 
   const data = await client.room.findMany({
     select: {
+      id: true,
       openat: true,
       deletedat: true,
     },
@@ -442,11 +448,12 @@ export const findYearUsage = async (
 
   let yearUsage = 0;
   data.map((r) => {
-    let isThisYear = false;
+    let isToday = false;
     const today = new Date();
-    if (r.openat == today || r.deletedat == today) isThisYear = true;
+    if (r.deletedat == null || r.deletedat == today) isToday = true;
 
-    if (!isThisYear) today.setHours(23, 59, 59, 599);
+    if (!isToday) today.setHours(23, 59, 59, 599);
+    if (isToday) today.setTime(new Date().getTime());
 
     yearUsage += getUsageOfDay(
       today,

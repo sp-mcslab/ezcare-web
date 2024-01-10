@@ -42,7 +42,8 @@ export const getUsageOfDay = (
   // 방의 deletedat이 비어있을 때
   else {
     // 방의 오픈 시간이 오늘 중에 있는 방만 집계 -> 오늘이 시작된 시점부터 현재까지 살아있음
-    if (openat <= startDate) time += currentUTC.getTime() - openat.getTime();
+    if (openat <= startDate) time += currentUTC.getTime() - startDate.getTime();
+    else time += currentUTC.getTime() - openat.getTime();
   }
 
   return time;

@@ -71,5 +71,9 @@
   "join_option": "lobby mode",
   "share_option": "Multiple screen share option",
   "option_sucess": "Changed the option.",
-  "option_failure": "Option change failed."
+  "option_failure": "Option change failed.",
+  "unmute_mic": "Unmute mic",
+  "unmute_vid": "Unmute vid",
+  "screen_share": "Screen share",
+  "screen_share_stop": "Screen share stop"
 }

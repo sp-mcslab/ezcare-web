@@ -63,5 +63,17 @@
   "room_create_failure": "Room creation has failed.",
   "room_delete_success": "Room deletion has been completed.",
   "room_delete_failure": "Room deletion has failed.",
-  "exit_check": "Do you really want to leave the room?"
+  "exit_check": "Do you really want to leave the room?",
+  "packets_lost": "Packets Lost",
+  "on_network_view_mode": "On network view mode",
+  "hospital_option": "Hospital option",
+  "change_option": "change",
+  "join_option": "lobby mode",
+  "share_option": "Multiple screen share option",
+  "option_sucess": "Changed the option.",
+  "option_failure": "Option change failed.",
+  "unmute_mic": "Unmute mic",
+  "unmute_vid": "Unmute vid",
+  "screen_share": "Screen share",
+  "screen_share_stop": "Screen share stop"
 }

@@ -443,7 +443,7 @@ const StudyRoom: NextPage<{ roomStore: RoomStore }> = observer(
                 : roomStore.shareMyScreen();
             }}
           >
-            {enabledScreenVideo ? t("screen_share") : t("screen_share_stop")}
+            {enabledScreenVideo ? t("screen_share_stop") : t("screen_share")}
           </Button>
 
           {!viewMode ? (

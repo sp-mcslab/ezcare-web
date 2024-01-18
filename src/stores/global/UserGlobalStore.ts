@@ -4,6 +4,7 @@ import userService, { UserService } from "@/service/userService";
 
 export class UserGlobalStore {
   private _didLogin: boolean = false;
+  private _username: string = "";
   private _hospitalCode: string = "";
 
   constructor(private readonly _userService: UserService = userService) {
@@ -11,24 +12,25 @@ export class UserGlobalStore {
   }
 
   public async login(username: string, property_code: string): Promise<void> {
-    localStorage.setItem("username", username);
-    localStorage.setItem("property_code", property_code);
+    await userService.saveUserInfoTest(username, property_code);
+
+    this._username = username;
+    this._hospitalCode = property_code;
+
     this._didLogin = true;
   }
 
   public logout = () => {
-    localStorage.setItem("username", "");
-    localStorage.setItem("property_code", "");
+    userService.removeUserInfoTest();
     this._didLogin = false;
   };
 
   public tryToLogin = async (): Promise<void> => {
-    const username = localStorage.getItem("username");
-    if (username == null) {
-      return;
+    const { username, property_code } = await userService.getUserInfoTest();
+    if (username != null) {
+      this._username = username;
     }
     this._didLogin = true;
-    const property_code = localStorage.getItem("property_code");
     if (property_code != null) {
       this._hospitalCode = property_code;
     }

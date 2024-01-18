@@ -1,4 +1,3 @@
-// TODO : 필요없어질 겁니다.
 export class HospitalOptDto {
   public readonly hospitalCode: string;
   public readonly joinOpt: boolean;

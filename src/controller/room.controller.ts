@@ -231,6 +231,7 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const rooms = await findRooms(userId as string, hospitalCode);
+    console.log("rooms :: " + rooms);
     res.status(200);
     res.json({
       message: "진료실 목록이 조회되었습니다.",

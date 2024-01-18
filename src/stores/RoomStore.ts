@@ -15,7 +15,7 @@ import {
 import { RoomSocketService } from "@/service/RoomSocketService";
 import { RoomListService } from "@/service/roomListService";
 
-import { UserService } from "@/service/userService";
+import userService, { UserService } from "@/service/userService";
 import { AdminService } from "@/service/adminService";
 import { uuidv4 } from "@firebase/util";
 
@@ -1229,15 +1229,26 @@ export class RoomStore implements RoomViewModel {
   }
 
   public loadRoomList = async (): Promise<void> => {
-    const sessionToken = localStorage.getItem("username");
-    if (sessionToken == null || sessionToken.length <= 0) {
-      return;
-    }
+    // TODO 운영용
+    // const { username, property_code } =
+    //   await this._userService.manageUserInfoOp();
+
+    // 시연용
+    const { username, property_code } =
+      await this._userService.getUserInfoTest();
     if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLogin();
+
+    if (username == null || username.length <= 0) {
+      return;
+    }
+    if (property_code == null) {
+      return;
+    }
+
     const roomResult = await this._roomListService.getRoomList(
-      this._userGlobalStore.hospitalCode,
-      sessionToken
+      property_code,
+      username
     );
     if (roomResult.isSuccess) {
       this._roomList = roomResult.getOrNull()!;
@@ -1366,10 +1377,20 @@ export class RoomStore implements RoomViewModel {
   };
 
   public postRoom = async (): Promise<void> => {
-    const sessionToken = localStorage.getItem("username");
-    if (sessionToken == null) {
+    // TODO 운영용
+    // const { username, property_code } =
+    //   await this._userService.manageUserInfoOp();
+
+    // 시연용
+    const { username, property_code } =
+      await this._userService.getUserInfoTest();
+    if (this._userGlobalStore.hospitalCode == "")
+      await this._userGlobalStore.tryToLogin();
+
+    if (username == null || property_code == null) {
       return;
     }
+
     if (this._createdRoomName == "") {
       const openTime = new Date();
       openTime.setSeconds(0, 0);
@@ -1391,12 +1412,11 @@ export class RoomStore implements RoomViewModel {
       });
     }
     this._createdAt.setSeconds(0, 0);
-    if (this._userGlobalStore.hospitalCode == "")
-      await this._userGlobalStore.tryToLogin();
+
     if (!this._isRoomCreateLater) {
       const roomResult = await this._roomListService.postRoomNow(
-        this._userGlobalStore.hospitalCode,
-        sessionToken,
+        property_code,
+        username,
         this._createdRoomName,
         this._inviteUserIdList,
         this._hostUserList
@@ -1416,7 +1436,7 @@ export class RoomStore implements RoomViewModel {
     } else {
       const roomResult = await this._roomListService.postRoomLater(
         this._userGlobalStore.hospitalCode,
-        sessionToken,
+        username,
         this._createdRoomName,
         this._createdAt,
         this._inviteUserIdList,
@@ -1533,14 +1553,21 @@ export class RoomStore implements RoomViewModel {
 
   // 호스트
   public getUserData = async (): Promise<void> => {
-    const username = localStorage.getItem("username");
+    // TODO 운영용
+    // const { username, property_code } =
+    //   await this._userService.manageUserInfoOp();
+
+    // 시연용
+    const { username, property_code } =
+      await this._userService.getUserInfoTest();
+
     if (username == null) {
       return;
     }
+
     this._uid = username.slice(1);
     this._userRole = username.slice(0, 1);
 
-    const property_code = localStorage.getItem("property_code");
     if (property_code != null) {
       this._userHospitalCode = property_code;
     }
@@ -1549,13 +1576,21 @@ export class RoomStore implements RoomViewModel {
   public getIsHost = async (roomId: string): Promise<void> => {
     if (this._userGlobalStore.hospitalCode == "")
       await this._userGlobalStore.tryToLogin();
-    const sessionToken = localStorage.getItem("username");
-    if (sessionToken == null) {
+
+    // TODO 운영용
+    // const { username, property_code } =
+    //   await this._userService.manageUserInfoOp();
+
+    // 시연용
+    const { username, property_code } =
+      await this._userService.getUserInfoTest();
+
+    if (username == null || property_code == null) {
       return;
     }
     const validResult = await this._userService.findUserIsHost(
-      this._userGlobalStore.hospitalCode,
-      sessionToken,
+      property_code,
+      username,
       roomId
     );
     this._isHost = validResult;

@@ -36,7 +36,7 @@ export const getCallLog = async (req: NextApiRequest, res: NextApiResponse) => {
     const rooms = await findAllRooms(hospitalCode);
 
     if (!rooms || rooms.length === 0) {
-      res.status(400).json({ message: "No rooms found" });
+      res.status(404).json({ message: "존재하지 않는 진료실입니다." });
       return;
     }
 
@@ -179,7 +179,7 @@ export const getTotalCallTime = async (
     console.log(rooms);
 
     if (!rooms || rooms.length === 0) {
-      res.status(400).json({ message: "No rooms found" });
+      res.status(404).json({ message: "존재하지 않는 진료실입니다." });
       return;
     }
 
@@ -290,7 +290,7 @@ export const getOperationLog = async (
     const rooms = await findAllRooms(hospitalCode);
 
     if (!rooms || rooms.length === 0) {
-      res.status(400).json({ message: "No rooms found" });
+      res.status(404).json({ message: "No rooms found" });
       return;
     }
 

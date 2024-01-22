@@ -232,7 +232,7 @@ export const checkRoomOpened = async (): Promise<boolean | null> => {
   const result = await client.room.updateMany({
     where: {
       AND: [
-        { deletedat: null },
+        { OR: [{ deletedat: null }, { deletedat: { gt: presentTime } }] },
         { flag: RoomFlag.SCHEDULED },
         { openat: { lte: presentTime } },
       ],

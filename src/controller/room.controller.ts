@@ -194,10 +194,7 @@ export const deleteRoom = async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (e) {
     if (typeof e === "string") {
       console.log("error:404", e);
-      res.status(404);
-      res.json({
-        message: "존재하지 않는 진료실입니다.",
-      });
+      res.status(400);
       return;
     }
     console.log("error: 500, ", e);
@@ -219,6 +216,7 @@ export const getRooms = async (req: NextApiRequest, res: NextApiResponse) => {
     console.log("hospital Code :: " + hospitalCode);
 
     // 방의 오픈 여부 검사
+    roomListService.checkAndUpdateFlag(hospitalCode);
     const schedule = require("node-schedule");
     const job = schedule.scheduleJob("1 * * * * *", function () {
       roomListService.checkAndUpdateFlag(hospitalCode);
@@ -285,7 +283,7 @@ export const getRoomById = async (
   } catch (e) {
     if (typeof e === "string") {
       console.log("error:400", e);
-      res.status(404);
+      res.status(400);
       return;
     }
     console.log("error: 500", e);
@@ -320,8 +318,13 @@ export const checkRoomFlag = async (
     res.json({ message: "flag 검사를 완료하였습니다." });
     return;
   } catch (e) {
-    res.status(400);
-    res.json({ message: "flag 검사 중 오류가 발생했습니다." });
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
     return;
   }
 };
@@ -335,7 +338,6 @@ export const getHostById = async (
   res: NextApiResponse
 ) => {
   try {
-    console.log(req.query.userId + " // " + req.query.roomId);
     // 사용자의 id get.
     const userId = req.query.userId;
 
@@ -358,7 +360,7 @@ export const getHostById = async (
     const roomId = req.query.roomId;
 
     if (roomId == null) {
-      res.status(401).end();
+      res.status(404).end();
       return;
     }
 
@@ -380,8 +382,13 @@ export const getHostById = async (
     res.json({ message: "호스트 권한을 가지고 있지 않습니다.", data: false });
     return;
   } catch (e) {
-    res.status(404);
-    res.json({ message: "호스트 권한이 조회되지 않았습니다." });
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
     return;
   }
 };
@@ -413,7 +420,8 @@ export const getInvitedUsersByRoomId = async (
 
     const invitedUsers = await findInvitedUsersByRoomId(roomId as string);
     if (invitedUsers == null) {
-      res.status(404).end();
+      res.status(404);
+      res.json({ message: "초대 목록이 조회되지 않았습니다." });
       return;
     }
 
@@ -424,8 +432,13 @@ export const getInvitedUsersByRoomId = async (
     });
     return;
   } catch (e) {
-    res.status(404);
-    res.json({ message: "초대 목록이 조회되지 않았습니다." });
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
     return;
   }
 };
@@ -479,8 +492,13 @@ export const postInvitation = async (
     });
     return;
   } catch (e) {
-    res.status(404);
-    res.json({ message: "초대 목록에 추가되지 않았습니다." });
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
     return;
   }
 };
@@ -518,9 +536,13 @@ export const getUrlById = async (req: NextApiRequest, res: NextApiResponse) => {
     });
     return;
   } catch (e) {
-    console.error(e);
-    res.status(400);
-    res.json({ message: "진료실 url 이 조회되지 않았습니다." });
+    if (typeof e === "string") {
+      console.log("error:400", e);
+      res.status(400);
+      return;
+    }
+    console.log("error: 500", e);
+    res.status(500);
     return;
   }
 };

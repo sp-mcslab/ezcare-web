@@ -90,7 +90,7 @@ export const deleteRoomReq = async (roomId: string) => {
             AND: [
               { id: roomId },
               { NOT: { deletedat: null } },
-              { flag: RoomFlag.OPENED },
+              { OR: [{ flag: RoomFlag.OPENED }, { flag: RoomFlag.SCHEDULED }] },
             ],
           },
         ],
